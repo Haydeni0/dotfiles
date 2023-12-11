@@ -1,0 +1,2 @@
+# Regular expressions to ignore files with stow
+\.git
