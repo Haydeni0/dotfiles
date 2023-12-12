@@ -118,26 +118,52 @@ source $ZSH/oh-my-zsh.sh
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# Autostart docker
-wsl.exe -u root -e sh -c "service docker status > /dev/null || service docker start > /dev/null"
 # >>> conda initialize >>>
+# This is a non-standard version of the initialisation script that I've modified
+# This assumes that mambaforge is installed at "$HOME/mambaforge"
 # !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/home/hayden/mambaforge/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+__conda_path="$HOME/mambaforge/bin/conda"
+__conda_setup="$($__conda_path 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
 else
-    if [ -f "/home/hayden/mambaforge/etc/profile.d/conda.sh" ]; then
-        . "/home/hayden/mambaforge/etc/profile.d/conda.sh"
+    if [ -f "$HOME/mambaforge/etc/profile.d/conda.sh" ]; then
+        . "$HOME/mambaforge/etc/profile.d/conda.sh"
     else
-        export PATH="/home/hayden/mambaforge/bin:$PATH"
+        export PATH="$HOME/mambaforge/bin:$PATH"
     fi
 fi
 unset __conda_setup
+unset __conda_path
 
-if [ -f "/home/hayden/mambaforge/etc/profile.d/mamba.sh" ]; then
-    . "/home/hayden/mambaforge/etc/profile.d/mamba.sh"
+if [ -f "$HOME/mambaforge/etc/profile.d/mamba.sh" ]; then
+    . "$HOME/mambaforge/etc/profile.d/mamba.sh"
 fi
 # <<< conda initialize <<<
 
+
+SSH_ENV="$HOME/.ssh/agent-environment"
+function start_agent {
+#    echo "Initialising new SSH agent..."
+    /usr/bin/ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
+#    echo succeeded
+    chmod 600 "${SSH_ENV}"
+    . "${SSH_ENV}" > /dev/null
+    /usr/bin/ssh-add;
+}
+# Source SSH settings, if applicable
+if [ -f "${SSH_ENV}" ]; then
+    . "${SSH_ENV}" > /dev/null
+    #ps ${SSH_AGENT_PID} doesn't work under cywgin
+    ps -ef | grep ${SSH_AGENT_PID} | grep ssh-agent$ > /dev/null || {
+        start_agent;
+    }
+else
+    start_agent;
+fi
+
+
 alias bat='batcat'
-export EDITOR=/usr/bin/micro
+if [ -f /usr/bin/micro]; then
+    export EDITOR=/usr/bin/micro
+fi
