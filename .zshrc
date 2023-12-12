@@ -141,4 +141,5 @@ if [ -f "$HOME/mambaforge/etc/profile.d/mamba.sh" ]; then
 fi
 # <<< conda initialize <<<
 
-source ./.myshellrc.bash
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+source $SCRIPT_DIR/.myshellrc.bash

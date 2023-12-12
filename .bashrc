@@ -116,4 +116,5 @@ if ! shopt -oq posix; then
   fi
 fi
 
-source ./.myshellrc.bash
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+source $SCRIPT_DIR/.myshellrc.bash
