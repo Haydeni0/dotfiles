@@ -141,4 +141,4 @@ if [ -f "$HOME/mambaforge/etc/profile.d/mamba.sh" ]; then
 fi
 # <<< conda initialize <<<
 
-bash ./.myshellrc.bash
+source ./.myshellrc.bash
