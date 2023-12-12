@@ -18,8 +18,12 @@ else
     start_agent;
 fi
 
+# If bat is installed, replace cat with bat
+if command -v batcat &> /dev/null
+then
+    alias cat='batcat'
+fi
 
-alias bat='batcat'
 if [ -f /usr/bin/micro ]; then
     export EDITOR=/usr/bin/micro
 fi
