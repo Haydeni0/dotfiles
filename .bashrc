@@ -116,4 +116,8 @@ if ! shopt -oq posix; then
   fi
 fi
 
+# Use ZSH if not using VSCode remote containers (because it breaks when switching shells 
+# due to $DOCKER_HOST not being visible)
+[[ -z "${REMOTE_CONTAINERS_SOCKETS}" ]] && exec zsh
+
 source ~/.myshellrc.bash
