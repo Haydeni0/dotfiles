@@ -1,3 +1,15 @@
+#!/bin/bash
+# Run commands for all shells
+
+# Add local binaries to path
+if [ -d "$HOME/bin" ] ; then
+    PATH="$HOME/bin:$PATH"
+fi
+if [ -d "$HOME/.local/bin" ] ; then
+    PATH="$HOME/.local/bin:$PATH"
+fi
+
+# SSH agent initialisation
 SSH_ENV="$HOME/.ssh/agent-environment"
 function start_agent {
 #    echo "Initialising new SSH agent..."
@@ -24,6 +36,8 @@ then
     alias cat='batcat'
 fi
 
-if [ -f /usr/bin/micro ]; then
-    export EDITOR=/usr/bin/micro
+# If micro is installed, use it as the default editor
+if command -v micro &> /dev/null
+then
+    export EDITOR=$(command -v micro)
 fi
