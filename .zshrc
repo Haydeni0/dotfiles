@@ -120,24 +120,24 @@ source $ZSH/oh-my-zsh.sh
 
 # >>> conda initialize >>>
 # This is a non-standard version of the initialisation script that I've modified
-# This assumes that mambaforge is installed at "$HOME/mambaforge"
+# This assumes that mambaforge is installed at "$HOME/miniforge3"
 # !! Contents within this block are managed by 'conda init' !!
-__conda_path="$HOME/mambaforge/bin/conda"
+__conda_path="$HOME/miniforge3/bin/conda"
 __conda_setup="$($__conda_path 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
 else
-    if [ -f "$HOME/mambaforge/etc/profile.d/conda.sh" ]; then
-        . "$HOME/mambaforge/etc/profile.d/conda.sh"
+    if [ -f "$HOME/miniforge3/etc/profile.d/conda.sh" ]; then
+        . "$HOME/miniforge3/etc/profile.d/conda.sh"
     else
-        export PATH="$HOME/mambaforge/bin:$PATH"
+        export PATH="$HOME/miniforge3/bin:$PATH"
     fi
 fi
 unset __conda_setup
 unset __conda_path
 
-if [ -f "$HOME/mambaforge/etc/profile.d/mamba.sh" ]; then
-    . "$HOME/mambaforge/etc/profile.d/mamba.sh"
+if [ -f "$HOME/miniforge3/etc/profile.d/mamba.sh" ]; then
+    . "$HOME/miniforge3/etc/profile.d/mamba.sh"
 fi
 # <<< conda initialize <<<
 
