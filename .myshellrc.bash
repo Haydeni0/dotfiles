@@ -33,7 +33,7 @@ fi
 # If bat is installed, replace cat with bat
 if command -v batcat &> /dev/null
 then
-    alias cat='batcat'
+    alias cat='batcat -p'
 fi
 
 # If micro is installed, use it as the default editor
