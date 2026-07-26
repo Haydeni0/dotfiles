@@ -7,9 +7,12 @@
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
     initContent = ''
-      # Start tmux (ported verbatim from the user's .zshrc)
+      # Start tmux (ported from the user's .zshrc, with SKIP_TMUX escape hatch).
+      # Normally tmux is already started by .bashrc (outside proot); this block
+      # only fires if zsh starts without tmux AND SKIP_TMUX isn't set.
       if [ -n "$PS1" ] && \
         [ -z "$TMUX" ] && \
+        [ -z "$SKIP_TMUX" ] && \
         [ "$TERM_PROGRAM" != "vscode" ] && \
         command -v tmux &>/dev/null; then
         exec tmux new-session -A -s main
