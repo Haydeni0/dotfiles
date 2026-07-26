@@ -28,7 +28,8 @@ home/
   shell.nix            # zsh + starship + aliases + EDITOR=nvim
   packages.nix         # home.packages (CLI tools + herdrPkg)
   git.nix              # programs.git (push + rerere only)
-  tmux.nix             # programs.tmux (ported config + dracula/sensible plugins)
+  tmux.nix             # empty module (tmux managed via direct symlink - see "NOT managed by Nix")
+  .tmux.conf           # tmux config (tracked in repo, symlinked to ~/.tmux.conf outside HM)
   editor.nix           # mkOutOfStoreSymlink -> home/.config/nvim (edit-in-place)
   zoxide.nix           # programs.zoxide
   btop.nix             # programs.btop
@@ -42,8 +43,9 @@ docs/
 ```
 
 **Two config-linking mechanisms** (same as the video):
-1. `programs.<x>` (zsh, starship, tmux, git, btop, zoxide, rclone) - Nix-expressed, written to the immutable Nix store, symlinked into place. Edit Nix + `switch` to change.
+1. `programs.<x>` (zsh, starship, git, btop, zoxide, rclone) - Nix-expressed, written to the immutable Nix store, symlinked into place. Edit Nix + `switch` to change.
 2. `mkOutOfStoreSymlink` (nvim only) - real files live in the repo, `~/.config/nvim` symlinks to `~/.dotfiles/home/.config/nvim`. Edit-in-place, no rebuild.
+3. **Direct symlink, outside HM** (tmux, `.bashrc`) - `~/.tmux.conf` -> `~/.dotfiles/home/.tmux.conf` directly. System tmux runs outside proot (needs kernel pty access); HM's store-resident symlinks don't resolve there, so tmux config is managed manually like `.bashrc`. Tracked in the repo, edit-in-place.
 
 ## Prerequisites
 
