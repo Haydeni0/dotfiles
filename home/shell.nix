@@ -3,6 +3,7 @@
 {
   programs.zsh = {
     enable = true;
+    enableCompletion = false;  # HM's compinit is slow under proot (stats every fpath file via ptrace). We run a cached one below.
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
     initContent = ''
@@ -19,10 +20,12 @@
       bindkey $'\e[1;3D' backward-word
       bindkey $'\e[1;3C' forward-word
 
-      # compinit
+      # compinit - cached, skip security check (the slow part under proot).
+      # -C skips the insecure-dir check (stats every fpath file via ptrace = 4s).
+      # .zcompdump caches completions; refreshed when zsh/completions change.
       fpath+=~/.zfunc
       autoload -Uz compinit
-      compinit -u
+      compinit -C
 
       # envman (defensive - kept from the user's setup)
       [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
