@@ -238,7 +238,6 @@ This repo currently only defines `homeConfigurations."hayden@remote"` (Linux). A
 
 - **proot overhead**: proot uses ptrace to intercept syscalls, adding latency to filesystem operations. Acceptable for interactive shells; heavy I/O workloads may be slower. This is the tradeoff for rootless Nix.
 - **First nvim launch**: bootstraps [lazy.nvim](https://github.com/folke/lazy.nvim) by cloning plugins from GitHub. Needs network once; after that it's offline.
-- **First nvim launch**: bootstraps [lazy.nvim](https://github.com/folke/lazy.nvim) by cloning plugins from GitHub. Needs network once; after that it's offline.
 - **Package versions**: pinned to nixos-26.05 (stable). Slightly behind unstable for some packages (uv 0.11.21 vs 0.11.28, zoxide 0.9.9 vs 0.10.0). Trade-off for stability vs HM/nixpkgs drift.
 
 ## Reference
