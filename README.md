@@ -14,19 +14,18 @@ Running `home-manager switch` builds:
   - ripgrep, fd, fzf, jq, bat, gh, delta, lazygit
   - uv (Python), yazi (file manager), gdu (disk usage), btop (resource monitor), zoxide (smart cd)
   - rclone (cloud sync), rsync, tmux
-  - herdr (agent multiplexer - run claude/codex/opencode with state at a glance)
 - **git** - `push.autoSetupRemote` + `rerere.enabled` only (no user/credential in the flake)
 - **tmux** - ported from the user's `.tmux.conf` (Ctrl-Space prefix, dracula theme, F11 nested toggle, vi copy mode)
 
 ## Architecture
 
 ```
-flake.nix              # inputs: nixpkgs-26.05 + home-manager release-26.05 + herdr flake
+flake.nix              # inputs: nixpkgs-26.05 + home-manager release-26.05
 flake.lock             # pinned versions -> reproducible
 home/
   default.nix          # imports all modules + username/homeDirectory/stateVersion
   shell.nix            # zsh + starship + aliases + EDITOR=nvim
-  packages.nix         # home.packages (CLI tools + herdrPkg)
+  packages.nix         # home.packages (CLI tools)
   git.nix              # programs.git (push + rerere only)
   tmux.nix             # empty module (tmux managed via direct symlink - see "NOT managed by Nix")
   .tmux.conf           # tmux config (tracked in repo, symlinked to ~/.tmux.conf outside HM)
@@ -35,7 +34,6 @@ home/
   btop.nix             # programs.btop
   rclone.nix           # programs.rclone (binary + completion only; config stays manual)
   .config/nvim/        # nvim config (adopted from video, edit-in-place via symlink)
-  .config/herdr/       # herdr config (keybindings + dracula theme, direct symlink)
   .tmux.conf           # tmux config (direct symlink, outside HM)
 hosts/
   remote.nix           # remote-specific: sessionPath (~/.nix-profile/bin first, then ~/.local/bin)
@@ -116,34 +114,7 @@ mv ~/.tmux.conf ~/.tmux.conf.pre-nix 2>/dev/null
 mv ~/.p10k.zsh ~/.p10k.zsh.pre-nix 2>/dev/null
 ```
 
-### Step 5: Install herdr (standalone on Linux, Nix on Mac)
-
-herdr is the agent multiplexer. On Mac, it's installed via Nix (included in the flake). On Linux with nix-portable, the Nix herdr can't spawn panes under proot (ptrace breaks fork+exec), so install it standalone:
-
-```sh
-curl -fsSL https://herdr.dev/install.sh | sh
-```
-
-This installs to `~/.local/bin/herdr`. Then create the pane wrapper (so herdr panes get Nix zsh + tools):
-
-```sh
-cat > ~/.local/bin/nix-zsh << 'EOF'
-#!/bin/sh
-exec env SKIP_TMUX=1 ~/.nix-portable/bin/proot -b ~/.nix-portable/nix:/nix ~/.nix-profile/bin/zsh
-EOF
-chmod +x ~/.local/bin/nix-zsh
-```
-
-And symlink the herdr config (keybindings + dracula theme, tracked in the repo):
-
-```sh
-mkdir -p ~/.config/herdr
-ln -sfn ~/.dotfiles/home/.config/herdr/config.toml ~/.config/herdr/config.toml
-```
-
-On Mac, skip this step - the Nix herdr works directly (no proot).
-
-### Step 6: Set up the `.bashrc` bridge
+### Step 5: Set up the `.bashrc` bridge
 
 The login shell is bash. `.bashrc` must: set up `NIX_PROFILES`/PATH, then `exec` zsh through proot (so `/nix/store` resolves). Replace `~/.bashrc` with:
 
@@ -177,7 +148,7 @@ export NIX_PROFILES="$HOME/.nix-profile"
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
 # Start system tmux FIRST (outside proot - tmux needs kernel pty access).
-# Set SKIP_TMUX=1 to bypass tmux for this session (e.g. to run herdr standalone).
+# Set SKIP_TMUX=1 to bypass tmux for this session (e.g. to run a non-tmux shell).
 if [ -n "$PS1" ] && \
    [ -z "$TMUX" ] && \
    [ -z "$SKIP_TMUX" ] && \
@@ -199,7 +170,7 @@ if [ -x ~/.nix-portable/bin/proot ] && \
 fi
 ```
 
-### Step 7: Apply the config
+### Step 6: Apply the config
 
 ```sh
 cd ~/.dotfiles
@@ -221,7 +192,7 @@ cd ~/.dotfiles
 
 For nvim config edits only (lua files in `home/.config/nvim/`): no rebuild needed - they're symlinked edit-in-place.
 
-To update flake inputs (nixpkgs, home-manager, herdr) deliberately:
+To update flake inputs (nixpkgs, home-manager) deliberately:
 ```sh
 cd ~/.dotfiles
 nix flake update
@@ -247,15 +218,12 @@ This setup differs from a standard Nix install because we have no root (shared c
 - **No `/nix`** - nix-portable stores everything in `~/.nix-portable/`. The Nix store is at `~/.nix-portable/nix/store/`.
 - **proot bridge** - HM-managed symlinks point to `/nix/store/...` paths, which don't exist on the real filesystem. `.bashrc` runs zsh through `proot -b ~/.nix-portable/nix:/nix`, which bind-mounts the nix store to `/nix` at the syscall level. This is transparent to the shell - all `/nix/store/...` paths resolve. proot is needed because we can't create the real `/nix` directory (no root).
 - **No nix-env by default** - nix-portable only provides `nix`. HM's activation script needs `nix-env`, so we create symlinks (`nix-env` -> `nix-portable`; it's a multi-call binary).
-- **herdr** - on Linux, installed standalone (outside Nix/proot) because the Nix herdr can't spawn panes under proot. On Mac, installed via Nix (works directly, no proot).
 - **Profile dir** - `~/.local/state/nix/profiles/` must exist before `switch` (nix-portable doesn't create it).
-- **proot limitation: herdr standalone** - proot uses ptrace to intercept syscalls, which breaks fork+exec of Nix binaries by a traced process (proot #119). This means the Nix herdr (`~/.nix-profile/bin/herdr`) launches its TUI but every pane it spawns segfaults. Fix: install herdr standalone (outside Nix/proot) via `curl -fsSL https://herdr.dev/install.sh | sh` to `~/.local/bin/herdr`. Panes spawn `~/.local/bin/nix-zsh` (a wrapper that enters proot fresh). The herdr config (`~/.config/herdr/config.toml`) is tracked in the repo at `home/.config/herdr/config.toml` via direct symlink. On Mac (no proot), the Nix herdr works without this workaround.
+- **proot limitation: terminal multiplexers** - proot uses ptrace to intercept syscalls, which breaks fork+exec of Nix binaries by a traced process (proot #119). Terminal multiplexers (tmux, herdr) that spawn panes under proot hit this bug. tmux is run outside proot (system `/usr/bin/tmux`); see `docs/herdr-learnings.md` for the full investigation on herdr.
 
 ## What's NOT managed by Nix (stays manual)
 
 - **tmux config (`~/.tmux.conf`)** - managed manually (direct symlink to `~/.dotfiles/home/.tmux.conf`), NOT via HM. System tmux runs outside proot; HM's store-resident symlinks don't resolve there. The config file IS tracked in the repo at `home/.tmux.conf` - edit-in-place. TPM (plugin manager) auto-installs dracula/sensible on first launch.
-- **herdr (standalone)** - installed via `curl -fsSL https://herdr.dev/install.sh | sh` to `~/.local/bin/herdr`, NOT Nix-managed on this remote (proot breaks Nix herdr's pane spawning - see above). Config tracked in repo at `home/.config/herdr/config.toml` via direct symlink. On Mac, the Nix herdr works (no proot).
-- **`~/.local/bin/nix-zsh`** - wrapper script that enters proot fresh so herdr panes get Nix zsh + tools. Created manually (outside the repo - it's host-specific).
 - **`~/.ssh/`** - keys, config, authorized_keys. The SSH agent setup in `.bashrc` stays manual.
 - **`~/.config/rclone/rclone.conf`** - holds cloud credentials. The HM module installs rclone + completion only; config stays manual (never in the flake - public GitHub repo).
 - **uv-managed tools** (`task`, `nvitop`, `hf`, `evo`, `graphify`) - these stay as `uv tool install` in `~/.local/bin`. Nix doesn't fight uv for Python-based tools.
@@ -270,7 +238,7 @@ This repo currently only defines `homeConfigurations."hayden@remote"` (Linux). A
 
 - **proot overhead**: proot uses ptrace to intercept syscalls, adding latency to filesystem operations. Acceptable for interactive shells; heavy I/O workloads may be slower. This is the tradeoff for rootless Nix.
 - **First nvim launch**: bootstraps [lazy.nvim](https://github.com/folke/lazy.nvim) by cloning plugins from GitHub. Needs network once; after that it's offline.
-- **herdr first launch**: bootstraps its server; needs network.
+- **First nvim launch**: bootstraps [lazy.nvim](https://github.com/folke/lazy.nvim) by cloning plugins from GitHub. Needs network once; after that it's offline.
 - **Package versions**: pinned to nixos-26.05 (stable). Slightly behind unstable for some packages (uv 0.11.21 vs 0.11.28, zoxide 0.9.9 vs 0.10.0). Trade-off for stability vs HM/nixpkgs drift.
 
 ## Reference
@@ -280,7 +248,6 @@ This repo currently only defines `homeConfigurations."hayden@remote"` (Linux). A
 - Video walkthrough: https://youtu.be/5N-okeDdIuI
 - Video's config: https://github.com/kunchenguid/dotfiles
 - nix-portable: https://github.com/DavHau/nix-portable
-- herdr: https://herdr.dev
 
 ## License
 

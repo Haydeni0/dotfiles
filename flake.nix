@@ -5,21 +5,16 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
-    # herdr is not in nixpkgs at v0.7.5; use its own flake
-    herdr.url = "github:ogulcancelik/herdr/v0.7.5";
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, herdr, ... }:
+  outputs = inputs@{ self, nixpkgs, home-manager, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
-      herdrPkg = herdr.packages.${system}.default;
     in
     {
       homeConfigurations."hayden@remote" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = { inherit herdrPkg; };
         modules = [
           ./home/default.nix
           ./hosts/remote.nix
