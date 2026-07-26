@@ -35,6 +35,8 @@ home/
   btop.nix             # programs.btop
   rclone.nix           # programs.rclone (binary + completion only; config stays manual)
   .config/nvim/        # nvim config (adopted from video, edit-in-place via symlink)
+  .config/herdr/       # herdr config (keybindings + dracula theme, direct symlink)
+  .tmux.conf           # tmux config (direct symlink, outside HM)
 hosts/
   remote.nix           # remote-specific: sessionPath (~/.nix-profile/bin first, then ~/.local/bin)
 docs/
@@ -122,12 +124,34 @@ nix build github:ogulcancelik/herdr/v0.7.5#default --no-link
 ```
 (First run: ~10 min, downloads + caches herdr in the nix store.)
 
+### Step 5b: Install standalone herdr (for use as a multiplexer on this remote)
+
+The Nix herdr installs fine but can't spawn panes under proot (ptrace breaks fork+exec). Install a standalone copy outside proot:
+```sh
+curl -fsSL https://herdr.dev/install.sh | sh
+```
+This installs to `~/.local/bin/herdr`. Also create the pane wrapper:
+```sh
+cat > ~/.local/bin/nix-zsh << 'EOF'
+#!/bin/sh
+exec ~/.nix-portable/bin/proot -b ~/.nix-portable/nix:/nix ~/.nix-profile/bin/zsh
+EOF
+chmod +x ~/.local/bin/nix-zsh
+```
+And symlink the herdr config:
+```sh
+mkdir -p ~/.config/herdr
+ln -sfn ~/.dotfiles/home/.config/herdr/config.toml ~/.config/herdr/config.toml
+```
+On Mac (no proot), skip this step - the Nix herdr works directly.
+
 ### Step 6: Set up the `.bashrc` bridge
 
 The login shell is bash. `.bashrc` must: set up `NIX_PROFILES`/PATH, then `exec` zsh through proot (so `/nix/store` resolves). Replace `~/.bashrc` with:
 
 ```bash
-# ~/.bashrc: slimmed - bash launches zsh via proot, so only env + bridge matter here.
+# ~/.bashrc: slimmed - bash launches system tmux, then proot zsh inside it.
+# tmux must run OUTSIDE proot (proot breaks pty creation).
 
 case $- in
     *i*) ;;
@@ -154,19 +178,26 @@ export AWS_PROFILE=coreweave
 export NIX_PROFILES="$HOME/.nix-profile"
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
-# Launch zsh through proot (binds ~/.nix-portable/nix -> /nix so HM symlinks resolve)
-if command -v zsh &> /dev/null && \
+# Start system tmux FIRST (outside proot - tmux needs kernel pty access).
+# Set SKIP_TMUX=1 to bypass tmux for this session (e.g. to run herdr standalone).
+if [ -n "$PS1" ] && \
+   [ -z "$TMUX" ] && \
+   [ -z "$SKIP_TMUX" ] && \
+   [ "$TERM_PROGRAM" != "vscode" ] && \
+   [ -z "${REMOTE_CONTAINERS_SOCKETS}" ] && \
+   [ -z "${CURSOR_AGENT}" ] && \
+   command -v /usr/bin/tmux &>/dev/null; then
+    exec /usr/bin/tmux new-session -A -s main
+fi
+
+# Inside tmux (or tmux not available): launch Nix zsh via proot.
+# Check proot binary (real file), NOT `command -v zsh` - the Nix zsh symlink
+# dangles outside proot (/nix/store doesn't exist on real FS).
+if [ -x ~/.nix-portable/bin/proot ] && \
    [[ $- == *i* ]] && \
    [[ -z "${REMOTE_CONTAINERS_SOCKETS}" ]] && \
    [[ -z "${CURSOR_AGENT}" ]]; then
     exec ~/.nix-portable/bin/proot -b ~/.nix-portable/nix:/nix ~/.nix-profile/bin/zsh -l
-else
-    if [ -n "$PS1" ] && \
-      [ -z "$TMUX" ] && \
-      [ "$TERM_PROGRAM" != "vscode" ] && \
-      command -v tmux &>/dev/null; then
-      exec ~/.nix-portable/bin/proot -b ~/.nix-portable/nix:/nix tmux new-session -A -s main
-    fi
 fi
 ```
 
@@ -213,17 +244,20 @@ If you clone this repo, review these before running the setup:
 
 ## How the rootless Nix setup works (nix-portable specifics)
 
-This setup differs from a standard Nix install because we have no root:
+This setup differs from a standard Nix install because we have no root (shared cluster, no sudo). Standard Nix needs root to create `/nix/store` and run a daemon. nix-portable avoids this entirely:
 
 - **No `/nix`** - nix-portable stores everything in `~/.nix-portable/`. The Nix store is at `~/.nix-portable/nix/store/`.
-- **proot bridge** - HM-managed symlinks point to `/nix/store/...` paths, which don't exist on the real filesystem. `.bashrc` runs zsh through `proot -b ~/.nix-portable/nix:/nix`, which bind-mounts the nix store to `/nix` at the syscall level. This is transparent to the shell - all `/nix/store/...` paths resolve.
+- **proot bridge** - HM-managed symlinks point to `/nix/store/...` paths, which don't exist on the real filesystem. `.bashrc` runs zsh through `proot -b ~/.nix-portable/nix:/nix`, which bind-mounts the nix store to `/nix` at the syscall level. This is transparent to the shell - all `/nix/store/...` paths resolve. proot is needed because we can't create the real `/nix` directory (no root).
 - **No nix-env by default** - nix-portable only provides `nix`. HM's activation script needs `nix-env`, so we create symlinks (`nix-env` -> `nix-portable`; it's a multi-call binary).
 - **herdr pre-build** - nix-portable's minimal sandbox can't build herdr from source (Rust/zig). Pre-build it separately before the first `switch`.
 - **Profile dir** - `~/.local/state/nix/profiles/` must exist before `switch` (nix-portable doesn't create it).
+- **proot limitation: herdr standalone** - proot uses ptrace to intercept syscalls, which breaks fork+exec of Nix binaries by a traced process (proot #119). This means the Nix herdr (`~/.nix-profile/bin/herdr`) launches its TUI but every pane it spawns segfaults. Fix: install herdr standalone (outside Nix/proot) via `curl -fsSL https://herdr.dev/install.sh | sh` to `~/.local/bin/herdr`. Panes spawn `~/.local/bin/nix-zsh` (a wrapper that enters proot fresh). The herdr config (`~/.config/herdr/config.toml`) is tracked in the repo at `home/.config/herdr/config.toml` via direct symlink. On Mac (no proot), the Nix herdr works without this workaround.
 
 ## What's NOT managed by Nix (stays manual)
 
 - **tmux config (`~/.tmux.conf`)** - managed manually (direct symlink to `~/.dotfiles/home/.tmux.conf`), NOT via HM. System tmux runs outside proot; HM's store-resident symlinks don't resolve there. The config file IS tracked in the repo at `home/.tmux.conf` - edit-in-place. TPM (plugin manager) auto-installs dracula/sensible on first launch.
+- **herdr (standalone)** - installed via `curl -fsSL https://herdr.dev/install.sh | sh` to `~/.local/bin/herdr`, NOT Nix-managed on this remote (proot breaks Nix herdr's pane spawning - see above). Config tracked in repo at `home/.config/herdr/config.toml` via direct symlink. On Mac, the Nix herdr works (no proot).
+- **`~/.local/bin/nix-zsh`** - wrapper script that enters proot fresh so herdr panes get Nix zsh + tools. Created manually (outside the repo - it's host-specific).
 - **`~/.ssh/`** - keys, config, authorized_keys. The SSH agent setup in `.bashrc` stays manual.
 - **`~/.config/rclone/rclone.conf`** - holds cloud credentials. The HM module installs rclone + completion only; config stays manual (never in the flake - public GitHub repo).
 - **uv-managed tools** (`task`, `nvitop`, `hf`, `evo`, `graphify`) - these stay as `uv tool install` in `~/.local/bin`. Nix doesn't fight uv for Python-based tools.
