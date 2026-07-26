@@ -1,0 +1,24 @@
+# Binaries never go in this repo
+*.exe
+*.bin
+*.o
+*.so
+
+# Local state / caches
+result
+result-*
+.direnv/
+
+# Backups (live outside the repo anyway, but just in case)
+backups/
+*.bak
+
+# Nix artifacts that shouldn't be committed
+*.qcow2
+
+# Editor swap files
+*.swp
+*~
+
+# SDD workspace (scratch - subagent-driven-development artifacts)
+.superpowers/

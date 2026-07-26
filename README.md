@@ -1,0 +1,248 @@
+# dotfiles
+
+A declarative, reproducible terminal environment managed with Nix (home-manager + flakes), running rootlessly on a shared Linux cluster (no root, no `/nix` daemon). One repo, one command, and a fresh remote ends up configured the same way every time.
+
+Modeled on [kunchenguid/dotfiles](https://github.com/kunchenguid/dotfiles) (walkthrough: https://youtu.be/5N-okeDdIuI), adapted for a rootless Linux remote instead of a Mac.
+
+## What you get
+
+Running `home-manager switch` builds:
+
+- **Shell** - zsh (autosuggestion + syntaxHighlighting, no oh-my-zsh) + starship prompt + tmux auto-start
+- **Editor** - Neovim (lazy.nvim, rose-pine moon theme, oil.nvim, snacks.nvim, neogit, gitsigns, which-key)
+- **Tools** (Nix-managed, in `~/.nix-profile/bin/`):
+  - ripgrep, fd, fzf, jq, bat, gh, delta, lazygit
+  - uv (Python), yazi (file manager), gdu (disk usage), btop (resource monitor), zoxide (smart cd)
+  - rclone (cloud sync), rsync, tmux
+  - herdr (agent multiplexer - run claude/codex/opencode with state at a glance)
+- **git** - `push.autoSetupRemote` + `rerere.enabled` only (no user/credential in the flake)
+- **tmux** - ported from the user's `.tmux.conf` (Ctrl-Space prefix, dracula theme, F11 nested toggle, vi copy mode)
+
+## Architecture
+
+```
+flake.nix              # inputs: nixpkgs-26.05 + home-manager release-26.05 + herdr flake
+flake.lock             # pinned versions -> reproducible
+home/
+  default.nix          # imports all modules + username/homeDirectory/stateVersion
+  shell.nix            # zsh + starship + aliases + EDITOR=nvim
+  packages.nix         # home.packages (CLI tools + herdrPkg)
+  git.nix              # programs.git (push + rerere only)
+  tmux.nix             # programs.tmux (ported config + dracula/sensible plugins)
+  editor.nix           # mkOutOfStoreSymlink -> home/.config/nvim (edit-in-place)
+  zoxide.nix           # programs.zoxide
+  btop.nix             # programs.btop
+  rclone.nix           # programs.rclone (binary + completion only; config stays manual)
+  .config/nvim/        # nvim config (adopted from video, edit-in-place via symlink)
+hosts/
+  remote.nix           # remote-specific: sessionPath (~/.nix-profile/bin first, then ~/.local/bin)
+docs/
+  specs/               # design doc
+  plans/               # implementation plan
+```
+
+**Two config-linking mechanisms** (same as the video):
+1. `programs.<x>` (zsh, starship, tmux, git, btop, zoxide, rclone) - Nix-expressed, written to the immutable Nix store, symlinked into place. Edit Nix + `switch` to change.
+2. `mkOutOfStoreSymlink` (nvim only) - real files live in the repo, `~/.config/nvim` symlinks to `~/.dotfiles/home/.config/nvim`. Edit-in-place, no rebuild.
+
+## Prerequisites
+
+- **Linux x86_64** (tested on Ubuntu 22.04, CoreWeave Slurm cluster)
+- **No root required** - this setup uses [nix-portable](https://github.com/DavHau/nix-portable) (rootless, no `/nix`, no daemon)
+- **bash as login shell** - the setup uses a bash -> `exec zsh -l` bridge (no `chsh` needed; zsh isn't in `/etc/shells` on this cluster)
+
+## Fresh-machine setup
+
+On a brand new Linux box, from a bare clone of this repo:
+
+```sh
+git clone git@github-haydeni0:Haydeni0/dotfiles.git ~/gitrepos/dotfiles
+cd ~/gitrepos/dotfiles
+```
+
+### Step 1: Install nix-portable (rootless Nix)
+
+```sh
+curl -L -o ~/.local/bin/nix-portable https://github.com/DavHau/nix-portable/releases/latest/download/nix-portable-x86_64
+chmod +x ~/.local/bin/nix-portable
+```
+
+Verify:
+```sh
+~/.local/bin/nix-portable nix --version
+# -> nix (Nix) 2.20.6 (first run takes ~2 min to self-extract)
+```
+
+Create convenience symlinks (nix-portable is a multi-call binary):
+```sh
+ln -sfn ~/.local/bin/nix-portable ~/.local/bin/nix
+for tool in nix-env nix-build nix-channel nix-instantiate nix-store nix-hash nix-collect-garbage; do
+    ln -sfn ~/.local/bin/nix-portable ~/.local/bin/$tool
+done
+```
+
+### Step 2: Create the `~/.dotfiles` symlink
+
+Stabilises `mkOutOfStoreSymlink` paths (so the flake keeps working if the repo moves):
+```sh
+ln -sfn ~/gitrepos/dotfiles ~/.dotfiles
+```
+
+### Step 3: Create the nix-portable profile dir
+
+nix-portable doesn't create this by default; home-manager needs it:
+```sh
+mkdir -p ~/.local/state/nix/profiles
+```
+
+### Step 4: Back up existing dotfiles
+
+home-manager refuses to overwrite existing files. Move them aside first:
+```sh
+mkdir -p ~/dotfiles-backup-$(date +%Y%m%d)
+cp ~/.zshrc ~/.p10k.zsh ~/.tmux.conf ~/.gitconfig ~/.bashrc ~/.profile ~/dotfiles-backup-$(date +%Y%m%d)/ 2>/dev/null
+mv ~/.zshrc ~/.zshrc.pre-nix 2>/dev/null
+mv ~/.gitconfig ~/.gitconfig.pre-nix 2>/dev/null
+mv ~/.tmux.conf ~/.tmux.conf.pre-nix 2>/dev/null
+mv ~/.p10k.zsh ~/.p10k.zsh.pre-nix 2>/dev/null
+```
+
+### Step 5: Pre-build herdr (nix-portable sandbox can't build it from source)
+
+nix-portable's minimal sandbox can't handle herdr's Rust/zig build. Pre-build it separately:
+```sh
+nix build github:ogulcancelik/herdr/v0.7.5#default --no-link
+```
+(First run: ~10 min, downloads + caches herdr in the nix store.)
+
+### Step 6: Set up the `.bashrc` bridge
+
+The login shell is bash. `.bashrc` must: set up `NIX_PROFILES`/PATH, then `exec` zsh through proot (so `/nix/store` resolves). Replace `~/.bashrc` with:
+
+```bash
+# ~/.bashrc: slimmed - bash launches zsh via proot, so only env + bridge matter here.
+
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# SSH agent - adds all private keys
+if [ -z "$SSH_AUTH_SOCK" ]; then
+    eval "$(ssh-agent -s)" > /dev/null
+    find ~/.ssh -maxdepth 1 -type f -name "*.pub" -exec basename {} .pub \; | while read key; do
+        ssh-add ~/.ssh/"$key" 2>/dev/null
+    done
+fi
+
+# uv env (defensive - kept alongside Nix)
+. "$HOME/.local/bin/env" 2>/dev/null
+
+# envman
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+
+export AWS_PROFILE=coreweave
+
+# Nix profile setup (nix-portable: /nix is virtualized via proot for the shell)
+export NIX_PROFILES="$HOME/.nix-profile"
+export PATH="$HOME/.nix-profile/bin:$PATH"
+
+# Launch zsh through proot (binds ~/.nix-portable/nix -> /nix so HM symlinks resolve)
+if command -v zsh &> /dev/null && \
+   [[ $- == *i* ]] && \
+   [[ -z "${REMOTE_CONTAINERS_SOCKETS}" ]] && \
+   [[ -z "${CURSOR_AGENT}" ]]; then
+    exec ~/.nix-portable/bin/proot -b ~/.nix-portable/nix:/nix ~/.nix-profile/bin/zsh -l
+else
+    if [ -n "$PS1" ] && \
+      [ -z "$TMUX" ] && \
+      [ "$TERM_PROGRAM" != "vscode" ] && \
+      command -v tmux &>/dev/null; then
+      exec ~/.nix-portable/bin/proot -b ~/.nix-portable/nix:/nix tmux new-session -A -s main
+    fi
+fi
+```
+
+### Step 7: Apply the config
+
+```sh
+cd ~/gitrepos/dotfiles
+nix run github:nix-community/home-manager/release-26.05#home-manager -- switch --flake .#hayden@remote
+```
+
+First run: 10-30 min (builds 115 derivations, downloads ~250 MiB). Subsequent runs: <1 min.
+
+After it completes: open a new SSH session. You should land in zsh inside tmux, with starship prompt, all Nix tools on PATH.
+
+## Daily use
+
+Edit the config files in place, then re-apply:
+
+```sh
+cd ~/gitrepos/dotfiles
+nix run github:nix-community/home-manager/release-26.05#home-manager -- switch --flake .#hayden@remote
+```
+
+For nvim config edits only (lua files in `home/.config/nvim/`): no rebuild needed - they're symlinked edit-in-place.
+
+To update flake inputs (nixpkgs, home-manager, herdr) deliberately:
+```sh
+cd ~/gitrepos/dotfiles
+nix flake update
+nix run github:nix-community/home-manager/release-26.05#home-manager -- switch --flake .#hayden@remote
+```
+
+## Make it yours
+
+If you clone this repo, review these before running the setup:
+
+- **Username**: `home/default.nix` has `home.username = "hayden.dorahy"` and `home.homeDirectory = "/mnt/home/hayden.dorahy"`. Change both to your user/home.
+- **Host label**: `flake.nix` declares `homeConfigurations."hayden@remote"`. The `#hayden@remote` in the switch command must match.
+- **AWS_PROFILE**: `.bashrc` sets `AWS_PROFILE=coreweave`. Remove or change if you don't use AWS.
+- **pi-node PATH**: `hosts/remote.nix` adds `$HOME/.local/share/pi-node/node-v22.23.1-linux-x64/bin` to `sessionPath`. Remove if you don't use pi-node.
+- **Aliases**: `home/shell.nix` has `cc`/`oc` pointing at `~/.local/bin/local-claude`/`local-opencode` (CoreWeave local model proxies). Change or remove if you don't have these.
+- **SSH agent**: `.bashrc` auto-adds all `~/.ssh/*.pub` keys. Review if you don't want that.
+- **Git identity**: this config deliberately does NOT set git `user.name`/`user.email`. Git will prompt on first commit. Add to `home/git.nix` if you want it managed.
+
+## How the rootless Nix setup works (nix-portable specifics)
+
+This setup differs from a standard Nix install because we have no root:
+
+- **No `/nix`** - nix-portable stores everything in `~/.nix-portable/`. The Nix store is at `~/.nix-portable/nix/store/`.
+- **proot bridge** - HM-managed symlinks point to `/nix/store/...` paths, which don't exist on the real filesystem. `.bashrc` runs zsh through `proot -b ~/.nix-portable/nix:/nix`, which bind-mounts the nix store to `/nix` at the syscall level. This is transparent to the shell - all `/nix/store/...` paths resolve.
+- **No nix-env by default** - nix-portable only provides `nix`. HM's activation script needs `nix-env`, so we create symlinks (`nix-env` -> `nix-portable`; it's a multi-call binary).
+- **herdr pre-build** - nix-portable's minimal sandbox can't build herdr from source (Rust/zig). Pre-build it separately before the first `switch`.
+- **Profile dir** - `~/.local/state/nix/profiles/` must exist before `switch` (nix-portable doesn't create it).
+
+## What's NOT managed by Nix (stays manual)
+
+- **`~/.bashrc` and `~/.profile`** - the bash -> zsh bridge. HM manages zsh config, not bash.
+- **`~/.ssh/`** - keys, config, authorized_keys. The SSH agent setup in `.bashrc` stays manual.
+- **`~/.config/rclone/rclone.conf`** - holds cloud credentials. The HM module installs rclone + completion only; config stays manual (never in the flake - public GitHub repo).
+- **uv-managed tools** (`task`, `nvitop`, `hf`, `evo`, `graphify`) - these stay as `uv tool install` in `~/.local/bin`. Nix doesn't fight uv for Python-based tools.
+- **`micro`** - fallback editor kept in `~/.local/bin` (EDITOR=nvim, but micro invokable directly).
+- **`local-claude`/`local-opencode`/etc.** - CoreWeave local model proxies in `~/.local/bin`.
+
+## Mac (deferred)
+
+This repo currently only defines `homeConfigurations."hayden@remote"` (Linux). A separate session will add `hosts/mac.nix` (and possibly a `darwinConfiguration` via nix-darwin) to the same repo, reusing the shared `home/` module. See `docs/specs/2026-07-26-nix-dotfiles-design.md` for the design.
+
+## Notes
+
+- **proot overhead**: proot uses ptrace to intercept syscalls, adding latency to filesystem operations. Acceptable for interactive shells; heavy I/O workloads may be slower. This is the tradeoff for rootless Nix.
+- **First nvim launch**: bootstraps [lazy.nvim](https://github.com/folke/lazy.nvim) by cloning plugins from GitHub. Needs network once; after that it's offline.
+- **herdr first launch**: bootstraps its server; needs network.
+- **Package versions**: pinned to nixos-26.05 (stable). Slightly behind unstable for some packages (uv 0.11.21 vs 0.11.28, zoxide 0.9.9 vs 0.10.0). Trade-off for stability vs HM/nixpkgs drift.
+
+## Reference
+
+- Design doc: `docs/specs/2026-07-26-nix-dotfiles-design.md`
+- Implementation plan: `docs/plans/2026-07-26-nix-dotfiles-setup.md`
+- Video walkthrough: https://youtu.be/5N-okeDdIuI
+- Video's config: https://github.com/kunchenguid/dotfiles
+- nix-portable: https://github.com/DavHau/nix-portable
+- herdr: https://herdr.dev
+
+## License
+
+MIT No Attribution (matching the reference repo).
