@@ -1,3 +1,4 @@
+onboarding = false
 # herdr config - keybindings mapped from the user's tmux config (~/.tmux.conf).
 # herdr runs standalone (outside proot); panes spawn ~/.local/bin/nix-zsh
 # which enters proot fresh so Nix tools resolve.
@@ -8,8 +9,10 @@ default_shell = "/mnt/home/hayden.dorahy/.local/bin/nix-zsh"
 shell_mode = "non_login"
 
 [keys]
-# Prefix: Ctrl-Space (matches tmux prefix).
-prefix = "ctrl+space"
+# Prefix: Ctrl-B (herdr default). Not Ctrl-Space (tmux prefix) because:
+# 1. herdr doesn't accept "ctrl+space" as a prefix key
+# 2. avoids collision if herdr runs inside tmux (Ctrl-Space = tmux prefix)
+prefix = "ctrl+b"
 
 # Pane switching - direct (no prefix), matches tmux:
 # M-S-Left/Right (Karabiner remaps Ctrl->Option with Shift), C-S-Up/Down
