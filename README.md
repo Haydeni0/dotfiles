@@ -116,34 +116,32 @@ mv ~/.tmux.conf ~/.tmux.conf.pre-nix 2>/dev/null
 mv ~/.p10k.zsh ~/.p10k.zsh.pre-nix 2>/dev/null
 ```
 
-### Step 5: Pre-build herdr (nix-portable sandbox can't build it from source)
+### Step 5: Install herdr (standalone on Linux, Nix on Mac)
 
-nix-portable's minimal sandbox can't handle herdr's Rust/zig build. Pre-build it separately:
-```sh
-nix build github:ogulcancelik/herdr/v0.7.5#default --no-link
-```
-(First run: ~10 min, downloads + caches herdr in the nix store.)
+herdr is the agent multiplexer. On Mac, it's installed via Nix (included in the flake). On Linux with nix-portable, the Nix herdr can't spawn panes under proot (ptrace breaks fork+exec), so install it standalone:
 
-### Step 5b: Install standalone herdr (for use as a multiplexer on this remote)
-
-The Nix herdr installs fine but can't spawn panes under proot (ptrace breaks fork+exec). Install a standalone copy outside proot:
 ```sh
 curl -fsSL https://herdr.dev/install.sh | sh
 ```
-This installs to `~/.local/bin/herdr`. Also create the pane wrapper:
+
+This installs to `~/.local/bin/herdr`. Then create the pane wrapper (so herdr panes get Nix zsh + tools):
+
 ```sh
 cat > ~/.local/bin/nix-zsh << 'EOF'
 #!/bin/sh
-exec ~/.nix-portable/bin/proot -b ~/.nix-portable/nix:/nix ~/.nix-profile/bin/zsh
+exec env SKIP_TMUX=1 ~/.nix-portable/bin/proot -b ~/.nix-portable/nix:/nix ~/.nix-profile/bin/zsh
 EOF
 chmod +x ~/.local/bin/nix-zsh
 ```
-And symlink the herdr config:
+
+And symlink the herdr config (keybindings + dracula theme, tracked in the repo):
+
 ```sh
 mkdir -p ~/.config/herdr
 ln -sfn ~/.dotfiles/home/.config/herdr/config.toml ~/.config/herdr/config.toml
 ```
-On Mac (no proot), skip this step - the Nix herdr works directly.
+
+On Mac, skip this step - the Nix herdr works directly (no proot).
 
 ### Step 6: Set up the `.bashrc` bridge
 
@@ -249,7 +247,7 @@ This setup differs from a standard Nix install because we have no root (shared c
 - **No `/nix`** - nix-portable stores everything in `~/.nix-portable/`. The Nix store is at `~/.nix-portable/nix/store/`.
 - **proot bridge** - HM-managed symlinks point to `/nix/store/...` paths, which don't exist on the real filesystem. `.bashrc` runs zsh through `proot -b ~/.nix-portable/nix:/nix`, which bind-mounts the nix store to `/nix` at the syscall level. This is transparent to the shell - all `/nix/store/...` paths resolve. proot is needed because we can't create the real `/nix` directory (no root).
 - **No nix-env by default** - nix-portable only provides `nix`. HM's activation script needs `nix-env`, so we create symlinks (`nix-env` -> `nix-portable`; it's a multi-call binary).
-- **herdr pre-build** - nix-portable's minimal sandbox can't build herdr from source (Rust/zig). Pre-build it separately before the first `switch`.
+- **herdr** - on Linux, installed standalone (outside Nix/proot) because the Nix herdr can't spawn panes under proot. On Mac, installed via Nix (works directly, no proot).
 - **Profile dir** - `~/.local/state/nix/profiles/` must exist before `switch` (nix-portable doesn't create it).
 - **proot limitation: herdr standalone** - proot uses ptrace to intercept syscalls, which breaks fork+exec of Nix binaries by a traced process (proot #119). This means the Nix herdr (`~/.nix-profile/bin/herdr`) launches its TUI but every pane it spawns segfaults. Fix: install herdr standalone (outside Nix/proot) via `curl -fsSL https://herdr.dev/install.sh | sh` to `~/.local/bin/herdr`. Panes spawn `~/.local/bin/nix-zsh` (a wrapper that enters proot fresh). The herdr config (`~/.config/herdr/config.toml`) is tracked in the repo at `home/.config/herdr/config.toml` via direct symlink. On Mac (no proot), the Nix herdr works without this workaround.
 
