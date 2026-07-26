@@ -58,8 +58,8 @@ docs/
 On a brand new Linux box, from a bare clone of this repo:
 
 ```sh
-git clone git@github-haydeni0:Haydeni0/dotfiles.git ~/gitrepos/dotfiles
-cd ~/gitrepos/dotfiles
+git clone git@github-haydeni0:Haydeni0/dotfiles.git ~/dotfiles
+cd ~/dotfiles
 ```
 
 ### Step 1: Install nix-portable (rootless Nix)
@@ -87,7 +87,7 @@ done
 
 Stabilises `mkOutOfStoreSymlink` paths (so the flake keeps working if the repo moves):
 ```sh
-ln -sfn ~/gitrepos/dotfiles ~/.dotfiles
+ln -sfn ~/dotfiles ~/.dotfiles
 ```
 
 Also create the tmux config symlink (tmux runs outside proot, so it's managed manually like `.bashrc`):
@@ -173,8 +173,8 @@ fi
 ### Step 7: Apply the config
 
 ```sh
-cd ~/gitrepos/dotfiles
-nix run github:nix-community/home-manager/release-26.05#home-manager -- switch --flake .#hayden@remote
+cd ~/.dotfiles
+./rebuild.sh
 ```
 
 First run: 10-30 min (builds 115 derivations, downloads ~250 MiB). Subsequent runs: <1 min.
@@ -186,17 +186,17 @@ After it completes: open a new SSH session. You should land in zsh inside tmux, 
 Edit the config files in place, then re-apply:
 
 ```sh
-cd ~/gitrepos/dotfiles
-nix run github:nix-community/home-manager/release-26.05#home-manager -- switch --flake .#hayden@remote
+cd ~/.dotfiles
+./rebuild.sh
 ```
 
 For nvim config edits only (lua files in `home/.config/nvim/`): no rebuild needed - they're symlinked edit-in-place.
 
 To update flake inputs (nixpkgs, home-manager, herdr) deliberately:
 ```sh
-cd ~/gitrepos/dotfiles
+cd ~/.dotfiles
 nix flake update
-nix run github:nix-community/home-manager/release-26.05#home-manager -- switch --flake .#hayden@remote
+./rebuild.sh
 ```
 
 ## Make it yours
