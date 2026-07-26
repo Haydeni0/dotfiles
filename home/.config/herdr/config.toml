@@ -1,0 +1,46 @@
+# herdr config - keybindings mapped from the user's tmux config.
+# herdr runs standalone (outside proot); panes spawn ~/.local/bin/nix-zsh
+# which enters proot fresh so Nix tools resolve.
+
+[terminal]
+# Panes enter proot via the wrapper (Nix zsh + tools).
+default_shell = "/mnt/home/hayden.dorahy/.local/bin/nix-zsh"
+shell_mode = "non_login"
+
+[keys]
+# Ctrl-B prefix (herdr default; avoids collision with tmux's Ctrl-Space if nested).
+prefix = "ctrl+b"
+
+# Splits - matches tmux: prefix+" horizontal, prefix+% vertical
+split_horizontal = "prefix+double_quote"
+split_vertical = "prefix+percent"
+
+# New tab - matches tmux: prefix+c
+new_tab = "prefix+c"
+
+# Pane focus - vim-style hjkl (works with prefix; arrow keys without prefix
+# conflict with terminal input in some setups).
+focus_pane_left  = "prefix+h"
+focus_pane_down  = "prefix+j"
+focus_pane_up    = "prefix+k"
+focus_pane_right = "prefix+l"
+
+# Tab switching
+next_tab = "prefix+n"
+previous_tab = "prefix+p"
+
+# Close tab
+close_tab = "prefix+ampersand"
+
+# Workspace picker
+workspace_picker = "prefix+w"
+
+# Go to (jump)
+goto = "prefix+g"
+
+# Copy mode (vi-style)
+copy_mode = "prefix+y"
+
+[theme]
+# Dracula to match the tmux theme
+name = "dracula"
