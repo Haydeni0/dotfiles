@@ -88,6 +88,11 @@ Stabilises `mkOutOfStoreSymlink` paths (so the flake keeps working if the repo m
 ln -sfn ~/gitrepos/dotfiles ~/.dotfiles
 ```
 
+Also create the tmux config symlink (tmux runs outside proot, so it's managed manually like `.bashrc`):
+```sh
+ln -sfn ~/.dotfiles/home/.tmux.conf ~/.tmux.conf
+```
+
 ### Step 3: Create the nix-portable profile dir
 
 nix-portable doesn't create this by default; home-manager needs it:
@@ -216,7 +221,7 @@ This setup differs from a standard Nix install because we have no root:
 
 ## What's NOT managed by Nix (stays manual)
 
-- **`~/.bashrc` and `~/.profile`** - the bash -> zsh bridge. HM manages zsh config, not bash.
+- **tmux config (`~/.tmux.conf`)** - managed manually (direct symlink to `~/.dotfiles/home/.tmux.conf`), NOT via HM. System tmux runs outside proot; HM's store-resident symlinks don't resolve there. The config file IS tracked in the repo at `home/.tmux.conf` - edit-in-place. TPM (plugin manager) auto-installs dracula/sensible on first launch.
 - **`~/.ssh/`** - keys, config, authorized_keys. The SSH agent setup in `.bashrc` stays manual.
 - **`~/.config/rclone/rclone.conf`** - holds cloud credentials. The HM module installs rclone + completion only; config stays manual (never in the flake - public GitHub repo).
 - **uv-managed tools** (`task`, `nvitop`, `hf`, `evo`, `graphify`) - these stay as `uv tool install` in `~/.local/bin`. Nix doesn't fight uv for Python-based tools.
