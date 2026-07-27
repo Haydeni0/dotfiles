@@ -27,7 +27,7 @@ bridge or platform conditionals must be verified on Linux.
    re-launches bwrap zsh and picks up the change.
 5. **Commit + push** - the repo is the source of truth.
 
-Config that's a direct symlink (tmux, `.bashrc`, `nix-zsh`) is edit-in-place - no
+Config that's a direct symlink (tmux, `.bashrc`) is edit-in-place - no
 rebuild. HM-managed config needs `./rebuild.sh`.
 
 ## Reproducibility rules
@@ -56,9 +56,12 @@ rebuild. HM-managed config needs `./rebuild.sh`.
 - **tmux runs outside bwrap.** System `/usr/bin/tmux`, launched by `.bashrc`
   before the namespace exists. Panes then spawn bwrap zsh. Don't run tmux inside
   bwrap - it segfaults on pty creation.
-- **herdr panes need the `nix-zsh` wrapper.** A Nix binary fork+exec'ing another
-  Nix binary inside bwrap segfaults; the system-bash wrapper works around it.
-  Don't point herdr's `default_shell` at Nix zsh directly.
+- **herdr panes need the `nix-zsh` wrapper (bwrap/Linux only).** A Nix binary
+  fork+exec'ing another Nix binary inside bwrap segfaults; the system-bash
+  wrapper works around it. Don't point herdr's `default_shell` at Nix zsh
+  directly on Linux. The wrapper is HM-managed (`hosts/remote.nix` →
+  `home.file`, Linux-gated by living in `hosts/`); Mac has no bwrap so no
+  segfault and no wrapper - herdr config points directly at Nix zsh there.
 - **`enableZshIntegration` defaults to true.** HM's ordering can break manual
   `compinit` ordering (zoxide hit this). To disable one integration, set it
   explicitly `false` and run the init yourself after compinit.

@@ -9,9 +9,11 @@ onboarding = false
 # Panes spawn via a system-bash wrapper that execs Nix zsh. herdr is a Nix
 # binary; fork+exec of another Nix binary inside bwrap segfaults, but a
 # system binary (the wrapper's /bin/bash interpreter) exec'ing a Nix binary
-# works. The wrapper is at ~/.local/bin/nix-zsh (symlinked from the repo).
-# Non-login: sources .zshrc (HM config: aliases, plugins, prompt) but not
-# .zprofile/.zlogin (PATH already set by the bwrap environment).
+# works. The wrapper is installed at ~/.local/bin/nix-zsh by Home Manager
+# (hosts/remote.nix -> home.file, source at hosts/nix-zsh) - bwrap/Linux-only
+# (Mac has no bwrap, so no segfault; default_shell points directly at Nix
+# zsh there). Non-login: sources .zshrc (HM config: aliases, plugins, prompt)
+# but not .zprofile/.zlogin (PATH already set by the bwrap environment).
 default_shell = "/mnt/home/hayden.dorahy/.local/bin/nix-zsh"
 shell_mode = "non_login"
 

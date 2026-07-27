@@ -95,10 +95,7 @@ Also create the tmux config symlink (tmux runs outside bwrap, so it's managed ma
 ln -sfn ~/.dotfiles/home/.tmux.conf ~/.tmux.conf
 ```
 
-herdr config is HM-managed (via `home/herdr.nix` → `xdg.configFile`) - the symlink is created by `./rebuild.sh`, no manual step. Only the `nix-zsh` wrapper needs a manual symlink (it's a script, edit-in-place, not HM-managed):
-```sh
-ln -sfn ~/.dotfiles/home/.local/bin/nix-zsh ~/.local/bin/nix-zsh
-```
+herdr config is HM-managed (via `home/herdr.nix` → `xdg.configFile`) - the symlink is created by `./rebuild.sh`, no manual step. The `nix-zsh` wrapper (herdr pane shell) is also HM-managed (`hosts/remote.nix` → `home.file`, Linux-gated) - no manual symlink needed.
 
 ### Step 3: Create the nix-portable profile dir
 
@@ -199,7 +196,6 @@ bwrap uses user+mount namespaces instead of ptrace - no syscall interception, no
 
 - **tmux config (`~/.tmux.conf`)** - managed manually (direct symlink to `~/.dotfiles/home/.tmux.conf`), NOT via HM. System tmux runs outside bwrap; HM's store-resident symlinks don't resolve there. The config file IS tracked in the repo at `home/.tmux.conf` - edit-in-place. TPM (plugin manager) auto-installs dracula/sensible on first launch.
 - **`.bashrc`** - managed manually (direct symlink to `~/.dotfiles/home/.bashrc`), NOT via HM. Runs outside bwrap (it *launches* bwrap), so HM's store-resident symlinks don't resolve there. Tracked in the repo at `home/.bashrc` - edit-in-place.
-- **herdr wrapper (`~/.local/bin/nix-zsh`)** - managed manually (direct symlink to `~/.dotfiles/home/.local/bin/nix-zsh`), NOT via HM. System-bash script that execs Nix zsh (works around Nix-binary-spawning-Nix-binary segfault in bwrap). Tracked in the repo - edit-in-place. herdr config IS HM-managed (via `home/herdr.nix` → `xdg.configFile`).
 - **`~/.ssh/`** - keys, config, authorized_keys. The SSH agent setup in `.bashrc` stays manual.
 - **`~/.config/rclone/rclone.conf`** - holds cloud credentials. The HM module installs rclone + completion only; config stays manual (never in the flake - public GitHub repo).
 - **uv-managed tools** (`task`, `nvitop`, `hf`, `evo`, `graphify`) - these stay as `uv tool install` in `~/.local/bin`. Nix doesn't fight uv for Python-based tools.
