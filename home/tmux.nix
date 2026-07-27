@@ -1,9 +1,9 @@
 # tmux is NOT managed by home-manager on this setup.
 #
-# Reason: system tmux runs OUTSIDE proot (needs kernel pty access, which
-# proot's ptrace breaks). HM's `home.file` always writes through the Nix
-# store (`/nix/store/...`), which only resolves INSIDE proot. So an
-# HM-managed ~/.tmux.conf would dangle outside proot and tmux couldn't
+# Reason: system tmux runs OUTSIDE bwrap (needs kernel pty access, which
+# bwrap's mount namespace breaks). HM's `home.file` always writes through the Nix
+# store (`/nix/store/...`), which only resolves INSIDE bwrap. So an
+# HM-managed ~/.tmux.conf would dangle outside bwrap and tmux couldn't
 # read it.
 #
 # Instead, ~/.tmux.conf is a direct symlink to ~/.dotfiles/home/.tmux.conf

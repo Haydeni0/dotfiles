@@ -45,7 +45,7 @@ docs/
 **Two config-linking mechanisms** (same as the video):
 1. `programs.<x>` (zsh, starship, git, btop, zoxide, rclone) - Nix-expressed, written to the immutable Nix store, symlinked into place. Edit Nix + `switch` to change.
 2. `mkOutOfStoreSymlink` (nvim only) - real files live in the repo, `~/.config/nvim` symlinks to `~/.dotfiles/home/.config/nvim`. Edit-in-place, no rebuild.
-3. **Direct symlink, outside HM** (tmux, `.bashrc`) - `~/.tmux.conf` -> `~/.dotfiles/home/.tmux.conf` directly. System tmux runs outside proot (needs kernel pty access); HM's store-resident symlinks don't resolve there, so tmux config is managed manually like `.bashrc`. Tracked in the repo, edit-in-place.
+3. **Direct symlink, outside HM** (tmux, `.bashrc`) - `~/.tmux.conf` -> `~/.dotfiles/home/.tmux.conf` directly. System tmux runs outside bwrap (needs kernel pty access); HM's store-resident symlinks don't resolve there, so tmux config is managed manually like `.bashrc`. Tracked in the repo, edit-in-place.
 
 ## Prerequisites
 
@@ -90,7 +90,7 @@ Stabilises `mkOutOfStoreSymlink` paths (so the flake keeps working if the repo m
 ln -sfn ~/dotfiles ~/.dotfiles
 ```
 
-Also create the tmux config symlink (tmux runs outside proot, so it's managed manually like `.bashrc`):
+Also create the tmux config symlink (tmux runs outside bwrap, so it's managed manually like `.bashrc`):
 ```sh
 ln -sfn ~/.dotfiles/home/.tmux.conf ~/.tmux.conf
 ```
@@ -116,56 +116,16 @@ mv ~/.p10k.zsh ~/.p10k.zsh.pre-nix 2>/dev/null
 
 ### Step 5: Set up the `.bashrc` bridge
 
-The login shell is bash. `.bashrc` must: set up `NIX_PROFILES`/PATH, then `exec` zsh through proot (so `/nix/store` resolves). Replace `~/.bashrc` with:
+The login shell is bash. `.bashrc` must: set up `NIX_PROFILES`/PATH, then `exec` zsh through bwrap (so `/nix/store` resolves). The file is tracked in the repo at `home/.bashrc` - symlink it into place (matching the `~/.tmux.conf` pattern):
 
-```bash
-# ~/.bashrc: slimmed - bash launches system tmux, then proot zsh inside it.
-# tmux must run OUTSIDE proot (proot breaks pty creation).
-
-case $- in
-    *i*) ;;
-      *) return;;
-esac
-
-# SSH agent - adds all private keys
-if [ -z "$SSH_AUTH_SOCK" ]; then
-    eval "$(ssh-agent -s)" > /dev/null
-    find ~/.ssh -maxdepth 1 -type f -name "*.pub" -exec basename {} .pub \; | while read key; do
-        ssh-add ~/.ssh/"$key" 2>/dev/null
-    done
-fi
-
-# uv env (defensive - kept alongside Nix)
-. "$HOME/.local/bin/env" 2>/dev/null
-
-export AWS_PROFILE=coreweave
-
-# Nix profile setup (nix-portable: /nix is virtualized via proot for the shell)
-export NIX_PROFILES="$HOME/.nix-profile"
-export PATH="$HOME/.nix-profile/bin:$PATH"
-
-# Start system tmux FIRST (outside proot - tmux needs kernel pty access).
-# Set SKIP_TMUX=1 to bypass tmux for this session (e.g. to run a non-tmux shell).
-if [ -n "$PS1" ] && \
-   [ -z "$TMUX" ] && \
-   [ -z "$SKIP_TMUX" ] && \
-   [ "$TERM_PROGRAM" != "vscode" ] && \
-   [ -z "${REMOTE_CONTAINERS_SOCKETS}" ] && \
-   [ -z "${CURSOR_AGENT}" ] && \
-   command -v /usr/bin/tmux &>/dev/null; then
-    exec /usr/bin/tmux new-session -A -s main
-fi
-
-# Inside tmux (or tmux not available): launch Nix zsh via proot.
-# Check proot binary (real file), NOT `command -v zsh` - the Nix zsh symlink
-# dangles outside proot (/nix/store doesn't exist on real FS).
-if [ -x ~/.nix-portable/bin/proot ] && \
-   [[ $- == *i* ]] && \
-   [[ -z "${REMOTE_CONTAINERS_SOCKETS}" ]] && \
-   [[ -z "${CURSOR_AGENT}" ]]; then
-    exec ~/.nix-portable/bin/proot -b ~/.nix-portable/nix:/nix ~/.nix-profile/bin/zsh -l
-fi
+```sh
+ln -sfn ~/.dotfiles/home/.bashrc ~/.bashrc
 ```
+
+What `home/.bashrc` does:
+1. Sets up `NIX_PROFILES`/PATH so HM-managed tools resolve once the namespace is up.
+2. Starts system tmux **outside** bwrap (tmux needs kernel pty access; bwrap's namespace breaks that).
+3. Inside tmux, `exec`s Nix zsh through bwrap, which creates a mount namespace with `~/.nix-portable/emptyroot` as root skeleton, overlays the real `/usr`/`/bin`/`/etc`/`/mnt`/`$HOME` on top, and binds `~/.nix-portable/nix` to `/nix` so HM symlinks resolve.
 
 ### Step 6: Apply the config
 
@@ -213,14 +173,26 @@ If you clone this repo, review these before running the setup:
 This setup differs from a standard Nix install because we have no root (shared cluster, no sudo). Standard Nix needs root to create `/nix/store` and run a daemon. nix-portable avoids this entirely:
 
 - **No `/nix`** - nix-portable stores everything in `~/.nix-portable/`. The Nix store is at `~/.nix-portable/nix/store/`.
-- **proot bridge** - HM-managed symlinks point to `/nix/store/...` paths, which don't exist on the real filesystem. `.bashrc` runs zsh through `proot -b ~/.nix-portable/nix:/nix`, which bind-mounts the nix store to `/nix` at the syscall level. This is transparent to the shell - all `/nix/store/...` paths resolve. proot is needed because we can't create the real `/nix` directory (no root).
+- **bwrap bridge** - HM-managed symlinks point to `/nix/store/...` paths, which don't exist on the real filesystem. `.bashrc` runs zsh through `bwrap`, which creates a mount namespace with `~/.nix-portable/emptyroot` as a root skeleton, overlays the real top-level dirs (`/usr`, `/bin`, `/etc`, `/mnt`, `$HOME`, etc.) on top, and binds `~/.nix-portable/nix` to `/nix`. All `/nix/store/...` paths resolve inside the namespace. bwrap is used because we can't create the real `/nix` directory (no root) and bwrap's namespace approach avoids the ptrace problems of the proot fallback (see "Why bwrap not proot" below).
 - **No nix-env by default** - nix-portable only provides `nix`. HM's activation script needs `nix-env`, so we create symlinks (`nix-env` -> `nix-portable`; it's a multi-call binary).
 - **Profile dir** - `~/.local/state/nix/profiles/` must exist before `switch` (nix-portable doesn't create it).
-- **proot limitation: terminal multiplexers** - proot uses ptrace to intercept syscalls, which breaks fork+exec of Nix binaries by a traced process (proot #119). Terminal multiplexers (tmux, herdr) that spawn panes under proot hit this bug. tmux is run outside proot (system `/usr/bin/tmux`); see `docs/herdr-learnings.md` for the full investigation on herdr.
+- **bwrap limitation: terminal multiplexers** - bwrap creates a mount namespace, which breaks tmux's pty creation. tmux is run outside bwrap (system `/usr/bin/tmux`); `.bashrc` handles the two-stage launch (tmux first, then bwrap zsh inside tmux). herdr (another multiplexer) segfaults under bwrap - see `docs/herdr-learnings.md`.
+
+### Why bwrap not proot
+
+nix-portable supports three runtimes (auto-selected: `nix --store` > `bwrap` > `proot`). This cluster has user namespaces (`unshare -U -m` succeeds), so nix-portable auto-selects `bwrap`. `.bashrc` invokes bwrap directly (the same runtime nix-portable's selector would pick) rather than calling `nix-portable` itself, because nix-portable has a path-concatenation bug when passed an absolute binary path.
+
+proot (the last-resort fallback) was the previous bridge. It uses ptrace to intercept every syscall and rewrite paths, which causes three problems this cluster hit:
+1. **SIGINT ignored** - proot explicitly sets `SIG_IGN` for SIGINT/SIGTERM/SIGHUP (`event.c:332-336`), so Ctrl-C can't kill a frozen TUI. ([proot#146](https://github.com/proot-me/proot/issues/146))
+2. **D-state cascade on NFS stalls** - proot's main loop blocks in `waitpid`; when proot itself stalls on an NFS read (D-state, uninterruptible), all traced children freeze until NFS recovers. No fix possible without abandoning ptrace.
+3. **Orphaned tracers after tmux crash** - if the tmux server dies, proot processes get reparented to init but keep ptracing their children indefinitely. ([proot#78](https://github.com/proot-me/proot/issues/78), filed by proot's original author, open since 2014)
+
+bwrap uses user+mount namespaces instead of ptrace - no syscall interception, no signal ignoring, no D-state cascade, no orphan problem. The tradeoff: bwrap creates a namespace (slightly more isolation than proot's transparent overlay), but the binds in `.bashrc` make the namespace functionally equivalent to proot's view for shell use.
 
 ## What's NOT managed by Nix (stays manual)
 
-- **tmux config (`~/.tmux.conf`)** - managed manually (direct symlink to `~/.dotfiles/home/.tmux.conf`), NOT via HM. System tmux runs outside proot; HM's store-resident symlinks don't resolve there. The config file IS tracked in the repo at `home/.tmux.conf` - edit-in-place. TPM (plugin manager) auto-installs dracula/sensible on first launch.
+- **tmux config (`~/.tmux.conf`)** - managed manually (direct symlink to `~/.dotfiles/home/.tmux.conf`), NOT via HM. System tmux runs outside bwrap; HM's store-resident symlinks don't resolve there. The config file IS tracked in the repo at `home/.tmux.conf` - edit-in-place. TPM (plugin manager) auto-installs dracula/sensible on first launch.
+- **`.bashrc`** - managed manually (direct symlink to `~/.dotfiles/home/.bashrc`), NOT via HM. Runs outside bwrap (it *launches* bwrap), so HM's store-resident symlinks don't resolve there. Tracked in the repo at `home/.bashrc` - edit-in-place.
 - **`~/.ssh/`** - keys, config, authorized_keys. The SSH agent setup in `.bashrc` stays manual.
 - **`~/.config/rclone/rclone.conf`** - holds cloud credentials. The HM module installs rclone + completion only; config stays manual (never in the flake - public GitHub repo).
 - **uv-managed tools** (`task`, `nvitop`, `hf`, `evo`, `graphify`) - these stay as `uv tool install` in `~/.local/bin`. Nix doesn't fight uv for Python-based tools.
@@ -233,7 +205,7 @@ This repo currently only defines `homeConfigurations."hayden@remote"` (Linux). A
 
 ## Notes
 
-- **proot overhead**: proot uses ptrace to intercept syscalls, adding latency to filesystem operations. Acceptable for interactive shells; heavy I/O workloads may be slower. This is the tradeoff for rootless Nix.
+- **bwrap overhead**: bwrap creates a mount namespace at shell startup (one-time, ~ms). Inside the namespace there's no per-syscall interception overhead (unlike proot's ptrace). The nix store is on NFS, so cold store reads pay NFS latency, but bwrap itself adds no runtime overhead.
 - **First nvim launch**: bootstraps [lazy.nvim](https://github.com/folke/lazy.nvim) by cloning plugins from GitHub. Needs network once; after that it's offline.
 - **Package versions**: pinned to nixos-26.05 (stable). Slightly behind unstable for some packages (uv 0.11.21 vs 0.11.28, zoxide 0.9.9 vs 0.10.0). Trade-off for stability vs HM/nixpkgs drift.
 

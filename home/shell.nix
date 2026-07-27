@@ -3,7 +3,7 @@
 {
   programs.zsh = {
     enable = true;
-    enableCompletion = false;  # HM's compinit is slow under proot (stats every fpath file via ptrace). We run a cached one below.
+    enableCompletion = false;  # HM's compinit is slow (stats every fpath file). We run a cached one below.
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
     initContent = ''
@@ -17,19 +17,18 @@
       # but terminals send ^H for Ctrl+Backspace, which is single-char by default).
       bindkey '^H' backward-kill-word
 
-      # tmux startup is owned solely by .bashrc (it must run OUTSIDE proot -
-      # proot breaks pty creation). Do NOT re-launch tmux from zsh: zsh only
+      # tmux startup is owned solely by .bashrc (it must run OUTSIDE bwrap -
+      # bwrap's namespace breaks pty creation). Do NOT re-launch tmux from zsh: zsh only
       # runs without $TMUX in paths where .bashrc intentionally skipped it
-      # (devcontainer, cursor), and exec'ing tmux inside proot segfaults.
+      # (devcontainer, cursor), and exec'ing tmux inside bwrap segfaults.
 
       # Cursor sends Ctrl+Left/Ctrl+Right as escape sequences ending in D/C.
       # Bind them to zle word movement so Ctrl+Left/Ctrl+Right move by word.
       bindkey $'\e[1;3D' backward-word
       bindkey $'\e[1;3C' forward-word
 
-      # compinit - cached, skip security check (the slow part under proot).
-      # -C skips the insecure-dir check (stats every fpath file via ptrace = 4s).
-      # .zcompdump caches completions; refreshed when zsh/completions change.
+      # compinit - cached, skip security check (the slow part - stats every fpath file).
+      # -C skips the insecure-dir check. .zcompdump caches completions; refreshed when zsh/completions change.
       fpath+=~/.zfunc
       autoload -Uz compinit
       compinit -C
