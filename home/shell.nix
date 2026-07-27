@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
 
 {
+  imports = [ ./aliases.nix ];
+
   programs.zsh = {
     enable = true;
     enableCompletion = false;  # HM's compinit is slow (stats every fpath file). We run a cached one below.
