@@ -12,5 +12,6 @@
     ./zoxide.nix
     ./btop.nix
     ./rclone.nix
+    ./herdr.nix
   ];
 }
