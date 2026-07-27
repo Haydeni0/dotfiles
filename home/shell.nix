@@ -35,10 +35,6 @@
       autoload -Uz compinit
       compinit -C
 
-      # zoxide: must run AFTER compinit (compdef requires compinit to have run).
-      # HM's enableZshIntegration places the eval before compinit, breaking completion.
-      eval "$(${pkgs.zoxide}/bin/zoxide init zsh)"
-
       # zstyle completion tuning (menu select, case-insensitive, caching).
       zstyle ':completion:*' menu select
       zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={a-zA-Z}' 'r:|=*' 'l:|=* r:|=*'
