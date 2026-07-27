@@ -50,10 +50,15 @@ fi
 # Note: check bwrap binary (real file), NOT `command -v zsh` - the Nix zsh
 # symlink dangles outside the namespace (/nix/store doesn't exist on real
 # FS), so `command -v zsh` fails and the bridge never fires in new tmux tabs.
+# Also test bwrap can actually create a mount namespace - login nodes may
+# have mount namespaces disabled (unshare -m fails) even though the binary
+# exists. Without this test, `exec bwrap` fails and the shell dies, killing
+# the SSH session.
 if [ -x ~/.nix-portable/bin/bwrap ] && \
    [[ $- == *i* ]] && \
    [[ -z "${REMOTE_CONTAINERS_SOCKETS}" ]] && \
-   [[ -z "${CURSOR_AGENT}" ]]; then
+   [[ -z "${CURSOR_AGENT}" ]] && \
+   ~/.nix-portable/bin/bwrap --bind / / /bin/true 2>/dev/null; then
     exec ~/.nix-portable/bin/bwrap \
         --bind ~/.nix-portable/emptyroot / \
         --dev-bind /dev /dev \
@@ -64,3 +69,8 @@ if [ -x ~/.nix-portable/bin/bwrap ] && \
         --bind "$HOME" "$HOME" \
         ~/.nix-profile/bin/zsh -l
 fi
+# If bwrap is unavailable or mount namespaces are disabled (e.g. login
+# nodes), fall through to the system shell. Nix tools won't work (HM
+# symlinks point to /nix/store which doesn't exist without the namespace),
+# but system tools (slurm, ssh, basic commands) work fine. Use 'srun' to
+# access compute nodes where bwrap works and the full Nix setup is available.

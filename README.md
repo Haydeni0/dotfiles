@@ -180,6 +180,7 @@ This setup differs from a standard Nix install because we have no root (shared c
 - **No nix-env by default** - nix-portable only provides `nix`. HM's activation script needs `nix-env`, so we create symlinks (`nix-env` -> `nix-portable`; it's a multi-call binary).
 - **Profile dir** - `~/.local/state/nix/profiles/` must exist before `switch` (nix-portable doesn't create it).
 - **bwrap + terminal multiplexers** - bwrap creates a mount namespace, which breaks tmux's pty creation. tmux is run outside bwrap (system `/usr/bin/tmux`); `.bashrc` handles the two-stage launch (tmux first, then bwrap zsh inside tmux). herdr (agent multiplexer, installed via the flake) runs inside bwrap - panes spawn via a system-bash wrapper (`~/.local/bin/nix-zsh`) that execs Nix zsh, because a Nix binary fork+exec'ing another Nix binary inside bwrap segfaults (system-binary-spawning-Nix-binary works fine). See `docs/herdr-learnings.md` for the full investigation.
+- **Login nodes: bwrap capability test** - `.bashrc` tests `bwrap --bind / / /bin/true` before exec'ing bwrap. Login nodes may block mount namespaces (kernel restriction), causing bwrap to fail. Without the test, `exec bwrap` would fail and kill the shell. When bwrap is unavailable, `.bashrc` falls through to the system shell - Nix tools won't work (HM symlinks point to `/nix/store` which doesn't exist without the namespace), but system tools (Slurm, SSH, basic commands) work fine. Use `srun` to access compute nodes where bwrap works and the full Nix setup is available.
 
 ### Why bwrap not proot
 
