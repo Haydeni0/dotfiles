@@ -6,10 +6,13 @@ onboarding = false
 # so fork+exec into PTYs works (verified: proot segfaulted here, bwrap doesn't).
 
 [terminal]
-# Panes spawn Nix zsh directly (inherits bwrap namespace from herdr).
+# Panes spawn via a system-bash wrapper that execs Nix zsh. herdr is a Nix
+# binary; fork+exec of another Nix binary inside bwrap segfaults, but a
+# system binary (the wrapper's /bin/bash interpreter) exec'ing a Nix binary
+# works. The wrapper is at ~/.local/bin/nix-zsh (symlinked from the repo).
 # Non-login: sources .zshrc (HM config: aliases, plugins, prompt) but not
 # .zprofile/.zlogin (PATH already set by the bwrap environment).
-default_shell = "/mnt/home/hayden.dorahy/.nix-profile/bin/zsh"
+default_shell = "/mnt/home/hayden.dorahy/.local/bin/nix-zsh"
 shell_mode = "non_login"
 
 [keys]

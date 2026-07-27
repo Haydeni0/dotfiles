@@ -99,6 +99,7 @@ And the herdr config symlink (herdr runs inside bwrap, but the config is managed
 ```sh
 mkdir -p ~/.config/herdr
 ln -sfn ~/.dotfiles/home/.config/herdr/config.toml ~/.config/herdr/config.toml
+ln -sfn ~/.dotfiles/home/.local/bin/nix-zsh ~/.local/bin/nix-zsh
 ```
 
 ### Step 3: Create the nix-portable profile dir
@@ -182,7 +183,7 @@ This setup differs from a standard Nix install because we have no root (shared c
 - **bwrap bridge** - HM-managed symlinks point to `/nix/store/...` paths, which don't exist on the real filesystem. `.bashrc` runs zsh through `bwrap`, which creates a mount namespace with `~/.nix-portable/emptyroot` as a root skeleton, overlays the real top-level dirs (`/usr`, `/bin`, `/etc`, `/mnt`, `$HOME`, etc.) on top, and binds `~/.nix-portable/nix` to `/nix`. All `/nix/store/...` paths resolve inside the namespace. bwrap is used because we can't create the real `/nix` directory (no root) and bwrap's namespace approach avoids the ptrace problems of the proot fallback (see "Why bwrap not proot" below).
 - **No nix-env by default** - nix-portable only provides `nix`. HM's activation script needs `nix-env`, so we create symlinks (`nix-env` -> `nix-portable`; it's a multi-call binary).
 - **Profile dir** - `~/.local/state/nix/profiles/` must exist before `switch` (nix-portable doesn't create it).
-- **bwrap + terminal multiplexers** - bwrap creates a mount namespace, which breaks tmux's pty creation. tmux is run outside bwrap (system `/usr/bin/tmux`); `.bashrc` handles the two-stage launch (tmux first, then bwrap zsh inside tmux). herdr (agent multiplexer, installed via the flake) runs inside bwrap - panes inherit the namespace and spawn Nix zsh directly. Verified: bwrap handles fork+exec into PTYs correctly (proot segfaulted here; bwrap doesn't). See `docs/herdr-learnings.md` for the full investigation.
+- **bwrap + terminal multiplexers** - bwrap creates a mount namespace, which breaks tmux's pty creation. tmux is run outside bwrap (system `/usr/bin/tmux`); `.bashrc` handles the two-stage launch (tmux first, then bwrap zsh inside tmux). herdr (agent multiplexer, installed via the flake) runs inside bwrap - panes spawn via a system-bash wrapper (`~/.local/bin/nix-zsh`) that execs Nix zsh, because a Nix binary fork+exec'ing another Nix binary inside bwrap segfaults (system-binary-spawning-Nix-binary works fine). See `docs/herdr-learnings.md` for the full investigation.
 
 ### Why bwrap not proot
 

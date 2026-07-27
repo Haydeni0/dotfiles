@@ -1,0 +1,9 @@
+#!/bin/bash
+# Wrapper: herdr panes exec this (system bash), which execs Nix zsh.
+# Why: herdr is a Nix binary. When it fork+execs another Nix binary
+# (Nix zsh) inside bwrap, the pane child segfaults (Nix-binary-spawning-
+# Nix-binary in a mount namespace). Using a system-bash wrapper avoids
+# this: herdr execs this script (system /bin/bash interpreter), which
+# then execs Nix zsh. System-binary-spawning-Nix-binary works fine in
+# bwrap (verified). See docs/herdr-learnings.md for the full investigation.
+exec /mnt/home/hayden.dorahy/.nix-profile/bin/zsh "$@"
