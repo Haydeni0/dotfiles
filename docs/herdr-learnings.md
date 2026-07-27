@@ -85,7 +85,9 @@ The difference: tmux can run outside proot because it doesn't need Nix tools to 
 3. **herdr with system shell panes (no Nix tools):** herdr panes run system bash/zsh without Nix tools. Agents (`cc`/`oc` in `~/.local/bin`) would work, but Nix tools (rg, fzf, nvim, etc.) wouldn't. Not useful for this setup.
 4. **Wait for proot/herdr fix:** file an issue with proot about PTY + fork+exec, or with herdr about proot compatibility. Unlikely to be a quick fix.
 
-## What we kept
+## What we kept (historical - proot era; SUPERSEDED by bwrap migration)
+
+> **Superseded:** herdr is now installed via the flake (`flake.nix` input, `packages.nix`, config at `home/.config/herdr/config.toml` managed by `home/herdr.nix`). The "removed" state below was the proot-era outcome, reversed by the bwrap migration. Kept for historical context only.
 
 - herdr removed from `home/packages.nix` (was platform-conditional, now gone entirely)
 - herdr flake input removed from `flake.nix`
@@ -93,7 +95,9 @@ The difference: tmux can run outside proot because it doesn't need Nix tools to 
 - This learnings doc at `docs/herdr-learnings.md`
 - The README references this doc in the proot limitations section
 
-## For Mac
+## For Mac (historical - proot era; SUPERSEDED)
+
+> **Superseded:** herdr is now installed via the flake for all platforms (Mac included once `hosts/mac.nix` lands). The Mac-specific re-add steps below were written when herdr was Linux-broken and Mac was the only viable path. Kept for historical context only - on Mac today, herdr works via the existing flake input with no extra steps.
 
 On Mac (no proot, standard Nix install with root), herdr works via Nix directly. To add it back for Mac:
 1. Add `herdr.url = "github:ogulcancelik/herdr/v0.7.5"` to `flake.nix` inputs

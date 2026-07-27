@@ -95,13 +95,6 @@ Also create the tmux config symlink (tmux runs outside bwrap, so it's managed ma
 ln -sfn ~/.dotfiles/home/.tmux.conf ~/.tmux.conf
 ```
 
-And the herdr config symlink (herdr runs inside bwrap, but the config is managed as a direct symlink like tmux/.bashrc):
-```sh
-mkdir -p ~/.config/herdr
-ln -sfn ~/.dotfiles/home/.config/herdr/config.toml ~/.config/herdr/config.toml
-ln -sfn ~/.dotfiles/home/.local/bin/nix-zsh ~/.local/bin/nix-zsh
-```
-
 herdr config is HM-managed (via `home/herdr.nix` → `xdg.configFile`) - the symlink is created by `./rebuild.sh`, no manual step. Only the `nix-zsh` wrapper needs a manual symlink (it's a script, edit-in-place, not HM-managed):
 ```sh
 ln -sfn ~/.dotfiles/home/.local/bin/nix-zsh ~/.local/bin/nix-zsh
@@ -177,6 +170,7 @@ If you clone this repo, review these before running the setup:
 - **AWS_PROFILE**: `.bashrc` sets `AWS_PROFILE=coreweave`. Remove or change if you don't use AWS.
 - **pi-node PATH**: `hosts/remote.nix` adds `$HOME/.local/share/pi-node/node-v22.23.1-linux-x64/bin` to `sessionPath`. Remove if you don't use pi-node.
 - **Aliases**: `home/shell.nix` has `cc`/`oc` pointing at `~/.local/bin/local-claude`/`local-opencode` (CoreWeave local model proxies). Change or remove if you don't have these.
+- **herdr `default_shell`**: `home/.config/herdr/config.toml` hardcodes `/mnt/home/hayden.dorahy/.local/bin/nix-zsh` (TOML can't expand `$HOME`). Change to your home path.
 - **SSH agent**: `.bashrc` auto-adds all `~/.ssh/*.pub` keys. Review if you don't want that.
 - **Git identity**: this config deliberately does NOT set git `user.name`/`user.email`. Git will prompt on first commit. Add to `home/git.nix` if you want it managed.
 

@@ -6,4 +6,4 @@
 # this: herdr execs this script (system /bin/bash interpreter), which
 # then execs Nix zsh. System-binary-spawning-Nix-binary works fine in
 # bwrap (verified). See docs/herdr-learnings.md for the full investigation.
-exec /mnt/home/hayden.dorahy/.nix-profile/bin/zsh "$@"
+exec "$HOME/.nix-profile/bin/zsh" "$@"
