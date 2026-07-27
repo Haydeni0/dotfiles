@@ -1,0 +1,53 @@
+onboarding = false
+# herdr config - keybindings mapped from the user's tmux config (~/.tmux.conf).
+# herdr runs inside bwrap (launched from the bwrap zsh in .bashrc). Panes
+# inherit the bwrap mount namespace, so /nix resolves and Nix tools are
+# available. No proot/ptrace wrapper needed - bwrap uses namespaces,
+# so fork+exec into PTYs works (verified: proot segfaulted here, bwrap doesn't).
+
+[terminal]
+# Panes spawn Nix zsh directly (inherits bwrap namespace from herdr).
+# Non-login: sources .zshrc (HM config: aliases, plugins, prompt) but not
+# .zprofile/.zlogin (PATH already set by the bwrap environment).
+default_shell = "/mnt/home/hayden.dorahy/.nix-profile/bin/zsh"
+shell_mode = "non_login"
+
+[keys]
+# Prefix: Ctrl-B (herdr default). Not Ctrl-Space (tmux prefix) because:
+# 1. herdr doesn't accept "ctrl+space" as a prefix key
+# 2. avoids collision if herdr runs inside tmux (Ctrl-Space = tmux prefix)
+prefix = "ctrl+b"
+
+# Pane switching - direct (no prefix), matches tmux:
+# M-S-Left/Right (Karabiner remaps Ctrl->Option with Shift), C-S-Up/Down
+focus_pane_left  = "alt+shift+left"
+focus_pane_right = "alt+shift+right"
+focus_pane_up    = "ctrl+shift+up"
+focus_pane_down  = "ctrl+shift+down"
+
+# Tab switching - direct (no prefix), matches tmux: S-Left/S-Right
+next_tab = "shift+right"
+previous_tab = "shift+left"
+
+# Splits - matches tmux: prefix+" vertical, prefix+% horizontal
+split_horizontal = "prefix+double_quote"
+split_vertical = "prefix+percent"
+
+# New tab - matches tmux: prefix+c
+new_tab = "prefix+c"
+
+# Close tab - tmux default: prefix+&
+close_tab = "prefix+ampersand"
+
+# Workspace picker (session switcher - herdr equivalent of tmux sessions)
+workspace_picker = "prefix+w"
+
+# Go to (jump)
+goto = "prefix+g"
+
+# Copy mode (vi-style, matching tmux's mode-keys vi)
+copy_mode = "prefix+y"
+
+[theme]
+# Dracula to match the tmux theme
+name = "dracula"

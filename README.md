@@ -95,6 +95,12 @@ Also create the tmux config symlink (tmux runs outside bwrap, so it's managed ma
 ln -sfn ~/.dotfiles/home/.tmux.conf ~/.tmux.conf
 ```
 
+And the herdr config symlink (herdr runs inside bwrap, but the config is managed as a direct symlink like tmux/.bashrc):
+```sh
+mkdir -p ~/.config/herdr
+ln -sfn ~/.dotfiles/home/.config/herdr/config.toml ~/.config/herdr/config.toml
+```
+
 ### Step 3: Create the nix-portable profile dir
 
 nix-portable doesn't create this by default; home-manager needs it:
@@ -176,7 +182,7 @@ This setup differs from a standard Nix install because we have no root (shared c
 - **bwrap bridge** - HM-managed symlinks point to `/nix/store/...` paths, which don't exist on the real filesystem. `.bashrc` runs zsh through `bwrap`, which creates a mount namespace with `~/.nix-portable/emptyroot` as a root skeleton, overlays the real top-level dirs (`/usr`, `/bin`, `/etc`, `/mnt`, `$HOME`, etc.) on top, and binds `~/.nix-portable/nix` to `/nix`. All `/nix/store/...` paths resolve inside the namespace. bwrap is used because we can't create the real `/nix` directory (no root) and bwrap's namespace approach avoids the ptrace problems of the proot fallback (see "Why bwrap not proot" below).
 - **No nix-env by default** - nix-portable only provides `nix`. HM's activation script needs `nix-env`, so we create symlinks (`nix-env` -> `nix-portable`; it's a multi-call binary).
 - **Profile dir** - `~/.local/state/nix/profiles/` must exist before `switch` (nix-portable doesn't create it).
-- **bwrap limitation: terminal multiplexers** - bwrap creates a mount namespace, which breaks tmux's pty creation. tmux is run outside bwrap (system `/usr/bin/tmux`); `.bashrc` handles the two-stage launch (tmux first, then bwrap zsh inside tmux). herdr (another multiplexer) segfaults under bwrap - see `docs/herdr-learnings.md`.
+- **bwrap + terminal multiplexers** - bwrap creates a mount namespace, which breaks tmux's pty creation. tmux is run outside bwrap (system `/usr/bin/tmux`); `.bashrc` handles the two-stage launch (tmux first, then bwrap zsh inside tmux). herdr (agent multiplexer, installed via the flake) runs inside bwrap - panes inherit the namespace and spawn Nix zsh directly. Verified: bwrap handles fork+exec into PTYs correctly (proot segfaulted here; bwrap doesn't). See `docs/herdr-learnings.md` for the full investigation.
 
 ### Why bwrap not proot
 
@@ -193,6 +199,7 @@ bwrap uses user+mount namespaces instead of ptrace - no syscall interception, no
 
 - **tmux config (`~/.tmux.conf`)** - managed manually (direct symlink to `~/.dotfiles/home/.tmux.conf`), NOT via HM. System tmux runs outside bwrap; HM's store-resident symlinks don't resolve there. The config file IS tracked in the repo at `home/.tmux.conf` - edit-in-place. TPM (plugin manager) auto-installs dracula/sensible on first launch.
 - **`.bashrc`** - managed manually (direct symlink to `~/.dotfiles/home/.bashrc`), NOT via HM. Runs outside bwrap (it *launches* bwrap), so HM's store-resident symlinks don't resolve there. Tracked in the repo at `home/.bashrc` - edit-in-place.
+- **herdr config (`~/.config/herdr/config.toml`)** - managed manually (direct symlink to `~/.dotfiles/home/.config/herdr/config.toml`), NOT via HM. herdr runs inside bwrap (so HM-managed config would resolve), but kept as a direct symlink for edit-in-place convenience (matches the tmux/.bashrc pattern). herdr binary IS managed by HM (via `packages.nix` + flake input). Tracked in the repo at `home/.config/herdr/config.toml`.
 - **`~/.ssh/`** - keys, config, authorized_keys. The SSH agent setup in `.bashrc` stays manual.
 - **`~/.config/rclone/rclone.conf`** - holds cloud credentials. The HM module installs rclone + completion only; config stays manual (never in the flake - public GitHub repo).
 - **uv-managed tools** (`task`, `nvitop`, `hf`, `evo`, `graphify`) - these stay as `uv tool install` in `~/.local/bin`. Nix doesn't fight uv for Python-based tools.

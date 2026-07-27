@@ -2,7 +2,11 @@
 
 Investigation into running herdr (agent multiplexer) alongside a rootless Nix setup (nix-portable + proot) on a shared Linux cluster (Ubuntu 22.04, no root).
 
-## TL;DR
+## Update (2026-07-27): RESOLVED by bwrap migration
+
+The proot → bwrap migration fixed all herdr issues. bwrap uses user+mount namespaces instead of ptrace, so fork+exec into PTYs works natively (verified: `pty.fork()` + `execvp(zsh)` inside bwrap succeeds, proot segfaulted here). herdr is now installed via the flake (`flake.nix` input `github:ogulcancelik/herdr/v0.7.5` → `packages.nix`) and runs inside bwrap. Panes inherit the namespace and spawn Nix zsh directly (no wrapper needed). Config at `home/.config/herdr/config.toml`. The investigation below is preserved as historical context.
+
+## TL;DR (historical - proot era)
 
 herdr doesn't work with nix-portable/proot on this remote. The Nix herdr segfaults when spawning panes (proot's fork+exec bug). The standalone herdr (outside proot) also can't spawn panes that use Nix tools (proot segfaults in PTY context). herdr is removed from the setup for now. On Mac (no proot), herdr would work via Nix directly.
 

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, herdrPkg, ... }:
 
 {
   home.packages = with pkgs; [
@@ -18,5 +18,8 @@
     rsync
     # zsh plugin: up/down arrow search history by typed prefix
     zsh-history-substring-search
+  ] ++ [
+    # agent multiplexer (from flake input - not in nixpkgs)
+    herdrPkg
   ];
 }
