@@ -2,7 +2,9 @@
 
 Guidance for AI coding agents (Claude Code, opencode) working in this repository.
 Read the README for architecture, setup, and the bwrap bridge - this file is about
-**how to work here**, not what the repo is.
+**how to work here**, not what the repo is. Read `MEMORY.md` at session start for
+accumulated lessons learned; append to it when you discover or fix something
+non-obvious (read it first, then edit - don't duplicate the README or AGENTS.md).
 
 ## What this repo is
 
