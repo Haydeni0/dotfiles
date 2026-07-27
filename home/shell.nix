@@ -7,6 +7,16 @@
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
     initContent = ''
+      # Force emacs keymap. zsh 5.9 picks the default interactive keymap from
+      # $EDITOR: a value containing "vi" (e.g. nvim) selects vi-insert, which
+      # changes Ctrl+Backspace (^H) to single-char delete and lets stray
+      # keystrokes enter vi-cmd mode (letters become operators like ~ = toggle case).
+      bindkey -e
+
+      # Ctrl+Backspace deletes the word to the left (emacs keymap default is ^W,
+      # but terminals send ^H for Ctrl+Backspace, which is single-char by default).
+      bindkey '^H' backward-kill-word
+
       # Start tmux (ported from the user's .zshrc, with SKIP_TMUX escape hatch).
       # Normally tmux is already started by .bashrc (outside proot); this block
       # only fires if zsh starts without tmux AND SKIP_TMUX isn't set.
