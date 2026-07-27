@@ -9,10 +9,10 @@ read_when:
 # MEMORY.md - dotfiles
 
 Long-term memory for AI agents working in this repo. Read at session start;
-append to when you discover or fix something non-obvious. This is the
-*distilled* memory - if a fact is already in the README or AGENTS.md, don't
-duplicate it here. Entries below should be things you'd only know from having
-worked in this repo and hit a snag.
+append to when you discover or fix something non-obvious. Don't duplicate
+README architecture here. An entry may expand on an AGENTS.md Principle with
+the evidence - commit ref, what broke, the fix - since that provenance is the
+value MEMORY.md adds over the rule alone.
 
 Rules:
 - One entry per learning, newest at top.
