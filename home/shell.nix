@@ -17,16 +17,10 @@
       # but terminals send ^H for Ctrl+Backspace, which is single-char by default).
       bindkey '^H' backward-kill-word
 
-      # Start tmux (ported from the user's .zshrc, with SKIP_TMUX escape hatch).
-      # Normally tmux is already started by .bashrc (outside proot); this block
-      # only fires if zsh starts without tmux AND SKIP_TMUX isn't set.
-      if [ -n "$PS1" ] && \
-        [ -z "$TMUX" ] && \
-        [ -z "$SKIP_TMUX" ] && \
-        [ "$TERM_PROGRAM" != "vscode" ] && \
-        command -v tmux &>/dev/null; then
-        exec tmux new-session -A -s main
-      fi
+      # tmux startup is owned solely by .bashrc (it must run OUTSIDE proot -
+      # proot breaks pty creation). Do NOT re-launch tmux from zsh: zsh only
+      # runs without $TMUX in paths where .bashrc intentionally skipped it
+      # (devcontainer, cursor), and exec'ing tmux inside proot segfaults.
 
       # Cursor sends Ctrl+Left/Ctrl+Right as escape sequences ending in D/C.
       # Bind them to zle word movement so Ctrl+Left/Ctrl+Right move by word.
@@ -40,8 +34,19 @@
       autoload -Uz compinit
       compinit -C
 
-      # envman (defensive - kept from the user's setup)
-      [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+      # zstyle completion tuning (menu select, case-insensitive, caching).
+      zstyle ':completion:*' menu select
+      zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={a-zA-Z}' 'r:|=*' 'l:|=* r:|=*'
+      zstyle ':completion:*' cache-path "$HOME/.cache/zsh"
+      zstyle ':completion:*:descriptions' format '%F{purple}%d%f'
+
+      # fzf: Ctrl+R fuzzy history, Ctrl+T file paste, Alt+C cd.
+      source <(${pkgs.fzf}/bin/fzf --zsh)
+
+      # History: HM defaults disable these; user setopt runs after HM's, so wins.
+      setopt HIST_IGNORE_ALL_DUPS HIST_FIND_NO_DUPS EXTENDED_HISTORY HIST_REDUCE_BLANKS
+      HISTSIZE=50000
+      SAVEHIST=50000
     '';
     shellAliases = {
       # user's aliases (kept - not the video's cc/co)
