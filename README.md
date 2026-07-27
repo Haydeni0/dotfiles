@@ -138,9 +138,6 @@ fi
 # uv env (defensive - kept alongside Nix)
 . "$HOME/.local/bin/env" 2>/dev/null
 
-# envman
-[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
-
 export AWS_PROFILE=coreweave
 
 # Nix profile setup (nix-portable: /nix is virtualized via proot for the shell)
