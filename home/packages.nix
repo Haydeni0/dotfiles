@@ -16,5 +16,7 @@
     yazi
     gdu
     rsync
+    # zsh plugin: up/down arrow search history by typed prefix
+    zsh-history-substring-search
   ];
 }

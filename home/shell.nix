@@ -43,6 +43,12 @@
       # fzf: Ctrl+R fuzzy history, Ctrl+T file paste, Alt+C cd.
       source <(${pkgs.fzf}/bin/fzf --zsh)
 
+      # history-substring-search: up/down arrow search history by typed prefix.
+      # Type "my_" then up-arrow -> jumps to most recent command starting with "my_".
+      source ${pkgs.zsh-history-substring-search}/share/zsh-history-substring-search/zsh-history-substring-search.zsh
+      bindkey '^[[A' history-substring-search-up
+      bindkey '^[[B' history-substring-search-down
+
       # History: HM defaults disable these; user setopt runs after HM's, so wins.
       setopt HIST_IGNORE_ALL_DUPS HIST_FIND_NO_DUPS EXTENDED_HISTORY HIST_REDUCE_BLANKS
       HISTSIZE=50000
