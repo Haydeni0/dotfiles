@@ -42,6 +42,21 @@ zstyle ':completion:*:descriptions' format '%F{purple}%d%f'
 # Prompt - starship if available, simple fallback
 if command -v starship >/dev/null 2>&1; then
     eval "$(starship init zsh)"
+
+    # Transient prompt - collapse previous prompts to just the character (❯)
+    # after command runs, keeping scrollback clean. Uses starship character module.
+    # starship init sets PROMPT to a $(...) template re-evaluated via PROMPT_SUBST
+    # on every redraw; save it so it can be restored before the next full prompt.
+    __starship_full_prompt="$PROMPT"
+    function zle-line-finish() {
+        PROMPT=$(starship module character)
+        zle .reset-prompt
+    }
+    zle -N zle-line-finish
+    function __restore_starship_prompt() {
+        PROMPT="$__starship_full_prompt"
+    }
+    precmd_functions+=(__restore_starship_prompt)
 else
     autoload -Uz colors && colors
     PROMPT='%F{cyan}%~%f %F{purple}%#%f '

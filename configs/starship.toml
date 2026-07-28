@@ -1,5 +1,5 @@
 add_newline = false
-format = "$directory$git_branch$git_status$cmd_duration$line_break$character"
+format = "$directory$git_branch$git_status$cmd_duration$fill$username$hostname$line_break$character"
 
 [character]
 success_symbol = "[❯](purple)"
@@ -7,3 +7,19 @@ error_symbol = "[❯](red)"
 
 [cmd_duration]
 format = "[$duration]($style) "
+
+[git_status]
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+
+[fill]
+symbol = " "
+
+[username]
+show_always = true
+format = "[$user]($style)"
+
+[hostname]
+ssh_only = false
+format = "[@$hostname]($style)"
