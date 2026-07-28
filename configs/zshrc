@@ -72,8 +72,10 @@ fi
 # gssh: open a new WezTerm window running plain ssh (no local herdr layer).
 # Remote auto-boots its own herdr; no nesting. Put ssh options before the host
 # (e.g. `gssh -p 2222 user@host`), not after - ssh parses positionally.
+# Uses `wezterm cli spawn --new-window` (not `wezterm start`) so the window
+# joins the running instance - cmd+\ (ActivateWindowRelative) can cycle to it.
 if command -v wezterm >/dev/null 2>&1; then
-    gssh() { wezterm start -- ssh -t "$@" }
+    gssh() { wezterm cli spawn --new-window -- ssh -t "$@" }
 fi
 
 # Plugins (git-cloned to ~/.local/share/zsh/, source with guards)
