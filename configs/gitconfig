@@ -11,6 +11,12 @@
     diffFilter = delta --color-only
 [delta]
     navigate = true
+    # side-by-side lives in a named feature (not a direct option) so it can
+    # be selectively disabled per-invocation via `--features ""` - delta
+    # ignores the features mechanism entirely for options set directly here.
+    # Used to give lazygit a stacked diff view instead (see lazygit.yml).
+    features = side-by-side
+[delta "side-by-side"]
     side-by-side = true
 [merge]
     conflictstyle = diff3

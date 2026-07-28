@@ -106,6 +106,14 @@ if command -v wezterm >/dev/null 2>&1; then
     }
 fi
 
+# lazygit: on macOS it defaults to ~/Library/Application Support/lazygit/
+# instead of ~/.config/lazygit/ (its own docs suggest this override). Force
+# XDG_CONFIG_HOME so the deployed dot_config/lazygit/config.yml.tmpl is the
+# one file it reads on both Mac and Linux - no per-OS config split needed.
+if command -v lazygit >/dev/null 2>&1; then
+    alias lazygit='XDG_CONFIG_HOME="$HOME/.config" lazygit'
+fi
+
 # Plugins (git-cloned to ~/.local/share/zsh/, source with guards)
 [[ -r ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
     source ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh

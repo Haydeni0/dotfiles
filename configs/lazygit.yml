@@ -1,0 +1,6 @@
+git:
+  pagers:
+    # --features "" opts out of the side-by-side feature (see gitconfig) so
+    # lazygit gets a stacked diff - its panels are narrower than a full
+    # terminal, and side-by-side has known width-rendering bugs in lazygit.
+    - pager: delta --dark --paging=never --line-numbers --features ""
