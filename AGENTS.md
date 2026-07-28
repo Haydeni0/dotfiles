@@ -15,9 +15,11 @@ micromamba (zsh), and curl (herdr). No Nix, no bwrap, no proot, no namespaces.
 ## How to make changes
 
 1. **Edit the source file in `configs/`** (NOT the deployed file in `$HOME`).
-2. **Apply**: `chezmoi apply`
-3. **Test in a new shell** - start a new zsh/tmux pane to pick up changes.
-4. **Commit + push** - the repo is the source of truth.
+2. **Check for drift**: `chezmoi diff` - shows any local edits to deployed files that
+   would be lost. Always run this before applying.
+3. **Apply**: `chezmoi apply`
+4. **Test in a new shell** - start a new zsh/tmux pane to pick up changes.
+5. **Commit + push** - the repo is the source of truth.
 
 Never edit deployed files directly - edit `configs/` and `chezmoi apply`.
 
@@ -46,6 +48,22 @@ Never edit deployed files directly - edit `configs/` and `chezmoi apply`.
 - **Install scripts use file existence checks** (`[[ -x ~/.local/bin/tool ]]`),
   not `command -v` (PATH may not include `~/.local/bin` when chezmoi runs scripts).
 - **mise activate** in `.zshrc` and `.bashrc` puts mise-managed tools on PATH.
+
+## Detecting drift
+
+chezmoi deploys **real files** (not read-only symlinks like Nix/HM used). This means
+deployed files can be edited directly, but those edits will be **overwritten on the
+next `chezmoi apply`** and are not in the repo.
+
+- **Check for drift**: `chezmoi diff` shows differences between deployed files and source.
+  Run this before `chezmoi apply` to catch accidental direct edits.
+- **Edit source, not deployed files**: `chezmoi edit ~/.zshrc` opens the source file
+  (`configs/zshrc`) in `$EDITOR`. This is the correct way to make changes.
+- **If a tool installer modifies a deployed file** (e.g. fzf tries to append to `.zshrc`):
+  the change is local only. Handle it in `configs/` or `run_once_install-tools.sh.tmpl`
+  instead. The install script already uses `--no-update-rc` flags where possible.
+- **Revert accidental edits**: `chezmoi apply` overwrites deployed files with source.
+  Anything not in `configs/` is lost.
 
 ## Testing changes
 
