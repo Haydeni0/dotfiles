@@ -141,23 +141,4 @@ zoxide query --list  # shows db entries
 - The macOS defaults script warns if a setting is MDM-managed (it'll be reverted on sync). Check `profiles show` first; if a pref is enforced by your employer's MDM, remove it from `run_once_macos-defaults.sh.tmpl`.
 - Karabiner-Elements installs a driver extension - may trigger an EDR (Falcon) alert. If blocked, keep Karabiner manual (config JSON still deploys via chezmoi; just install the app outside the Brewfile).
 
-## Updating
-```sh
-chezmoi update    # pull + apply
-# or
-chezmoi git pull && chezmoi apply
-```
-
-## Adding new tools
-- Mac: add to Brewfile, `brew bundle install`
-- Linux: edit `run_once_install-tools.sh.tmpl` (adding a tool re-runs it automatically on
-  `chezmoi apply` because the content hash changes). To force a re-run of unchanged
-  content: `chezmoi state delete-bucket --bucket=scriptState && chezmoi apply`
-- Both: commit + push
-
-## What stays manual (not managed by chezmoi)
-- `~/.ssh/` - keys, config, authorized_keys (secrets, never in repo)
-- `~/.config/rclone/rclone.conf` - cloud credentials (secrets)
-- `~/.local/bin/local-claude`, `local-opencode` - CoreWeave proxies
-- uv-managed tools (task, nvitop, hf, evo, graphify) - installed via `uv tool install`
-- Git identity (user.name, user.email) - different per user
+> Ongoing operations (updating, adding tools, what stays manual) live in [README.md](../README.md).

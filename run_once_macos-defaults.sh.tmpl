@@ -39,9 +39,18 @@ echo "  fn-keys as F-keys"
 # (just unticked) and you can re-enable it manually if desired.
 # Requires `killall SystemUIServer` + logout to take effect.
 write_hotkey() {
-    # $1 = key number, $2 = "parameters" array e.g. "65535,123,8650752"
+    # $1 = key number, $2 = "parameters" comma-list e.g. "65535,123,8650752"
+    # Emit one <integer> element per parameter (plist requires one element per value).
+    local IFS=,
+    local -a params
+    read -ra params <<<"$2"
+    local ints=""
+    local p
+    for p in "${params[@]}"; do
+        ints+="<integer>${p}</integer>"
+    done
     defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add \
-        "$1" "<dict><key>enabled</key><false/><key>value</key><dict><key>type</key><string>standard</string><key>parameters</key><array><integer>$2</integer></array></dict></dict>" 2>/dev/null || true
+        "$1" "<dict><key>enabled</key><false/><key>value</key><dict><key>type</key><string>standard</string><key>parameters</key><array>${ints}</array></dict></dict>"
 }
 # 79: Move left a space (Ctrl+LeftArrow)
 write_hotkey 79 "65535,123,8650752"

@@ -1,7 +1,6 @@
 {{- if eq .chezmoi.os "darwin" -}}
 {{- $k1 := include "dot_config/karabiner/karabiner.json" -}}
-{{- $k2 := include "dot_config/karabiner/assets/complex_modifications/1757349181.json" -}}
-{{- $hash := sha256sum (print $k1 $k2) -}}
+{{- $hash := sha256sum (print $k1) -}}
 #!/bin/sh
 # Reload Karabiner-Elements after chezmoi deploys a config change.
 # run_onchange_ re-runs when this script's rendered content changes. The

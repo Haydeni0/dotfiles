@@ -37,12 +37,8 @@ if [[ ! -x ~/.local/bin/zsh ]]; then
         micromamba create -y -n zsh zsh -c conda-forge >/dev/null 2>&1
         # micromamba installs to ~/.local/share/mamba/envs/ (not micromamba/)
         ln -sf ~/.local/share/mamba/envs/zsh/bin/zsh ~/.local/bin/zsh
-    elif command -v conda &>/dev/null; then
-        conda create -y -n zsh zsh -c conda-forge >/dev/null 2>&1
-        ln -sf ~/miniconda3/envs/zsh/bin/zsh ~/.local/bin/zsh 2>/dev/null || \
-        ln -sf ~/anaconda3/envs/zsh/bin/zsh ~/.local/bin/zsh 2>/dev/null
     else
-        echo "Warning: no conda/micromamba available. Install zsh via your OS package manager."
+        echo "Warning: no micromamba available. Install zsh via your OS package manager."
     fi
 fi
 
