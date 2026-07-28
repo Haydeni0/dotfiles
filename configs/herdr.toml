@@ -6,10 +6,6 @@ shell_mode = "non_login"
 
 [keys]
 prefix = "ctrl+space"
-next_tab = "shift+right"
-previous_tab = "shift+left"
-split_horizontal = "prefix+double_quote"
-split_vertical = "prefix+percent"
 detach = "prefix+d"
 
 [theme]
