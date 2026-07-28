@@ -124,6 +124,15 @@ setopt HIST_IGNORE_ALL_DUPS HIST_FIND_NO_DUPS EXTENDED_HISTORY HIST_REDUCE_BLANK
 # Editor
 export EDITOR=nvim
 
+# SSH agent - adds all private keys (both platforms, runs in zsh which is the
+# login shell on Mac and the exec'd shell on Linux)
+if [ -z "$SSH_AUTH_SOCK" ]; then
+    eval "$(ssh-agent -s)" > /dev/null
+    find ~/.ssh -maxdepth 1 -type f -name "*.pub" -exec basename {} .pub \; | while read key; do
+        ssh-add ~/.ssh/"$key" 2>/dev/null
+    done
+fi
+
 # Keybindings (emacs mode)
 bindkey -e
 bindkey '^H' backward-kill-word
@@ -193,14 +202,6 @@ case $- in
       *) return;;
 esac
 
-# SSH agent - adds all private keys
-if [ -z "$SSH_AUTH_SOCK" ]; then
-    eval "$(ssh-agent -s)" > /dev/null
-    find ~/.ssh -maxdepth 1 -type f -name "*.pub" -exec basename {} .pub \; | while read key; do
-        ssh-add ~/.ssh/"$key" 2>/dev/null
-    done
-fi
-
 # uv env (defensive - kept alongside other tools)
 . "$HOME/.local/bin/env" 2>/dev/null
 
@@ -227,14 +228,6 @@ case $- in
     *i*) ;;
       *) return;;
 esac
-
-# SSH agent
-if [ -z "$SSH_AUTH_SOCK" ]; then
-    eval "$(ssh-agent -s)" > /dev/null
-    find ~/.ssh -maxdepth 1 -type f -name "*.pub" -exec basename {} .pub \; | while read key; do
-        ssh-add ~/.ssh/"$key" 2>/dev/null
-    done
-fi
 ```
 
 ### dot_bashrc.tmpl
