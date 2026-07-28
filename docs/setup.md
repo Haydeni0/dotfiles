@@ -14,7 +14,7 @@
 sh -c "$(curl -fsLS https://get.chezmoi.io/lb)" --
 
 # 2. Apply dotfiles (deploys configs + installs all tools)
-#    - mise bootstraps and installs 16 CLI tools
+#    - mise bootstraps and installs 17 CLI tools
 #    - micromamba installs zsh to ~/.local/bin/zsh
 #    - herdr installed via curl
 #    - zsh plugins git-cloned
@@ -41,7 +41,7 @@ zoxide query --list  # should show db entries
 ### What gets installed
 - chezmoi → `~/.local/bin/chezmoi`
 - mise (package manager) → `~/.local/bin/mise`
-- starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, yazi, gdu, btop, rclone, uv → managed by mise (in `~/.local/share/mise/installs/`)
+- starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, difftastic, yazi, gdu, btop, rclone, uv → managed by mise (in `~/.local/share/mise/installs/`)
 - herdr → `~/.local/bin/herdr`
 - zsh → `~/.local/bin/zsh` (via micromamba - shared on NFS home, available on all nodes)
 - zsh plugins → `~/.local/share/zsh/`
@@ -70,7 +70,7 @@ A fresh work Mac following this section gets the complete setup.
 brew install chezmoi
 
 # 2. Apply dotfiles (deploys configs + Brewfile + runs install scripts)
-#    - mise bootstraps and installs 16 CLI tools (starship, zoxide, fzf, etc.)
+#    - mise bootstraps and installs 17 CLI tools (starship, zoxide, fzf, etc.)
 #    - herdr installed via curl
 #    - zsh plugins git-cloned
 #    - Karabiner config deployed to ~/.config/karabiner/ (ISO UK layout)
@@ -142,7 +142,7 @@ rm -rf ~/.config/ghostty
 removed - chezmoi only manages files it knows about, not abandoned deployed dirs.
 
 ### What gets installed
-- **CLI tools** (via mise): starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, yazi, gdu, btop, rclone, uv - in `~/.local/share/mise/installs/`
+- **CLI tools** (via mise): starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, difftastic, yazi, gdu, btop, rclone, uv - in `~/.local/share/mise/installs/`
 - **herdr** (via curl) - `~/.local/bin/herdr`
 - **zsh plugins** (git-cloned) - `~/.local/share/zsh/`
 - **GUI apps** (via Homebrew casks): wezterm, rectangle, dockdoor, scroll-reverser, betterdisplay, obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp, karabiner-elements

@@ -9,7 +9,7 @@ duplicate the README or AGENTS.md).
 
 A cross-platform dotfiles repo managed by chezmoi. Plain config files in
 `configs/` are the source of truth, deployed to `$HOME` via chezmoi templates
-(`dot_*.tmpl` with `{{ include }}`). Tools installed via mise (16 CLI tools),
+(`dot_*.tmpl` with `{{ include }}`). Tools installed via mise (17 CLI tools),
 micromamba (zsh), and curl (herdr). No Nix, no bwrap, no proot, no namespaces.
 
 The chezmoi source dir IS the working repo. `chezmoi init` clones it to

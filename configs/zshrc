@@ -114,6 +114,12 @@ if command -v lazygit >/dev/null 2>&1; then
     alias lazygit='XDG_CONFIG_HOME="$HOME/.config" lazygit'
 fi
 
+# gdifft: git diff through difftastic's syntax-aware diff instead of delta,
+# for trying it out one-off without touching core.pager.
+if command -v difft >/dev/null 2>&1; then
+    alias gdifft='GIT_EXTERNAL_DIFF=difft git diff'
+fi
+
 # Plugins (git-cloned to ~/.local/share/zsh/, source with guards)
 [[ -r ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
     source ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh

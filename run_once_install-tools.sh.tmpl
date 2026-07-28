@@ -11,7 +11,7 @@ export PATH="$HOME/.local/bin:$PATH"
 # --- install all CLI tools via mise (aqua backend handles archives automatically) ---
 # btop excluded here - mise's aqua backend doesn't support darwin/arm64 for btop.
 # On Mac, btop is installed via Homebrew (Brewfile). On Linux, mise handles it.
-mise use -g starship zoxide fzf neovim bat ripgrep fd jq lazygit gh delta yazi gdu rclone uv
+mise use -g starship zoxide fzf neovim bat ripgrep fd jq lazygit gh delta difftastic yazi gdu rclone uv
 
 {{ if eq .chezmoi.os "darwin" -}}
 # Mac: btop via Homebrew (Brewfile), not mise (aqua has no darwin build).

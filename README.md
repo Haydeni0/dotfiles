@@ -69,7 +69,7 @@ See [docs/setup.md](docs/setup.md) for the full guide (includes macOS system.def
 
 ## Tool installation
 
-- **mise** bootstraps and installs 16 CLI tools (starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, yazi, gdu, btop, rclone, uv) - handles archive formats, URLs, version detection, and download verification automatically
+- **mise** bootstraps and installs 17 CLI tools (starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, difftastic, yazi, gdu, btop, rclone, uv) - handles archive formats, URLs, version detection, and download verification automatically
 - **micromamba** installs zsh to `~/.local/bin/zsh` (compute nodes don't have system zsh; login nodes and Mac do)
 - **herdr** via its own curl installer (not in mise registry)
 - **zsh plugins** (autosuggestions, syntax-highlighting, history-substring-search) git-cloned to `~/.local/share/zsh/`
