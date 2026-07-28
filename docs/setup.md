@@ -10,13 +10,10 @@
 
 ### Install
 ```sh
-# 1. Install chezmoi (installs to ~/bin/chezmoi)
-sh -c "$(curl -fsLS https://get.chezmoi.io)"
+# 1. Install chezmoi (installs to ~/.local/bin/chezmoi, already on PATH)
+sh -c "$(curl -fsLS https://get.chezmoi.io/lb)" --
 
-# 2. Add ~/bin to PATH for this session (chezmoi installs here)
-export PATH="$HOME/bin:$PATH"
-
-# 3. Apply dotfiles (deploys configs + installs all tools)
+# 2. Apply dotfiles (deploys configs + installs all tools)
 #    - mise bootstraps and installs 16 CLI tools
 #    - micromamba installs zsh to ~/.local/bin/zsh
 #    - herdr installed via curl
@@ -37,7 +34,7 @@ zoxide query --list  # should show db entries
 ```
 
 ### What gets installed
-- chezmoi → `~/bin/chezmoi`
+- chezmoi → `~/.local/bin/chezmoi`
 - mise (package manager) → `~/.local/bin/mise`
 - starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, yazi, gdu, btop, rclone, uv → managed by mise (in `~/.local/share/mise/installs/`)
 - herdr → `~/.local/bin/herdr`

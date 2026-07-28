@@ -6,13 +6,10 @@ Cross-platform dotfiles managed by chezmoi, with mise for tool installation. No 
 
 **Linux (HPC, no sudo):**
 ```sh
-# 1. Install chezmoi (installs to ~/bin/chezmoi)
-sh -c "$(curl -fsLS https://get.chezmoi.io)"
+# 1. Install chezmoi (installs to ~/.local/bin/chezmoi, already on PATH)
+sh -c "$(curl -fsLS https://get.chezmoi.io/lb)" --
 
-# 2. Add ~/bin to PATH (chezmoi installs here, not ~/.local/bin)
-export PATH="$HOME/bin:$PATH"
-
-# 3. Apply dotfiles (deploys configs + installs all tools via mise + micromamba)
+# 2. Apply dotfiles (deploys configs + installs all tools via mise + micromamba)
 chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 
 # 4. Set git identity (not managed by chezmoi - different per user)

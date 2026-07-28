@@ -12,9 +12,15 @@ A cross-platform dotfiles repo managed by chezmoi. Plain config files in
 (`dot_*.tmpl` with `{{ include }}`). Tools installed via mise (16 CLI tools),
 micromamba (zsh), and curl (herdr). No Nix, no bwrap, no proot, no namespaces.
 
+The chezmoi source dir IS the working repo. `chezmoi init` clones it to
+`~/.local/share/chezmoi`; edit, commit, and `chezmoi apply` from there. Do not
+keep a separate working clone (e.g. `~/gitrepos/dotfiles`) - it drifts from the
+source dir and `chezmoi apply` will not see your edits.
+
 ## How to make changes
 
 1. **Edit the source file in `configs/`** (NOT the deployed file in `$HOME`).
+   The source dir is `~/.local/share/chezmoi` (= `chezmoi source-path`).
 2. **Check for drift**: `chezmoi diff` - shows any local edits to deployed files that
    would be lost. Always run this before applying.
 3. **Apply**: `chezmoi apply`
