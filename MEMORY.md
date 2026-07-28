@@ -32,6 +32,19 @@ Environment specifics an agent needs to know. Add as discovered.
 
 ## Learnings
 
+### 2026-07-28 - enableCompletion=false + manual compinit -C still needed under bwrap
+Tested whether `enableCompletion=false` + manual `compinit -C` (commit 8978b19,
+blamed on proot ptrace) is stale under bwrap. NOT stale - bwrap still has the
+stat cost: nix store is NFS-backed, HM's `compinit` (full security check, no
+`-C`) stats every fpath file. Startup: HM compinit 1.9-9.4s vs manual
+`compinit -C` 1.8s. Keep `enableCompletion=false` + manual `compinit -C`.
+
+Also found: HM compinit runs BEFORE `initContent` (line 8 of generated zshrc,
+not "order 1000" as a prior comment guessed). So `fpath+=~/.zfunc` in
+initContent is too late for HM compinit - `_slurm` breaks. Manual compinit
+(after the fpath+=) is the only reason `_slurm` loads. Don't move fpath into
+HM completion path without also moving compinit. No commit (test reverted).
+
 ### 2026-07-27 - zoxide completion needs compinit before init
 HM's `enableZshIntegration` places `zoxide init zsh` at mkOrder 851, but our
 manual `compinit -C` runs later in `initContent`. `compdef` fails silently
