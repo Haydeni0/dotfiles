@@ -5,3 +5,14 @@
 [user]
     name = Hayden Dorahy
     email = hayden.dorahy@physicsx.ai
+[core]
+    pager = delta
+[interactive]
+    diffFilter = delta --color-only
+[delta]
+    navigate = true
+    side-by-side = true
+[merge]
+    conflictstyle = diff3
+[diff]
+    colorMoved = default
