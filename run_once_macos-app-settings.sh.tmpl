@@ -23,10 +23,11 @@ echo "  Rectangle: maximize=ctrl+opt+cmd+up, launchOnLogin"
 # --- AltTab (alt-tab like Windows) ---
 # Domain: com.lwouis.alt-tab-macos
 # holdShortcut = cmd (hold to show window switcher); previousWindowShortcut = shift+tab.
-# (\U2318 = cmd, \U21e7 = shift, \U21e5 = tab)
-defaults write com.lwouis.alt-tab-macos holdShortcut -string '\U2318'
-defaults write com.lwouis.alt-tab-macos holdShortcut2 -string '\U2318'
-defaults write com.lwouis.alt-tab-macos previousWindowShortcut -string '\U21e7\U21e5'
+# Use literal glyph chars - `defaults write` with `\U` escapes stores them literally
+# (double-escaped), not as the unicode codepoints. The plist stores the glyphs directly.
+defaults write com.lwouis.alt-tab-macos holdShortcut -string '⌘'
+defaults write com.lwouis.alt-tab-macos holdShortcut2 -string '⌘'
+defaults write com.lwouis.alt-tab-macos previousWindowShortcut -string '⇧⇥'
 echo "  AltTab: cmd hold, shift+tab previous window"
 
 # --- ScrollReverser (fix scroll direction/acceleration for mice) ---
