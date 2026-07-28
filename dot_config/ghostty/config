@@ -1,0 +1,31 @@
+# Ghostty terminal config (macOS). Edit-in-place via chezmoi (dot_config/ghostty/).
+# Docs: https://ghostty.org/docs/config/reference
+
+# Theme - matches nvim (rose-pine moon)
+theme = Rose Pine Moon
+
+# Font - Hack Nerd Font (installed via Brewfile cask font-hack-nerd-font)
+font-family = Hack Nerd Font
+font-size = 14
+
+# macOS-specific
+macos-titlebar-style = tabs
+# Treat Option as Alt (for terminal keybinds). The globe<->control swap is
+# handled at the macOS level (run_once_macos-defaults.sh.tmpl), not here.
+macos-option-as-alt = true
+window-padding-x = 8
+window-padding-y = 4
+background-opacity = 0.95
+background-blur = true
+
+# Shell integration - auto-detects zsh
+shell-integration = detect
+window-save-state = always
+
+# Splits (tmux-like). User also runs tmux/herdr; these are for standalone Ghostty use.
+# Copy/paste/tab/window use Ghostty defaults (not overridden).
+keybind = cmd+d=new_split:right
+keybind = cmd+shift+d=new_split:down
+keybind = cmd+]=goto_split:right
+keybind = cmd+[=goto_split:left
+keybind = cmd+shift+enter=toggle_split_zoom

@@ -1,0 +1,66 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# macOS system defaults (run once on first chezmoi apply on Mac).
+# Sets: separate-spaces OFF, fn-keys as F-keys, mission-control ctrl+arrow keybinds disabled.
+#
+# Globe<->Control swap is NOT here - it has no stable `defaults write` (lives in a
+# ByHost plist with keyboard-specific keys). Set it manually in System Settings >
+# Keyboard > Modifier Keys, or via Karabiner-Elements (config in this repo).
+#
+# Some changes need logout or `killall` to take effect - noted inline.
+# On a company Mac: if MDM enforces any of these, the `defaults write` will be
+# reverted on next MDM sync (flapping). Check `profiles show` first; if a pref
+# is MDM-managed, remove it from this script and leave it to MDM.
+
+set -euo pipefail
+
+echo "Setting macOS defaults..."
+
+# --- Displays have separate Spaces: OFF ---
+# System Settings > Desktop & Dock > Displays have separate Spaces.
+# true = one space spans all displays (checkbox OFF) - removes dock/menubar
+# on external displays. Requires logout to take effect.
+# WARNING: macOS 26 (Tahoe) has a known WindowServer crash-at-login bug with
+# this setting (Apple radar 153570422). Test before deploying on Tahoe.
+# If you hit login crashes, set this manually in System Settings instead.
+defaults write com.apple.spaces spans-displays -bool true
+echo "  separate spaces OFF (logout required; WARNING: Tahoe login-crash bug - test first)"
+
+# --- Function keys as standard F-keys (F1-F12, not media keys) ---
+# System Settings > Keyboard > Function Keys > Use F-keys as standard function keys.
+defaults write -g com.apple.keyboard.fnState -bool true
+echo "  fn-keys as F-keys"
+
+# --- Mission Control: disable ctrl+arrow space-switching ---
+# System Settings > Keyboard > Keyboard Shortcuts > Mission Control.
+# Disable "Move left a space" (79), "Move right a space" (81), Mission Control
+# ctrl+up (32), App Windows ctrl+down (35). Verified key numbers on macOS 26.
+# Each entry keeps the `value` dict so System Settings still shows the binding
+# (just unticked) and you can re-enable it manually if desired.
+# Requires `killall SystemUIServer` + logout to take effect.
+write_hotkey() {
+    # $1 = key number, $2 = "parameters" array e.g. "65535,123,8650752"
+    defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add \
+        "$1" "<dict><key>enabled</key><false/><key>value</key><dict><key>type</key><string>standard</string><key>parameters</key><array><integer>$2</integer></array></dict></dict>" 2>/dev/null || true
+}
+# 79: Move left a space (Ctrl+LeftArrow)
+write_hotkey 79 "65535,123,8650752"
+# 81: Move right a space (Ctrl+RightArrow)
+write_hotkey 81 "65535,124,8650752"
+# 32: Mission Control (Ctrl+UpArrow)
+write_hotkey 32 "65535,126,8650752"
+# 35: App Windows (Ctrl+DownArrow)
+write_hotkey 35 "65535,125,8650752"
+echo "  mission-control ctrl+arrow keybinds disabled (killall SystemUIServer + logout required)"
+
+# Flush SystemUIServer so the symbolichotkeys changes are read on next login.
+killall SystemUIServer 2>/dev/null || true
+
+echo ""
+echo "macOS defaults set. LOG OUT and back in for all changes to take effect."
+echo ""
+echo "Manual steps (no stable `defaults write`):"
+echo "  - System Settings > Keyboard > Modifier Keys > swap Globe and Control"
+echo "    (or use Karabiner-Elements - config deployed by this repo)"
+echo "If any setting didn't apply (MDM-managed), set it manually in System Settings."
+{{ end -}}

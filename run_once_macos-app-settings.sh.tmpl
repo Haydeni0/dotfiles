@@ -1,0 +1,43 @@
+{{ if eq .chezmoi.os "darwin" -}}
+#!/bin/bash
+# GUI app settings (run once on first chezmoi apply on Mac).
+# Sets keybinds/prefs for Rectangle, AltTab, ScrollReverser via `defaults write`.
+# Apps must be installed first (Brewfile casks) - run `brew bundle` before this.
+# Apps may need a restart (or re-login) to pick up changes.
+
+set -euo pipefail
+
+echo "Setting GUI app defaults..."
+
+# --- Rectangle (window keyboard shortcuts) ---
+# Domain: com.knollsoft.Rectangle
+# Maximize = ctrl+opt+cmd+uparrow (keyCode 126, modifierFlags 1835008 = cmd+opt+ctrl).
+# allowAnyShortcut = permit arbitrary keybinds; alternateDefaultShortcuts = use Rectangle's
+# alternate defaults; launchOnLogin = start at login.
+defaults write com.knollsoft.Rectangle allowAnyShortcut -bool true
+defaults write com.knollsoft.Rectangle alternateDefaultShortcuts -bool true
+defaults write com.knollsoft.Rectangle launchOnLogin -bool true
+defaults write com.knollsoft.Rectangle maximize -dict keyCode 126 modifierFlags 1835008
+echo "  Rectangle: maximize=ctrl+opt+cmd+up, launchOnLogin"
+
+# --- AltTab (alt-tab like Windows) ---
+# Domain: com.lwouis.alt-tab-macos
+# holdShortcut = cmd (hold to show window switcher); previousWindowShortcut = shift+tab.
+# (\U2318 = cmd, \U21e7 = shift, \U21e5 = tab)
+defaults write com.lwouis.alt-tab-macos holdShortcut -string '\U2318'
+defaults write com.lwouis.alt-tab-macos holdShortcut2 -string '\U2318'
+defaults write com.lwouis.alt-tab-macos previousWindowShortcut -string '\U21e7\U21e5'
+echo "  AltTab: cmd hold, shift+tab previous window"
+
+# --- ScrollReverser (fix scroll direction/acceleration for mice) ---
+# Domain: com.pilotmoon.scroll-reverser
+# InvertScrollingOn = invert scrolling (the app's master toggle).
+# ReverseTrackpad = 0 = do NOT reverse trackpad (only reverse mouse).
+# Conflicts with macOS "natural scrolling" - turn natural scrolling OFF in System Settings.
+defaults write com.pilotmoon.scroll-reverser InvertScrollingOn -bool true
+defaults write com.pilotmoon.scroll-reverser ReverseTrackpad -bool false
+echo "  ScrollReverser: invert on, trackpad not reversed (mouse only)"
+
+echo "GUI app defaults set. Restart Rectangle/AltTab/ScrollReverser (or re-login) to apply."
+echo "Note: turn OFF macOS 'natural scrolling' in System Settings for ScrollReverser to work."
+{{ end -}}
