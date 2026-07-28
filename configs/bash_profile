@@ -1,0 +1,3 @@
+# Sourced by login bash (SSH on Linux). bash sources .bash_profile (not .bashrc)
+# for login shells, so source .bashrc here to get PATH, mise, tmux, exec zsh.
+[[ -r ~/.bashrc ]] && source ~/.bashrc

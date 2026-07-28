@@ -1,5 +1,5 @@
 # PATH setup - runs for login shells on both platforms.
-# Linux: bash login -> .bashrc sets PATH -> exec zsh -l -> zsh inherits.
+# Linux: login bash sources .bash_profile -> .bashrc (PATH) -> exec zsh -l -> zsh inherits.
 # Mac: zsh is default shell, .zprofile runs directly.
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$PATH"
 
