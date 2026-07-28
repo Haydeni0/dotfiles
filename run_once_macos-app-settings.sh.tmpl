@@ -21,14 +21,13 @@ defaults write com.knollsoft.Rectangle maximize -dict keyCode 126 modifierFlags 
 echo "  Rectangle: maximize=ctrl+opt+cmd+up, launchOnLogin"
 
 # --- AltTab (alt-tab like Windows) ---
-# Domain: com.lwouis.alt-tab-macos
-# holdShortcut = cmd (hold to show window switcher); previousWindowShortcut = shift+tab.
-# Use literal glyph chars - `defaults write` with `\U` escapes stores them literally
-# (double-escaped), not as the unicode codepoints. The plist stores the glyphs directly.
-defaults write com.lwouis.alt-tab-macos holdShortcut -string '⌘'
-defaults write com.lwouis.alt-tab-macos holdShortcut2 -string '⌘'
-defaults write com.lwouis.alt-tab-macos previousWindowShortcut -string '⇧⇥'
-echo "  AltTab: cmd hold, shift+tab previous window"
+# MANUAL CONFIG - cannot be automated. AltTab clobbers holdShortcut and
+# previousWindowShortcut in its plist on every launch (rewrites from internal
+# state), so `defaults write` is unreliable (the app discards external values).
+# This matches AltTab issue #1284 (no import/export). Configure once in the GUI:
+#   - Hold cmd to show the window switcher
+#   - shift+tab for previous window
+# The app install IS automated (Brewfile cask); only the keybinds are manual.
 
 # --- ScrollReverser (fix scroll direction/acceleration for mice) ---
 # Domain: com.pilotmoon.scroll-reverser
