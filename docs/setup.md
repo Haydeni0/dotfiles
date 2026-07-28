@@ -78,10 +78,10 @@ brew install chezmoi
 #    - Brewfile deployed to ~/Brewfile (for step 3)
 chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 
-# 3. Install GUI apps + fonts + mise + zsh + btop via Homebrew (Brewfile from step 2)
+# 3. Install GUI apps + fonts + mise + zsh + btop + opencode via Homebrew (Brewfile from step 2)
 #    This installs: ghostty, rectangle, alt-tab, scroll-reverser, betterdisplay,
 #    obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp,
-#    karabiner-elements, font-hack-nerd-font, mise, zsh, btop.
+#    karabiner-elements, font-hack-nerd-font, mise, zsh, btop, opencode.
 #    Company-managed apps (Office, 1Password, Falcon, etc.) are NOT touched
 #    (Brewfile has no `cleanup` directive).
 brew bundle --file=~/Brewfile
@@ -128,7 +128,7 @@ zoxide query --list  # shows db entries
 - **zsh plugins** (git-cloned) - `~/.local/share/zsh/`
 - **GUI apps** (via Homebrew casks): ghostty, rectangle, alt-tab, scroll-reverser, betterdisplay, obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp, karabiner-elements
 - **Fonts** (via Homebrew cask): Hack Nerd Font
-- **mise + zsh** (via Homebrew): for tool management + current zsh
+- **mise + zsh + btop + opencode** (via Homebrew): tool management, current zsh, resource monitor, AI coding agent (opencode brings node + npm as brew deps)
 - **Configs** (via chezmoi): zsh, tmux, starship, herdr, git, nvim, ghostty, karabiner - real files in `~`
 - **macOS defaults** (via run_once script): separate-spaces OFF, fn-keys as F-keys, mission-control ctrl+arrow keybinds disabled
 - **GUI app settings** (via run_once script): Rectangle keybinds, AltTab behavior, ScrollReverser mouse-only reverse
