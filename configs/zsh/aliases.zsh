@@ -32,10 +32,17 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 
-# cat -> bat (guarded - bat may not be installed on fresh systems)
-if command -v bat >/dev/null 2>&1; then
-    alias cat='bat -p'
-fi
+# cat -> bat, but fall back to real cat if bat isn't on PATH at call time.
+# A plain alias (set once at load) breaks when bat is a lazy mise shim that
+# resolves in interactive shells but not in the non-interactive subshells
+# scripts spawn (e.g. `cat <<EOF` in a hook). A function checks at call time.
+cat() {
+    if command -v bat >/dev/null 2>&1; then
+        bat -p "$@"
+    else
+        command cat "$@"
+    fi
+}
 
 # git: core
 alias g=git
