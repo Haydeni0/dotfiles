@@ -8,6 +8,11 @@ brew "zsh"
 # (Linux gets btop via mise in run_once_install-tools.sh.tmpl.)
 brew "btop"
 
+# opencode - AI coding agent. brew version (1.x) is current; mise registry is
+# way behind (0.0.48). Uses ripgrep via PATH (mise provides rg). Kept as brew
+# for the current version. Brings node + npm as brew deps.
+brew "opencode"
+
 # Note: most CLI tools (starship, zoxide, fzf, bat, ripgrep, fd, etc.)
 # are installed via mise (run_once_install-tools.sh.tmpl) on both platforms.
 # Homebrew is used for mise + zsh only on Mac. Add more brew entries here
