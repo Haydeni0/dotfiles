@@ -1,7 +1,7 @@
 {{ if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 # GUI app settings (run once on first chezmoi apply on Mac).
-# Sets keybinds/prefs for Rectangle, AltTab, ScrollReverser via `defaults write`.
+# Sets keybinds/prefs for Rectangle, DockDoor, ScrollReverser via `defaults write`.
 # Apps must be installed first (Brewfile casks) - run `brew bundle` before this.
 # Apps may need a restart (or re-login) to pick up changes.
 
@@ -20,14 +20,25 @@ defaults write com.knollsoft.Rectangle launchOnLogin -bool true
 defaults write com.knollsoft.Rectangle maximize -dict keyCode 126 modifierFlags 1835008
 echo "  Rectangle: maximize=ctrl+opt+cmd+up, launchOnLogin"
 
-# --- AltTab (alt-tab like Windows) ---
-# MANUAL CONFIG - cannot be automated. AltTab clobbers holdShortcut and
-# previousWindowShortcut in its plist on every launch (rewrites from internal
-# state), so `defaults write` is unreliable (the app discards external values).
-# This matches AltTab issue #1284 (no import/export). Configure once in the GUI:
-#   - Hold cmd to show the window switcher
-#   - shift+tab for previous window
-# The app install IS automated (Brewfile cask); only the keybinds are manual.
+# --- DockDoor (window peeking + alt-tab switcher) ---
+# Domain: com.ethanbills.DockDoor. Free/open-source replacement for AltTab
+# (which paywalled cmd+` window switching). All keybinds are plain UserDefaults
+# values (string/int), so fully automatable - no GUI needed on a fresh Mac.
+#
+# Two switcher keybinds (alternate shares the main's modifier):
+#   main (UserKeybind): cmd+tab  -> all-apps window switcher
+#   alternate (cmd+`):           -> same-app (activeAppOnly) window switcher
+# Sort order = recentlyUsed (last-used window first, not cyclic).
+# UserKeybind is a JSON string (DockDoor's Defaults Codable serialization):
+#   keyCode 48 = Tab, modifierFlags 1048840 = cmd (maskCommand) + capture bits.
+# alternateKeybindKey 50 = grave_accent/backtick (the ISO key above Tab after
+# Karabiner reshuffling). alternateKeybindMode = activeAppOnly.
+defaults write com.ethanbills.DockDoor enableWindowSwitcher -bool true
+defaults write com.ethanbills.DockDoor windowSwitcherSortOrder -string "recentlyUsed"
+defaults write com.ethanbills.DockDoor UserKeybind -string '{"keyCode":48,"modifierFlags":1048840}'
+defaults write com.ethanbills.DockDoor alternateKeybindKey -int 50
+defaults write com.ethanbills.DockDoor alternateKeybindMode -string "activeAppOnly"
+echo "  DockDoor: cmd+tab=all-apps, cmd+\`=same-app (activeAppOnly), recentlyUsed order"
 
 # --- ScrollReverser (fix scroll direction/acceleration for mice) ---
 # Domain: com.pilotmoon.scroll-reverser
@@ -38,6 +49,6 @@ defaults write com.pilotmoon.scroll-reverser InvertScrollingOn -bool true
 defaults write com.pilotmoon.scroll-reverser ReverseTrackpad -bool false
 echo "  ScrollReverser: invert on, trackpad not reversed (mouse only)"
 
-echo "GUI app defaults set. Restart Rectangle/AltTab/ScrollReverser (or re-login) to apply."
+echo "GUI app defaults set. Restart Rectangle/DockDoor/ScrollReverser (or re-login) to apply."
 echo "Note: turn OFF macOS 'natural scrolling' in System Settings for ScrollReverser to work."
 {{ end -}}

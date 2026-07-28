@@ -24,7 +24,7 @@ brew "opencode"
 # are company-managed). `brew bundle` installs/updates listed casks only.
 cask "wezterm"
 cask "rectangle"
-cask "alt-tab"
+cask "dockdoor"
 cask "scroll-reverser"
 cask "betterdisplay"
 cask "obsidian"

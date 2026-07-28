@@ -76,12 +76,12 @@ brew install chezmoi
 #    - Karabiner config deployed to ~/.config/karabiner/ (ISO UK layout)
 #    - WezTerm config deployed to ~/.config/wezterm/
 #    - macOS system.defaults script runs (separate-spaces, fn-keys, mission-control keybinds)
-#    - GUI app settings script runs (Rectangle/AltTab/ScrollReverser keybinds)
+#    - GUI app settings script runs (Rectangle/ScrollReverser keybinds)
 #    - Brewfile deployed to ~/Brewfile (for step 3)
 chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 
 # 3. Install GUI apps + fonts + mise + zsh + btop + opencode via Homebrew (Brewfile from step 2)
-#    This installs: wezterm, rectangle, alt-tab, scroll-reverser, betterdisplay,
+#    This installs: wezterm, rectangle, dockdoor, scroll-reverser, betterdisplay,
 #    obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp,
 #    karabiner-elements, font-hack-nerd-font, mise, zsh, btop, opencode.
 #    Company-managed apps (Office, 1Password, Falcon, etc.) are NOT touched
@@ -112,9 +112,11 @@ git config --global user.email "you@example.com"
 #    f. If a tmux server was running before `chezmoi apply` (started with an old
 #       config), reload it so the new keybinds take effect: `tmux source-file
 #       ~/.tmux.conf` (or kill the server and start fresh).
-#    g. AltTab keybinds (hold cmd for switcher, shift+tab for previous window)
-#       are MANUAL - AltTab clobbers its plist on launch, so `defaults write`
-#       can't set them. Open AltTab's prefs and set them once in the GUI.
+#    g. DockDoor: launch the app once (it requests Accessibility access in
+#       System Settings > Privacy & Security - approve it, required for window
+#       switching). Keybinds are automated via run_once_macos-app-settings.sh.tmpl
+#       (cmd+tab = all-apps switcher, cmd+` = same-app switcher, recentlyUsed
+#       order). No GUI config needed on a fresh Mac - just grant Accessibility.
 
 # 6. Verify (open a new terminal window after re-login)
 echo $SHELL          # /bin/zsh or /opt/homebrew/bin/zsh
@@ -143,12 +145,12 @@ removed - chezmoi only manages files it knows about, not abandoned deployed dirs
 - **CLI tools** (via mise): starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, yazi, gdu, btop, rclone, uv - in `~/.local/share/mise/installs/`
 - **herdr** (via curl) - `~/.local/bin/herdr`
 - **zsh plugins** (git-cloned) - `~/.local/share/zsh/`
-- **GUI apps** (via Homebrew casks): wezterm, rectangle, alt-tab, scroll-reverser, betterdisplay, obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp, karabiner-elements
+- **GUI apps** (via Homebrew casks): wezterm, rectangle, dockdoor, scroll-reverser, betterdisplay, obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp, karabiner-elements
 - **Fonts** (via Homebrew cask): Hack Nerd Font
 - **mise + zsh + btop + opencode** (via Homebrew): tool management, current zsh, resource monitor, AI coding agent (opencode brings node + npm as brew deps)
 - **Configs** (via chezmoi): zsh, tmux, starship, herdr, git, nvim, wezterm, karabiner - real files in `~`
 - **macOS defaults** (via run_once script): separate-spaces OFF, fn-keys as F-keys, mission-control ctrl+arrow keybinds disabled
-- **GUI app settings** (via run_once script): Rectangle keybinds, AltTab behavior, ScrollReverser mouse-only reverse
+- **GUI app settings** (via run_once script): Rectangle keybinds, DockDoor config, ScrollReverser mouse-only reverse
 
 ### Company-PC notes
 - The Brewfile has NO `cleanup` directive, so `brew bundle` only installs/updates the listed casks. Company-managed apps (Microsoft Office, 1Password, Intune Company Portal, Falcon/CrowdStrike, FortiClient, Microsoft Defender, Chrome, Notion, Slack, Zoom) are NOT removed.
