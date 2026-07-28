@@ -71,6 +71,22 @@ next `chezmoi apply`** and are not in the repo.
   instead. The install script already uses `--no-update-rc` flags where possible.
 - **Revert accidental edits**: `chezmoi apply` overwrites deployed files with source.
   Anything not in `configs/` is lost.
+- **Never blindly `chezmoi apply` when `chezmoi diff` shows changes.** When a
+  diff appears, **surface it to the user and work through it together** - do not
+  resolve it unilaterally. Present the diff, state the likely cause, and let the
+  user decide incorporate-vs-overwrite. Common causes:
+  - **Hand-edited deployed file** (e.g. a tool appended to `~/.zshrc`): incorporate
+    into `configs/` or a `run_once` script, then apply. Do not overwrite real work.
+  - **Template resolves differently than last apply** (e.g. `lookPath` finding a
+    different binary): fix the template to be deterministic (prefer hardcoded
+    paths or `stat`/`isExecutable` over PATH lookups), then apply. Non-deterministic
+    templates cause flip-flop drift - they are bugs, not state to preserve.
+  - **Intentional local experiment**: safe to overwrite once the user confirms the
+    local change isn't worth keeping.
+  Only when the cause is known and the user has made the call should `chezmoi apply`
+  run. `chezmoi diff` should be empty after a clean apply; if it isn't, the
+  remaining diff is an unresolved cause to investigate with the user, not noise to
+  ignore.
 
 ## Testing changes
 

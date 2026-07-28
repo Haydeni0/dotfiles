@@ -1,12 +1,7 @@
 {{ $zsh := "/usr/bin/zsh" -}}
 {{ if eq .chezmoi.os "darwin" -}}
 {{   $zsh = "/bin/zsh" -}}
-{{   if lookPath "zsh" -}}
-{{     $zsh = (lookPath "zsh") -}}
-{{   end -}}
 {{ else -}}
-{{   if lookPath "zsh" -}}
-{{     $zsh = (lookPath "zsh") -}}
-{{   end -}}
+{{   $zsh = (printf "%s/.local/bin/zsh" .chezmoi.homeDir) -}}
 {{ end -}}
 {{   include "configs/herdr.toml" | replace "ZSH_PATH_PLACEHOLDER" $zsh -}}
