@@ -14,4 +14,20 @@ config.window_decorations = 'RESIZE'
 -- so ~/.local/bin isn't on PATH (same constraint as ghostty).
 config.default_prog = { os.getenv('HOME') .. '/.local/bin/herdr' }
 
+-- Cycle WezTerm windows with cmd+\ and cmd+` (ISO UK + Karabiner reshuffling
+-- move these keys around). WezTerm swallows unhandled cmd combos so macOS's
+-- native cycle-windows never fires; bind both to WezTerm's own action.
+config.keys = {
+    { key = '\\', mods = 'CMD', action = wezterm.action.ActivateWindowRelative(1) },
+    { key = '\\', mods = 'CMD|SHIFT', action = wezterm.action.ActivateWindowRelative(-1) },
+    { key = '`', mods = 'CMD', action = wezterm.action.ActivateWindowRelative(1) },
+    { key = '`', mods = 'CMD|SHIFT', action = wezterm.action.ActivateWindowRelative(-1) },
+    -- cmd+arrows: jump to line start/end (readline ctrl+a/ctrl+e). WezTerm
+    -- doesn't bind cmd+arrows by default so zsh never sees a line-jump action.
+    { key = 'LeftArrow', mods = 'CMD', action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' } },
+    { key = 'RightArrow', mods = 'CMD', action = wezterm.action.SendKey { key = 'e', mods = 'CTRL' } },
+    -- cmd+backspace: delete to start of line (readline ctrl+u)
+    { key = 'Backspace', mods = 'CMD', action = wezterm.action.SendKey { key = 'u', mods = 'CTRL' } },
+}
+
 return config
