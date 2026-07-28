@@ -9,8 +9,8 @@ duplicate the README or AGENTS.md).
 
 A cross-platform dotfiles repo managed by chezmoi. Plain config files in
 `configs/` are the source of truth, deployed to `$HOME` via chezmoi templates
-(`dot_*.tmpl` with `{{ include }}`). Tools installed via Homebrew (Mac) or
-curl/git-clone (Linux). No Nix, no bwrap, no proot, no namespaces.
+(`dot_*.tmpl` with `{{ include }}`). Tools installed via mise (16 CLI tools),
+micromamba (zsh), and curl (herdr). No Nix, no bwrap, no proot, no namespaces.
 
 ## How to make changes
 
@@ -29,7 +29,7 @@ Never edit deployed files directly - edit `configs/` and `chezmoi apply`.
   configs/ pattern because nvim lua doesn't need templating and `lazy-lock.json` is
   auto-managed by lazy.nvim)
 - `Brewfile` - Mac: mise + zsh via Homebrew (deployed to `~/Brewfile`)
-- `run_once_install-tools.sh.tmpl` - tool installer (mise for 17 tools, micromamba for zsh, git-clone for zsh plugins + herdr)
+- `run_once_install-tools.sh.tmpl` - tool installer (mise for 16 tools, micromamba for zsh, curl for herdr, git-clone for zsh plugins)
 - `.chezmoiignore` - files not deployed to `$HOME`
 - `docs/setup.md` - setup guide for both platforms
 
@@ -40,17 +40,18 @@ Never edit deployed files directly - edit `configs/` and `chezmoi apply`.
   not `lookPath` in chezmoi templates (lookPath runs at apply time, not shell startup).
 - **Zero drift.** Same config files on Mac and Linux. Platform differences handled
   via chezmoi templates (`dot_bashrc.tmpl`, herdr `config.toml.tmpl`).
-- **No Nix.** No `/nix/store`, no bwrap, no proot, no namespaces. System tools +
-  curl-installed binaries in `~/.local/bin`.
+- **No Nix.** No `/nix/store`, no bwrap, no proot, no namespaces. Tools via mise
+  (managed in `~/.local/share/mise/installs/`), zsh via micromamba (`~/.local/bin/zsh`).
 - **zsh plugins git-cloned** to `~/.local/share/zsh/`, sourced with `[[ -r ]]` guards.
 - **Install scripts use file existence checks** (`[[ -x ~/.local/bin/tool ]]`),
   not `command -v` (PATH may not include `~/.local/bin` when chezmoi runs scripts).
+- **mise activate** in `.zshrc` and `.bashrc` puts mise-managed tools on PATH.
 
 ## Testing changes
 
 After `chezmoi apply`, in a new shell:
 - `z <tab>` - zoxide completion (frecency db entries, not local subdirs)
-- `which starship` - resolves to `~/.local/bin/starship`
+- `which starship` - resolves via mise to `~/.local/share/mise/installs/starship/latest/`
 - `alias g` - shows `git`
 - `herdr` - launches, panes spawn with zsh
 - `nvim` - launches, plugins load (lazy.nvim)

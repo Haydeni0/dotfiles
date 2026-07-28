@@ -28,7 +28,7 @@ git config --global user.name "Your Name"
 git config --global user.email "you@example.com"
 
 # 5. Verify (open a new tmux pane so the new .bashrc runs)
-#    New panes: bash -> .bashrc (sets PATH, starts tmux) -> exec zsh -> .zshrc (mise, starship, etc.)
+#    Shell chain: bash login -> .bash_profile -> .bashrc (PATH, mise, tmux) -> exec zsh -> .zshrc (mise, starship, zoxide, plugins)
 echo $SHELL          # should be zsh
 which starship       # should resolve via mise
 which zoxide         # should resolve via mise
