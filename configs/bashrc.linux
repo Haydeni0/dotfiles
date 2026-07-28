@@ -1,10 +1,6 @@
-# Return early for non-interactive shells
-case $- in
-    *i*) ;;
-      *) return;;
-esac
-
 # PATH setup (login bash sources .bash_profile -> .bashrc sets PATH, then exec zsh -l inherits)
+# Must be before the interactive check - login shells need PATH even if non-interactive
+# (e.g. SSH runs bash -l which is non-interactive but needs PATH to find zsh).
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.local/share/pi-node/node-v22.23.1-linux-x64/bin:$PATH"
 
 # uv env (defensive - kept alongside other tools)
@@ -14,6 +10,12 @@ export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.local/share/pi-node/nod
 if command -v mise >/dev/null 2>&1; then
     eval "$(mise activate bash)"
 fi
+
+# Return early for non-interactive shells (after PATH/mise setup)
+case $- in
+    *i*) ;;
+      *) return;;
+esac
 
 export AWS_PROFILE=coreweave
 
