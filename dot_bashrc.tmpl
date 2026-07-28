@@ -1,0 +1,5 @@
+{{ if eq .chezmoi.os "darwin" -}}
+{{   include "configs/bashrc.darwin" -}}
+{{ else -}}
+{{   include "configs/bashrc.linux" -}}
+{{ end -}}
