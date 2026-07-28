@@ -83,10 +83,10 @@ mkdir -p ~/.local/share/zsh
 [[ -x ~/.local/bin/lazygit ]] || {
     LG_VER=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep -oP '"tag_name": "\K[^"]+' | head -1)
     LG_VER_NUM=${LG_VER#v}
-    curl -sSL "https://github.com/jesseduffield/lazygit/releases/download/${LG_VER}/lazygit_${LG_VER_NUM}_Linux_x86_64.tar.gz" \
+    curl -sSL "https://github.com/jesseduffield/lazygit/releases/download/${LG_VER}/lazygit_${LG_VER_NUM}_linux_x86_64.tar.gz" \
         | tar xz -C /tmp
     mv /tmp/lazygit ~/.local/bin/
-    rm -f /tmp/lazygit
+    rm -f /tmp/LICENSE /tmp/README.md
 }
 
 # gh (GitHub CLI)
@@ -118,17 +118,18 @@ mkdir -p ~/.local/share/zsh
 # gdu (disk usage)
 [[ -x ~/.local/bin/gdu ]] || {
     curl -sSL -o /tmp/gdu.tgz https://github.com/dundee/gdu/releases/latest/download/gdu_linux_amd64.tgz
-    tar xzf /tmp/gdu.tgz -C ~/.local/bin/
+    tar xzf /tmp/gdu.tgz -C /tmp
+    mv /tmp/gdu_linux_amd64 ~/.local/bin/gdu
     chmod +x ~/.local/bin/gdu
     rm -f /tmp/gdu.tgz
 }
 
 # btop (process monitor)
 [[ -x ~/.local/bin/btop ]] || {
-    curl -sSL https://github.com/aristocratos/btop/releases/latest/download/btop-x86_64-linux-musl.tbz -o /tmp/btop.tbz
-    tar xjf /tmp/btop.tbz -C /tmp
+    curl -sSL "https://github.com/aristocratos/btop/releases/latest/download/btop-x86_64-unknown-linux-musl.tar.gz" \
+        | tar xz -C /tmp
     mv /tmp/btop/bin/btop ~/.local/bin/
-    rm -rf /tmp/btop /tmp/btop.tbz
+    rm -rf /tmp/btop
 }
 
 # rclone
