@@ -103,7 +103,7 @@ mkdir -p ~/.local/share/zsh
     DELTA_VER=$(curl -s https://api.github.com/repos/dandavison/delta/releases/latest | grep -oP '"tag_name": "\K[^"]+' | head -1)
     curl -sSL "https://github.com/dandavison/delta/releases/download/${DELTA_VER}/delta-${DELTA_VER}-x86_64-unknown-linux-musl.tar.gz" \
         | tar xz -C /tmp
-    mv "/tmp/delta-${DELTA_VER}-x86_64-unknown-linux-musl/bin/delta" ~/.local/bin/
+    mv "/tmp/delta-${DELTA_VER}-x86_64-unknown-linux-musl/delta" ~/.local/bin/
     rm -rf "/tmp/delta-${DELTA_VER}-x86_64-unknown-linux-musl"
 }
 
