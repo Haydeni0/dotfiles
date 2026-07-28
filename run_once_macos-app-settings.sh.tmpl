@@ -38,6 +38,11 @@ defaults write com.ethanbills.DockDoor windowSwitcherSortOrder -string "recently
 defaults write com.ethanbills.DockDoor UserKeybind -string '{"keyCode":48,"modifierFlags":1048840}'
 defaults write com.ethanbills.DockDoor alternateKeybindKey -int 50
 defaults write com.ethanbills.DockDoor alternateKeybindMode -string "activeAppOnly"
+# GUI-customized prefs (captured via defaults read):
+defaults write com.ethanbills.DockDoor enableCmdTabEnhancements -bool true
+defaults write com.ethanbills.DockDoor requireShiftTabToGoBack -bool true
+defaults write com.ethanbills.DockDoor switcherTrafficLightButtonsVisibility -string "never"
+defaults write com.ethanbills.DockDoor switcherAppIconSize -int 29
 echo "  DockDoor: cmd+tab=all-apps, cmd+\`=same-app (activeAppOnly), recentlyUsed order"
 
 # --- ScrollReverser (fix scroll direction/acceleration for mice) ---
