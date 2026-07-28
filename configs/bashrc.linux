@@ -19,11 +19,16 @@ esac
 
 export AWS_PROFILE=coreweave
 
-# Start tmux (outside zsh - system tmux needs kernel pty access)
-if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -z "$SKIP_TMUX" ] && \
+# Start herdr (primary multiplexer). tmux is backup (prefix ctrl-b).
+# Set SKIP_HERDR=1 to drop to a plain shell. Set USE_TMUX=1 to start tmux instead.
+if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -z "$HERDR" ] && [ -z "$SKIP_HERDR" ] && \
    [ "$TERM_PROGRAM" != "vscode" ] && [ -z "${REMOTE_CONTAINERS_SOCKETS}" ] && \
-   [ -z "${CURSOR_AGENT}" ] && command -v /usr/bin/tmux &>/dev/null; then
-    exec /usr/bin/tmux new-session -A -s main
+   [ -z "${CURSOR_AGENT}" ]; then
+    if [ -n "$USE_TMUX" ] && command -v /usr/bin/tmux &>/dev/null; then
+        exec /usr/bin/tmux new-session -A -s main
+    elif command -v herdr &>/dev/null; then
+        exec herdr --session main
+    fi
 fi
 
 # Inside tmux: exec zsh (PATH-resolved - may be /usr/bin/zsh, ~/.local/bin/zsh, or mise-managed)
