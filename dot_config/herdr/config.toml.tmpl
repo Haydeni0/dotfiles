@@ -4,4 +4,9 @@
 {{ else -}}
 {{   $zsh = (printf "%s/.local/bin/zsh" .chezmoi.homeDir) -}}
 {{ end -}}
-{{   include "configs/herdr.toml" | replace "ZSH_PATH_PLACEHOLDER" $zsh -}}
+{{- $theme := "dracula" -}}
+{{- if eq .chezmoi.os "linux" -}}{{- $theme = "vesper" -}}{{- end -}}
+{{- /* If per-OS differences grow beyond single fields, split into
+     configs/herdr-darwin.toml + configs/herdr-linux.toml and include
+     by OS instead of placeholder substitution. */ -}}
+{{   include "configs/herdr.toml" | replace "ZSH_PATH_PLACEHOLDER" $zsh | replace "THEME_PLACEHOLDER" $theme -}}

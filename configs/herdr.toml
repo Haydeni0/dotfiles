@@ -24,4 +24,5 @@ goto = "prefix+g"
 copy_mode = "prefix+["
 
 [theme]
-name = "dracula"
+name = "THEME_PLACEHOLDER"
+auto_switch = false
