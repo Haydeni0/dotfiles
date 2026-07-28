@@ -1,5 +1,5 @@
 ---
-summary: "Agent long-term memory — tool setup and lessons learned"
+summary: "Agent long-term memory - tool setup and lessons learned"
 read_when:
   - Starting work in this repo
   - Hitting a gotcha that might recur
@@ -25,42 +25,56 @@ Rules:
 Environment specifics an agent needs to know. Add as discovered.
 
 ### Linux cluster (no root)
-- Nix store: `~/.nix-portable/nix/store/` (NFS-backed)
-- bwrap binary: `~/.nix-portable/bin/bwrap`
-- nix-portable: `~/.local/bin/nix-portable` (orchestrator, auto-selects bwrap)
-- Rebuild must run from a bwrap pane (nix segfaults in proot - TracerPid != 0)
+- Tools installed to `~/.local/bin` (curl/git-clone, no sudo)
+- zsh plugins git-cloned to `~/.local/share/zsh/`
+- Configs deployed by chezmoi as real files (not store symlinks)
+- Login nodes block mount namespaces (but no longer relevant - no bwrap/proot)
+
+### macOS
+- Tools installed via Homebrew (Brewfile)
+- zsh plugins also git-cloned to `~/.local/share/zsh/` (same as Linux)
 
 ## Learnings
 
-### 2026-07-28 - enableCompletion=false + manual compinit -C still needed under bwrap
-Tested whether `enableCompletion=false` + manual `compinit -C` (commit 8978b19,
-blamed on proot ptrace) is stale under bwrap. NOT stale - bwrap still has the
-stat cost: nix store is NFS-backed, HM's `compinit` (full security check, no
-`-C`) stats every fpath file. Startup: HM compinit 1.9-9.4s vs manual
-`compinit -C` 1.8s. Keep `enableCompletion=false` + manual `compinit -C`.
+### 2026-07-28 - chezmoi lookPath runs at apply time, not shell startup
+`{{ if lookPath "starship" }}` in chezmoi templates evaluates when `chezmoi apply`
+runs, NOT when the shell starts. If you apply on a machine where a tool is on PATH,
+then log into a machine where it's not, the rendered config still has the tool line.
+Fix: use runtime `command -v` guards in the shell config itself, not template-time
+`lookPath` checks.
 
-Also found: HM compinit runs BEFORE `initContent` (line 8 of generated zshrc,
-not "order 1000" as a prior comment guessed). So `fpath+=~/.zfunc` in
-initContent is too late for HM compinit - `_slurm` breaks. Manual compinit
-(after the fpath+=) is the only reason `_slurm` loads. Don't move fpath into
-HM completion path without also moving compinit. No commit (test reverted).
+### 2026-07-28 - configs/ must be in .chezmoiignore
+`configs/` is the source-of-truth directory, NOT deployed to `$HOME`. Without
+`.chezmoiignore`, chezmoi deploys `~/configs/`, `~/docs/`, `~/README.md` etc.
+`{{ include "configs/..." }}` still works when `configs/` is ignored - include
+reads from source state, ignore only prevents deployment to the target.
 
-### 2026-07-27 - zoxide completion needs compinit before init
-HM's `enableZshIntegration` places `zoxide init zsh` at mkOrder 851, but our
-manual `compinit -C` runs later in `initContent`. `compdef` fails silently
-without compinit, so `z <tab>` never registered. Fix: disable the HM
-integration (`enableZshIntegration = false`), run `zoxide init zsh` manually
-after compinit. Commit `94760b7`.
+### 2026-07-28 - dot_*.tmpl wrapper files MUST have .tmpl suffix
+Without `.tmpl`, chezmoi treats files as plain files (no template processing).
+`{{ include "configs/..." }}` silently fails - the file deploys empty. All
+wrapper files must be `dot_zshrc.tmpl`, `dot_tmux.conf.tmpl`, etc.
 
-### 2026-07-27 - herdr panes segfault without the nix-zsh wrapper
-herdr (Nix binary) fork+exec'ing Nix zsh inside bwrap segfaults every pane.
-System bash exec'ing Nix zsh works. Fix: `~/.local/bin/nix-zsh` wrapper
-(system bash script) that `exec`s Nix zsh. Don't point herdr's
-`default_shell` at Nix zsh directly. Commit `b36ca63`.
+### 2026-07-28 - install scripts should use [[ -x ]] not command -v
+`command -v starship` checks PATH, but `~/.local/bin` may not be on PATH when
+chezmoi runs `run_once_` scripts (chezmoi runs with the current environment,
+not a fresh shell with .bashrc/.zshrc sourced). Use `[[ -x ~/.local/bin/starship ]]`
+file existence checks instead.
 
-### 2026-07-27 - proot orphans survive tmux server crash
-When the tmux server dies, proot pane processes reparent to init but keep
-ptracing their children indefinitely. They're invisible (no pane) but hold
-tracees frozen. After a tmux crash, check for orphans:
-`ps -eo pid,ppid,stat,comm | awk '$4=="proot" && $2==1'`
-and kill them (only works when they're out of D-state). Commit `d93ce85`.
+### 2026-07-28 - herdr.toml needs absolute zsh path (template-resolved)
+herdr's `default_shell` may require an absolute path, not a bare command name.
+The config uses a `ZSH_PATH_PLACEHOLDER` replaced by the chezmoi template with
+the platform-correct path via `lookPath "zsh"` (at apply time, which is correct
+here since the path doesn't change between apply and runtime).
+
+### 2026-07-28 - nvim appimage extracted (no FUSE)
+AppImages require FUSE to mount the squashfs filesystem. On no-root HPC clusters,
+FUSE is often unavailable (`/dev/fuse` missing). Fix: extract the appimage with
+`--appimage-extract` and symlink to `AppRun`. No FUSE needed, slightly slower
+startup but works everywhere.
+
+### 2026-07-28 - zoxide completion: use db entries not local subdirs
+zoxide's default `z <tab>` shows local subdirectories (`_cd -/`), NOT the frecency
+database. The custom `_zoxide_complete` function queries `zoxide query -l` instead,
+showing frecency-ranked db entries (matching omz z plugin behavior). Key flags:
+`-M ''` (disable matcher-list, fixes `/` prefix issue), `-o nosort` (preserve
+frecency order), `compstate[insert]=menu` (Tab cycling). From zoxide issue #513.
