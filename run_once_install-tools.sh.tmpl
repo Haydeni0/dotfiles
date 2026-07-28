@@ -23,6 +23,14 @@ mkdir -p ~/.local/share/zsh
 {{ else -}}
 # Linux: install all tools via curl/git-clone (no sudo)
 
+# zsh (install via micromamba - available on HPC nodes, or system-provided)
+[[ -x ~/.local/bin/zsh ]] || {
+    if command -v micromamba &>/dev/null; then
+        micromamba create -y -n zsh zsh -c conda-forge >/dev/null 2>&1
+        ln -sf ~/.local/share/micromamba/envs/zsh/bin/zsh ~/.local/bin/zsh
+    fi
+}
+
 # starship
 [[ -x ~/.local/bin/starship ]] || \
     curl -sS https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin

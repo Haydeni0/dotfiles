@@ -16,7 +16,7 @@ if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -z "$SKIP_TMUX" ] && \
     exec /usr/bin/tmux new-session -A -s main
 fi
 
-# Inside tmux: exec system zsh
-if [ -n "$PS1" ] && [ -x /usr/bin/zsh ]; then
-    exec /usr/bin/zsh -l
+# Inside tmux: exec zsh (PATH-resolved - may be /usr/bin/zsh or ~/.local/bin/zsh)
+if [ -n "$PS1" ] && command -v zsh &>/dev/null; then
+    exec zsh -l
 fi
