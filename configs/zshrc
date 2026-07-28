@@ -69,6 +69,13 @@ if command -v fzf >/dev/null 2>&1; then
     source <(fzf --zsh)
 fi
 
+# gssh: open a new WezTerm window running plain ssh (no local herdr layer).
+# Remote auto-boots its own herdr; no nesting. Put ssh options before the host
+# (e.g. `gssh -p 2222 user@host`), not after - ssh parses positionally.
+if command -v wezterm >/dev/null 2>&1; then
+    gssh() { wezterm start -- ssh -t "$@" }
+fi
+
 # Plugins (git-cloned to ~/.local/share/zsh/, source with guards)
 [[ -r ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
     source ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh

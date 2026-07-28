@@ -22,7 +22,7 @@ brew "opencode"
 # No `cask_args` or `cleanup` directive: on a company Mac, brew must NOT
 # uninstall casks that aren't listed here (Office, 1Password, Falcon, etc.
 # are company-managed). `brew bundle` installs/updates listed casks only.
-cask "ghostty"
+cask "wezterm"
 cask "rectangle"
 cask "alt-tab"
 cask "scroll-reverser"

@@ -74,14 +74,14 @@ brew install chezmoi
 #    - herdr installed via curl
 #    - zsh plugins git-cloned
 #    - Karabiner config deployed to ~/.config/karabiner/ (ISO UK layout)
-#    - Ghostty config deployed to ~/.config/ghostty/
+#    - WezTerm config deployed to ~/.config/wezterm/
 #    - macOS system.defaults script runs (separate-spaces, fn-keys, mission-control keybinds)
 #    - GUI app settings script runs (Rectangle/AltTab/ScrollReverser keybinds)
 #    - Brewfile deployed to ~/Brewfile (for step 3)
 chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 
 # 3. Install GUI apps + fonts + mise + zsh + btop + opencode via Homebrew (Brewfile from step 2)
-#    This installs: ghostty, rectangle, alt-tab, scroll-reverser, betterdisplay,
+#    This installs: wezterm, rectangle, alt-tab, scroll-reverser, betterdisplay,
 #    obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp,
 #    karabiner-elements, font-hack-nerd-font, mise, zsh, btop, opencode.
 #    Company-managed apps (Office, 1Password, Falcon, etc.) are NOT touched
@@ -122,19 +122,31 @@ which starship       # via mise
 which zoxide         # via mise
 alias g              # shows git
 zoxide query --list  # shows db entries
-# Open Ghostty - should show rose-pine moon theme, Hack Nerd Font
+# Open WezTerm - should show rose-pine moon theme, Hack Nerd Font
 # Launch Karabiner-Elements - ISO UK layout active
 # Launch Rectangle - ctrl+opt+cmd+up maximizes window
 ```
+
+### Migrating from Ghostty (manual cleanup)
+WezTerm replaced Ghostty as the terminal emulator. The Brewfile has no `cleanup`
+directive (company Mac must not uninstall MDM-managed casks), so `brew bundle`
+installs WezTerm but does NOT remove Ghostty. After confirming WezTerm works,
+remove Ghostty manually:
+```sh
+brew uninstall --cask ghostty
+rm -rf ~/.config/ghostty
+```
+`chezmoi apply` will not delete `~/.config/ghostty/` just because the source was
+removed - chezmoi only manages files it knows about, not abandoned deployed dirs.
 
 ### What gets installed
 - **CLI tools** (via mise): starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, yazi, gdu, btop, rclone, uv - in `~/.local/share/mise/installs/`
 - **herdr** (via curl) - `~/.local/bin/herdr`
 - **zsh plugins** (git-cloned) - `~/.local/share/zsh/`
-- **GUI apps** (via Homebrew casks): ghostty, rectangle, alt-tab, scroll-reverser, betterdisplay, obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp, karabiner-elements
+- **GUI apps** (via Homebrew casks): wezterm, rectangle, alt-tab, scroll-reverser, betterdisplay, obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp, karabiner-elements
 - **Fonts** (via Homebrew cask): Hack Nerd Font
 - **mise + zsh + btop + opencode** (via Homebrew): tool management, current zsh, resource monitor, AI coding agent (opencode brings node + npm as brew deps)
-- **Configs** (via chezmoi): zsh, tmux, starship, herdr, git, nvim, ghostty, karabiner - real files in `~`
+- **Configs** (via chezmoi): zsh, tmux, starship, herdr, git, nvim, wezterm, karabiner - real files in `~`
 - **macOS defaults** (via run_once script): separate-spaces OFF, fn-keys as F-keys, mission-control ctrl+arrow keybinds disabled
 - **GUI app settings** (via run_once script): Rectangle keybinds, AltTab behavior, ScrollReverser mouse-only reverse
 
