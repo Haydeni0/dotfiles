@@ -22,16 +22,25 @@ git config --global user.email "you@example.com"
 
 **macOS:**
 ```sh
-# 1. Install chezmoi + GUI apps + fonts + mise + zsh via Homebrew
+# 1. Install chezmoi
 brew install chezmoi
-brew bundle --file=~/Brewfile
 
-# 2. Apply dotfiles (deploys configs + mise tools + macOS defaults + GUI app settings)
+# 2. Apply dotfiles (deploys configs + Brewfile + mise tools + macOS defaults + GUI app settings)
 chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 
-# 3. Manual one-time: launch Karabiner-Elements (approve driver + permissions),
-#    System Settings > Keyboard > Modifier Keys > swap Globe/Control,
-#    System Settings > Mouse > turn OFF natural scrolling, then LOG OUT.
+# 3. Install GUI apps + fonts via Homebrew (Brewfile was deployed by step 2)
+brew bundle --file=~/Brewfile
+
+# 4. Set git identity (not managed by chezmoi - different per user)
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+
+# 5. Manual one-time steps (see docs/setup.md for detail):
+#    - Launch Karabiner-Elements once (approve driver + Accessibility/Input Monitoring)
+#    - System Settings > Keyboard > Modifier Keys > swap Globe/Control
+#    - System Settings > Mouse > turn OFF natural scrolling
+#    - LOG OUT and back in (macOS defaults + Karabiner need it)
+#    - Reload tmux config if a server was running pre-apply: tmux source-file ~/.tmux.conf
 ```
 
 See [docs/setup.md](docs/setup.md) for the full guide (includes macOS system.defaults, GUI app settings, company-PC safety notes).

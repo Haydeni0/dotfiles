@@ -67,14 +67,7 @@ A fresh work Mac following this section gets the complete setup.
 # 1. Install chezmoi
 brew install chezmoi
 
-# 2. Install GUI apps + fonts + mise + zsh via Homebrew (Brewfile)
-#    This installs: ghostty, rectangle, alt-tab, scroll-reverser, betterdisplay,
-#    obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp,
-#    karabiner-elements, font-hack-nerd-font, mise, zsh.
-#    Company-managed apps (Office, 1Password, Falcon, etc.) are NOT touched.
-brew bundle --file=~/Brewfile
-
-# 3. Apply dotfiles (deploys configs + runs install scripts)
+# 2. Apply dotfiles (deploys configs + Brewfile + runs install scripts)
 #    - mise bootstraps and installs 16 CLI tools (starship, zoxide, fzf, etc.)
 #    - herdr installed via curl
 #    - zsh plugins git-cloned
@@ -82,7 +75,16 @@ brew bundle --file=~/Brewfile
 #    - Ghostty config deployed to ~/.config/ghostty/
 #    - macOS system.defaults script runs (separate-spaces, fn-keys, mission-control keybinds)
 #    - GUI app settings script runs (Rectangle/AltTab/ScrollReverser keybinds)
+#    - Brewfile deployed to ~/Brewfile (for step 3)
 chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
+
+# 3. Install GUI apps + fonts + mise + zsh + btop via Homebrew (Brewfile from step 2)
+#    This installs: ghostty, rectangle, alt-tab, scroll-reverser, betterdisplay,
+#    obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp,
+#    karabiner-elements, font-hack-nerd-font, mise, zsh, btop.
+#    Company-managed apps (Office, 1Password, Falcon, etc.) are NOT touched
+#    (Brewfile has no `cleanup` directive).
+brew bundle --file=~/Brewfile
 
 # 4. Set git identity (not managed by chezmoi - different per user)
 git config --global user.name "Your Name"
@@ -105,6 +107,9 @@ git config --global user.email "you@example.com"
 #       WindowServer crash-at-login bug (Apple radar 153570422). If you hit login
 #       crashes after step d, re-enable separate spaces in System Settings and
 #       remove the spans-displays line from run_once_macos-defaults.sh.tmpl.
+#    f. If a tmux server was running before `chezmoi apply` (started with an old
+#       config), reload it so the new keybinds take effect: `tmux source-file
+#       ~/.tmux.conf` (or kill the server and start fresh).
 
 # 6. Verify (open a new terminal window after re-login)
 echo $SHELL          # /bin/zsh or /opt/homebrew/bin/zsh
