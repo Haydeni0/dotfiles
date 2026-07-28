@@ -7,12 +7,5 @@ MEMORY.md
 CLAUDE.md
 Brewfile
 
-# Nix files (during migration, removed after)
-flake.nix
-flake.lock
-home/
-hosts/
-rebuild.sh
-
 # nvim lazy-lock.json is auto-managed by lazy.nvim
 .config/nvim/lazy-lock.json
