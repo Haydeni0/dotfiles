@@ -1,14 +1,13 @@
 {{- if eq .chezmoi.os "darwin" -}}
+{{- $k1 := include "dot_config/karabiner/karabiner.json" -}}
+{{- $k2 := include "dot_config/karabiner/assets/complex_modifications/1757349181.json" -}}
+{{- $hash := sha256sum (print $k1 $k2) -}}
 #!/bin/sh
 # Reload Karabiner-Elements after chezmoi deploys a config change.
-# run_onchange_ re-runs when this script's rendered content changes. The two
-# include lines below embed the karabiner config files, so editing either JSON
-# changes the rendered hash and triggers this reload. They render as comments
-# (no execution effect). run_onchange_after_ runs after dest files update, so
-# the new config is in place when this fires.
-# hash inputs:
-# {{ include "dot_config/karabiner/karabiner.json" }}
-# {{ include "dot_config/karabiner/assets/complex_modifications/1757349181.json" }}
+# run_onchange_ re-runs when this script's rendered content changes. The
+# karabiner config hash below changes when either JSON changes, triggering
+# the reload. darwin-gated (no Karabiner on Linux).
+# karabiner config hash: {{ $hash }}
 set -euo pipefail
 
 # Kickstart the per-user Karabiner daemon. -k kills the running instance first
