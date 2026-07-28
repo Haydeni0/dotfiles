@@ -1,21 +1,10 @@
-# CLI tools
-brew "ripgrep"
-brew "fd"
-brew "fzf"
-brew "jq"
-brew "lazygit"
-brew "neovim"
-brew "bat"
-brew "gh"
-brew "delta"
-brew "yazi"
-brew "gdu"
-brew "rsync"
-brew "starship"
-brew "zoxide"
-brew "btop"
-brew "rclone"
-brew "git"
-brew "tmux"
+# Package manager (installs all CLI tools via mise activate)
+brew "mise"
+
+# Shell (system zsh on Mac, but brew provides current version)
 brew "zsh"
-brew "uv"
+
+# Note: most CLI tools (starship, zoxide, fzf, bat, ripgrep, fd, etc.)
+# are installed via mise (run_once_install-tools.sh.tmpl) on both platforms.
+# Homebrew is used for mise + zsh only on Mac. Add more brew entries here
+# if you prefer Homebrew for specific tools.

@@ -7,6 +7,12 @@ setopt HIST_IGNORE_ALL_DUPS HIST_FIND_NO_DUPS EXTENDED_HISTORY HIST_REDUCE_BLANK
 # Editor
 export EDITOR=nvim
 
+# mise - puts mise-managed tools on PATH (starship, zoxide, fzf, bat, etc.)
+# Must run before any command -v checks below, since mise provides the tools.
+if command -v mise >/dev/null 2>&1; then
+    eval "$(mise activate zsh)"
+fi
+
 # SSH agent - adds all private keys (both platforms)
 if [ -z "$SSH_AUTH_SOCK" ]; then
     eval "$(ssh-agent -s)" > /dev/null

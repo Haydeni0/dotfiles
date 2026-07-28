@@ -7,6 +7,11 @@ esac
 # uv env (defensive - kept alongside other tools)
 . "$HOME/.local/bin/env" 2>/dev/null
 
+# mise - puts mise-managed tools on PATH
+if command -v mise >/dev/null 2>&1; then
+    eval "$(mise activate bash)"
+fi
+
 export AWS_PROFILE=coreweave
 
 # Start tmux (outside zsh - system tmux needs kernel pty access)
@@ -16,7 +21,7 @@ if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -z "$SKIP_TMUX" ] && \
     exec /usr/bin/tmux new-session -A -s main
 fi
 
-# Inside tmux: exec zsh (PATH-resolved - may be /usr/bin/zsh or ~/.local/bin/zsh)
+# Inside tmux: exec zsh (PATH-resolved - may be /usr/bin/zsh, ~/.local/bin/zsh, or mise-managed)
 if [ -n "$PS1" ] && command -v zsh &>/dev/null; then
     exec zsh -l
 fi

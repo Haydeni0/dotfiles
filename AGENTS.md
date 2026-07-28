@@ -25,8 +25,8 @@ Never edit deployed files directly - edit `configs/` and `chezmoi apply`.
 
 - `configs/` - source of truth (plain files, NOT deployed to `$HOME`)
 - `dot_*.tmpl` - chezmoi entry points (include from `configs/`)
-- `Brewfile` - Mac package list
-- `run_once_install-tools.sh.tmpl` - tool installer (both platforms: zsh plugins + herdr; Linux: all CLI tools)
+- `Brewfile` - Mac: mise + zsh via Homebrew
+- `run_once_install-tools.sh.tmpl` - tool installer (mise for 17 tools, micromamba for zsh, git-clone for zsh plugins + herdr)
 - `.chezmoiignore` - files not deployed to `$HOME`
 - `docs/setup.md` - setup guide for both platforms
 

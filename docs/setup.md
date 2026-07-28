@@ -21,15 +21,19 @@ zsh -c 'echo $SHELL; which starship; which zoxide; zoxide query --list'
 ```
 
 ### What gets installed
-- starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, yazi, gdu, btop, rclone, uv, herdr → ~/.local/bin
-- zsh plugins → ~/.local/share/zsh/
-- Configs → ~ (real files, not symlinks to /nix/store)
+- mise (package manager) → `~/.local/bin/mise`
+- starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, yazi, gdu, btop, rclone, uv → managed by mise (in `~/.local/share/mise/installs/`)
+- herdr → `~/.local/bin/herdr`
+- zsh → `~/.local/bin/zsh` (via micromamba on Linux if not system-provided)
+- zsh plugins → `~/.local/share/zsh/`
+- Configs → `~` (real files, managed by chezmoi)
 
 ### Notes
 - No /nix/store dependency
 - No bwrap/proot/namespace overhead
 - Works on login nodes AND compute nodes (same NFS home)
-- nvim installed via appimage extraction (no FUSE needed)
+- mise handles tool archives/URLs/versions automatically (no brittle per-tool install scripts)
+- zsh installed via micromamba if not system-provided (compute nodes)
 
 ## macOS
 
