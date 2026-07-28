@@ -134,7 +134,7 @@ mkdir -p ~/.local/share/zsh
 
 # rclone (download directly - official install.sh needs root for /usr/bin)
 [[ -x ~/.local/bin/rclone ]] || {
-    curl -sSL -o /tmp/rclone.zip https://rclone.org/downloads/rclone-current-linux-amd64.zip
+    curl -sSL -o /tmp/rclone.zip https://downloads.rclone.org/rclone-current-linux-amd64.zip
     unzip -o /tmp/rclone.zip -d /tmp/rclone-extract >/dev/null
     mv /tmp/rclone-extract/rclone-*/rclone ~/.local/bin/
     chmod +x ~/.local/bin/rclone
