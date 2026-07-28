@@ -20,6 +20,11 @@ sh -c "$(curl -fsLS https://get.chezmoi.io/lb)" --
 #    - zsh plugins git-cloned
 chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 
+# 3. Symlink ~/.dotfiles -> source dir for easy access
+#    The chezmoi source dir (~/.local/share/chezmoi) IS the working repo.
+#    Edit, commit, and `chezmoi apply` from there. ~/.dotfiles is a convenience alias.
+ln -sfn ~/.local/share/chezmoi ~/.dotfiles
+
 # 4. Set git identity (not managed by chezmoi)
 git config --global user.name "Your Name"
 git config --global user.email "you@example.com"

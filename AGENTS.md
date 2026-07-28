@@ -15,7 +15,8 @@ micromamba (zsh), and curl (herdr). No Nix, no bwrap, no proot, no namespaces.
 The chezmoi source dir IS the working repo. `chezmoi init` clones it to
 `~/.local/share/chezmoi`; edit, commit, and `chezmoi apply` from there. Do not
 keep a separate working clone (e.g. `~/gitrepos/dotfiles`) - it drifts from the
-source dir and `chezmoi apply` will not see your edits.
+source dir and `chezmoi apply` will not see your edits. `~/.dotfiles` is a
+symlink to the source dir for easy access (created during setup).
 
 ## How to make changes
 
