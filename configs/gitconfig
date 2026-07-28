@@ -2,3 +2,6 @@
     autoSetupRemote = true
 [rerere]
     enabled = true
+[user]
+    name = Hayden Dorahy
+    email = hayden.dorahy@physicsx.ai
