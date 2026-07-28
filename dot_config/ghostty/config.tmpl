@@ -1,4 +1,4 @@
-# Ghostty terminal config (macOS). Edit-in-place via chezmoi (dot_config/ghostty/).
+# Ghostty terminal config. Edit-in-place via chezmoi (dot_config/ghostty/).
 # Docs: https://ghostty.org/docs/config/reference
 
 # Theme - matches nvim (rose-pine moon)
@@ -18,7 +18,11 @@ window-padding-y = 4
 background-opacity = 0.95
 background-blur = true
 
-# Shell integration - auto-detects zsh
+# Launch herdr instead of a bare shell. Absolute path via homedir: GUI-launched
+# Ghostty (Dock/Spotlight) doesn't source zprofile, so ~/.local/bin isn't on PATH.
+command = {{ .chezmoi.homeDir }}/.local/bin/herdr
+
+# Shell integration - auto-detects zsh (spawned by herdr)
 shell-integration = detect
 window-save-state = always
 
