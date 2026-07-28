@@ -1,0 +1,144 @@
+#!/bin/bash
+set -euo pipefail
+
+mkdir -p ~/.local/bin
+mkdir -p ~/.local/share/zsh
+
+# --- zsh plugins (both platforms, git-cloned) ---
+[[ -d ~/.local/share/zsh/zsh-autosuggestions ]] || \
+    git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions ~/.local/share/zsh/zsh-autosuggestions
+[[ -d ~/.local/share/zsh/zsh-syntax-highlighting ]] || \
+    git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting ~/.local/share/zsh/zsh-syntax-highlighting
+[[ -d ~/.local/share/zsh/zsh-history-substring-search ]] || \
+    git clone --depth 1 https://github.com/zsh-users/zsh-history-substring-search ~/.local/share/zsh/zsh-history-substring-search
+
+# --- herdr (both platforms, curl install) ---
+[[ -x ~/.local/bin/herdr ]] || \
+    curl -fsSL https://herdr.dev/install.sh | sh
+
+{{ if eq .chezmoi.os "darwin" -}}
+# Mac: Homebrew handles most tools (Brewfile). Only install tools not in Homebrew.
+# (All listed tools are in Homebrew, so nothing to do here beyond plugins + herdr above.)
+
+{{ else -}}
+# Linux: install all tools via curl/git-clone (no sudo)
+
+# starship
+[[ -x ~/.local/bin/starship ]] || \
+    curl -sS https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin
+
+# zoxide
+[[ -x ~/.local/bin/zoxide ]] || \
+    curl -sSf https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh -s -- -b ~/.local/bin
+
+# fzf
+[[ -x ~/.local/bin/fzf ]] || {
+    git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+    ~/.fzf/install --all --no-update-rc --xdg
+}
+
+# neovim (extract appimage - no FUSE needed)
+[[ -x ~/.local/bin/nvim ]] || {
+    curl -L -o /tmp/nvim.appimage https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+    chmod u+x /tmp/nvim.appimage
+    cd /tmp && ./nvim.appimage --appimage-extract >/dev/null 2>&1
+    mv /tmp/squashfs-root ~/.local/share/nvim-appimage
+    ln -sf ~/.local/share/nvim-appimage/AppRun ~/.local/bin/nvim
+    rm -f /tmp/nvim.appimage
+}
+
+# bat
+[[ -x ~/.local/bin/bat ]] || {
+    BAT_VER=$(curl -s https://api.github.com/repos/sharkdp/bat/releases/latest | grep -oP '"tag_name": "\K[^"]+' | head -1)
+    curl -sSL "https://github.com/sharkdp/bat/releases/download/${BAT_VER}/bat-${BAT_VER}-x86_64-unknown-linux-musl.tar.gz" \
+        | tar xz -C /tmp
+    mv "/tmp/bat-${BAT_VER}-x86_64-unknown-linux-musl/bat" ~/.local/bin/
+    rm -rf "/tmp/bat-${BAT_VER}-x86_64-unknown-linux-musl"
+}
+
+# ripgrep
+[[ -x ~/.local/bin/rg ]] || {
+    RG_VER=$(curl -s https://api.github.com/repos/BurntSushi/ripgrep/releases/latest | grep -oP '"tag_name": "\K[^"]+' | head -1)
+    curl -sSL "https://github.com/BurntSushi/ripgrep/releases/download/${RG_VER}/ripgrep-${RG_VER}-x86_64-unknown-linux-musl.tar.gz" \
+        | tar xz -C /tmp
+    mv "/tmp/ripgrep-${RG_VER}-x86_64-unknown-linux-musl/rg" ~/.local/bin/
+    rm -rf "/tmp/ripgrep-${RG_VER}-x86_64-unknown-linux-musl"
+}
+
+# fd
+[[ -x ~/.local/bin/fd ]] || {
+    FD_VER=$(curl -s https://api.github.com/repos/sharkdp/fd/releases/latest | grep -oP '"tag_name": "\K[^"]+' | head -1)
+    curl -sSL "https://github.com/sharkdp/fd/releases/download/${FD_VER}/fd-${FD_VER}-x86_64-unknown-linux-musl.tar.gz" \
+        | tar xz -C /tmp
+    mv "/tmp/fd-${FD_VER}-x86_64-unknown-linux-musl/fd" ~/.local/bin/
+    rm -rf "/tmp/fd-${FD_VER}-x86_64-unknown-linux-musl"
+}
+
+# jq
+[[ -x ~/.local/bin/jq ]] || {
+    curl -sSL -o ~/.local/bin/jq https://github.com/jqlang/jq/releases/latest/download/jq-linux-amd64
+    chmod +x ~/.local/bin/jq
+}
+
+# lazygit
+[[ -x ~/.local/bin/lazygit ]] || {
+    LG_VER=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep -oP '"tag_name": "\K[^"]+' | head -1)
+    LG_VER_NUM=${LG_VER#v}
+    curl -sSL "https://github.com/jesseduffield/lazygit/releases/download/${LG_VER}/lazygit_${LG_VER_NUM}_Linux_x86_64.tar.gz" \
+        | tar xz -C /tmp
+    mv /tmp/lazygit ~/.local/bin/
+    rm -f /tmp/lazygit
+}
+
+# gh (GitHub CLI)
+[[ -x ~/.local/bin/gh ]] || {
+    GH_VER=$(curl -s https://api.github.com/repos/cli/cli/releases/latest | grep -oP '"tag_name": "\K[^"]+' | head -1)
+    curl -sSL "https://github.com/cli/cli/releases/download/${GH_VER}/gh_${GH_VER#v}_linux_amd64.tar.gz" \
+        | tar xz -C /tmp
+    mv "/tmp/gh_${GH_VER#v}_linux_amd64/bin/gh" ~/.local/bin/
+    rm -rf "/tmp/gh_${GH_VER#v}_linux_amd64"
+}
+
+# delta (git-delta)
+[[ -x ~/.local/bin/delta ]] || {
+    DELTA_VER=$(curl -s https://api.github.com/repos/dandavison/delta/releases/latest | grep -oP '"tag_name": "\K[^"]+' | head -1)
+    curl -sSL "https://github.com/dandavison/delta/releases/download/${DELTA_VER}/delta-${DELTA_VER}-x86_64-unknown-linux-musl.tar.gz" \
+        | tar xz -C /tmp
+    mv "/tmp/delta-${DELTA_VER}-x86_64-unknown-linux-musl/bin/delta" ~/.local/bin/
+    rm -rf "/tmp/delta-${DELTA_VER}-x86_64-unknown-linux-musl"
+}
+
+# yazi (terminal file manager)
+[[ -x ~/.local/bin/yazi ]] || {
+    curl -sSL https://github.com/sxyazi/yazi/releases/latest/download/yazi-x86_64-unknown-linux-musl.zip -o /tmp/yazi.zip
+    unzip -o /tmp/yazi.zip -d /tmp/yazi-extract >/dev/null
+    mv /tmp/yazi-extract/yazi-x86_64-unknown-linux-musl/yazi ~/.local/bin/
+    rm -rf /tmp/yazi.zip /tmp/yazi-extract
+}
+
+# gdu (disk usage)
+[[ -x ~/.local/bin/gdu ]] || {
+    curl -sSL -o /tmp/gdu.tgz https://github.com/dundee/gdu/releases/latest/download/gdu_linux_amd64.tgz
+    tar xzf /tmp/gdu.tgz -C ~/.local/bin/
+    chmod +x ~/.local/bin/gdu
+    rm -f /tmp/gdu.tgz
+}
+
+# btop (process monitor)
+[[ -x ~/.local/bin/btop ]] || {
+    curl -sSL https://github.com/aristocratos/btop/releases/latest/download/btop-x86_64-linux-musl.tbz -o /tmp/btop.tbz
+    tar xjf /tmp/btop.tbz -C /tmp
+    mv /tmp/btop/bin/btop ~/.local/bin/
+    rm -rf /tmp/btop /tmp/btop.tbz
+}
+
+# rclone
+[[ -x ~/.local/bin/rclone ]] || \
+    curl -sSL https://rclone.org/install.sh | bash
+
+# uv (Python package manager)
+[[ -x ~/.local/bin/uv ]] || \
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+echo "Linux tools installed to ~/.local/bin"
+{{ end -}}
