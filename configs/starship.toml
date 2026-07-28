@@ -1,5 +1,5 @@
 add_newline = false
-format = "$directory$git_branch$git_status$cmd_duration$fill$username$hostname$line_break$character"
+format = "${custom.dir}$git_branch$git_status$cmd_duration$fill$username$hostname$line_break$character"
 
 [character]
 success_symbol = "[❯](purple)"
@@ -7,6 +7,33 @@ error_symbol = "[❯](red)"
 
 [cmd_duration]
 format = "[$duration]($style) "
+
+[custom.dir]
+# Full path, but only the first segment after ~ and the last 3 segments stay
+# full-length; anything in between shortens to its first character. Plain
+# built-in truncation_length can't express "keep the start AND the end", so
+# this shells out instead.
+command = '''
+p="$PWD"; h="$HOME"
+prefix=""
+if [ "${p#$h}" != "$p" ]; then prefix="~"; p="${p#$h}"; fi
+p="${p#/}"
+IFS='/' read -ra parts <<< "$p"
+n=${#parts[@]}
+out="$prefix"
+if [ "$n" -le 5 ]; then
+  for x in "${parts[@]}"; do out="$out/$x"; done
+else
+  out="$out/${parts[0]}"
+  for ((i=1; i<n-3; i++)); do out="$out/${parts[i]:0:1}"; done
+  for ((i=n-3; i<n; i++)); do out="$out/${parts[i]}"; done
+fi
+printf '%s' "$out"
+'''
+shell = ["bash"]
+when = true
+format = "[$output]($style) "
+style = "bold cyan"
 
 [git_status]
 ahead = "⇡${count}"
