@@ -1,0 +1,28 @@
+onboarding = false
+
+[terminal]
+default_shell = "ZSH_PATH_PLACEHOLDER"
+shell_mode = "non_login"
+
+[keys]
+prefix = "ctrl+b"
+focus_pane_left = "alt+shift+left"
+focus_pane_right = "alt+shift+right"
+focus_pane_up = "ctrl+shift+up"
+focus_pane_down = "ctrl+shift+down"
+next_tab = "shift+right"
+previous_tab = "shift+left"
+split_horizontal = "prefix+double_quote"
+split_vertical = "prefix+percent"
+new_tab = "prefix+c"
+close_tab = "prefix+ampersand"
+close_pane = "prefix+x"
+zoom = "prefix+z"
+detach = "prefix+d"
+switch_tab = "prefix+1..9"
+workspace_picker = "prefix+w"
+goto = "prefix+g"
+copy_mode = "prefix+["
+
+[theme]
+name = "dracula"

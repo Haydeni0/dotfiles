@@ -1,0 +1,22 @@
+# Return early for non-interactive shells
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# uv env (defensive - kept alongside other tools)
+. "$HOME/.local/bin/env" 2>/dev/null
+
+export AWS_PROFILE=coreweave
+
+# Start tmux (outside zsh - system tmux needs kernel pty access)
+if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -z "$SKIP_TMUX" ] && \
+   [ "$TERM_PROGRAM" != "vscode" ] && [ -z "${REMOTE_CONTAINERS_SOCKETS}" ] && \
+   [ -z "${CURSOR_AGENT}" ] && command -v /usr/bin/tmux &>/dev/null; then
+    exec /usr/bin/tmux new-session -A -s main
+fi
+
+# Inside tmux: exec system zsh
+if [ -n "$PS1" ] && [ -x /usr/bin/zsh ]; then
+    exec /usr/bin/zsh -l
+fi

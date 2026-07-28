@@ -1,0 +1,5 @@
+# Mac .bashrc - minimal (zsh is default shell on macOS, .bashrc rarely runs)
+case $- in
+    *i*) ;;
+      *) return;;
+esac

@@ -1,0 +1,75 @@
+# History
+HISTFILE=~/.zsh_history
+HISTSIZE=50000
+SAVEHIST=50000
+setopt HIST_IGNORE_ALL_DUPS HIST_FIND_NO_DUPS EXTENDED_HISTORY HIST_REDUCE_BLANKS SHARE_HISTORY
+
+# Editor
+export EDITOR=nvim
+
+# SSH agent - adds all private keys (both platforms)
+if [ -z "$SSH_AUTH_SOCK" ]; then
+    eval "$(ssh-agent -s)" > /dev/null
+    find ~/.ssh -maxdepth 1 -type f -name "*.pub" -exec basename {} .pub \; | while read key; do
+        ssh-add ~/.ssh/"$key" 2>/dev/null
+    done
+fi
+
+# Keybindings (emacs mode)
+bindkey -e
+bindkey '^H' backward-kill-word
+bindkey $'\e[1;3D' backward-word
+bindkey $'\e[1;3C' forward-word
+
+# Completion
+fpath+=~/.zfunc
+autoload -Uz compinit
+compinit -C
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={a-zA-Z}' 'r:|=*' 'l:|=* r:|=*'
+zstyle ':completion:*' cache-path "$HOME/.cache/zsh"
+zstyle ':completion:*:descriptions' format '%F{purple}%d%f'
+
+# Aliases (shared)
+[[ -r ~/.zsh/aliases.zsh ]] && source ~/.zsh/aliases.zsh
+
+# Prompt - starship if available, simple fallback
+if command -v starship >/dev/null 2>&1; then
+    eval "$(starship init zsh)"
+else
+    autoload -Uz colors && colors
+    PROMPT='%F{cyan}%~%f %F{purple}%#%f '
+fi
+
+# zoxide
+export _ZO_EXCLUDE_DIRS="$HOME:$HOME/.cache/*:$HOME/.local/share/*:/tmp/*"
+if command -v zoxide >/dev/null 2>&1; then
+    eval "$(zoxide init zsh)"
+    _zoxide_complete() {
+        [[ "${#words[@]}" -eq "${CURRENT}" ]] || return 0
+        local -a dirs expl
+        dirs=("${(@f)$(\command zoxide query -l -- ${words[2,-1]} 2>/dev/null | head -15)}")
+        if (( ${#dirs} )); then
+            compstate[insert]=menu
+            compstate[list]=list
+            _wanted directories expl 'zoxide' compadd -M '' -U -o nosort -a dirs
+        fi
+    }
+    compdef _zoxide_complete z
+fi
+
+# fzf (requires fzf 0.48+ for --zsh flag)
+if command -v fzf >/dev/null 2>&1; then
+    source <(fzf --zsh)
+fi
+
+# Plugins (git-cloned to ~/.local/share/zsh/, source with guards)
+[[ -r ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
+    source ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+[[ -r ~/.local/share/zsh/zsh-history-substring-search/zsh-history-substring-search.zsh ]] && \
+    source ~/.local/share/zsh/zsh-history-substring-search/zsh-history-substring-search.zsh
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+# Syntax highlighting MUST be last
+[[ -r ~/.local/share/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
+    source ~/.local/share/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
