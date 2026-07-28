@@ -65,7 +65,9 @@ chezmoi git pull && chezmoi apply
 
 ## Adding new tools
 - Mac: add to Brewfile, `brew bundle install`
-- Linux: add to run_once_install-tools.sh.tmpl, `chezmoi state delete-bucket --bucket=entryState && chezmoi apply`
+- Linux: edit `run_once_install-tools.sh.tmpl` (adding a tool re-runs it automatically on
+  `chezmoi apply` because the content hash changes). To force a re-run of unchanged
+  content: `chezmoi state delete-bucket --bucket=scriptState && chezmoi apply`
 - Both: commit + push
 
 ## What stays manual (not managed by chezmoi)

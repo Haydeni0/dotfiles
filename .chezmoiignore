@@ -1,11 +1,12 @@
 # Non-deploy files (source-of-truth data, not deployed to $HOME)
 configs/
+configs/**
 docs/
+docs/**
 AGENTS.md
 README.md
 MEMORY.md
 CLAUDE.md
-Brewfile
 
 # nvim lazy-lock.json is auto-managed by lazy.nvim
 .config/nvim/lazy-lock.json

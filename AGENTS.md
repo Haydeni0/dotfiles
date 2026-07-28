@@ -25,7 +25,10 @@ Never edit deployed files directly - edit `configs/` and `chezmoi apply`.
 
 - `configs/` - source of truth (plain files, NOT deployed to `$HOME`)
 - `dot_*.tmpl` - chezmoi entry points (include from `configs/`)
-- `Brewfile` - Mac: mise + zsh via Homebrew
+- `dot_config/nvim/` - nvim config (plain files, deployed directly - exception to the
+  configs/ pattern because nvim lua doesn't need templating and `lazy-lock.json` is
+  auto-managed by lazy.nvim)
+- `Brewfile` - Mac: mise + zsh via Homebrew (deployed to `~/Brewfile`)
 - `run_once_install-tools.sh.tmpl` - tool installer (mise for 17 tools, micromamba for zsh, git-clone for zsh plugins + herdr)
 - `.chezmoiignore` - files not deployed to `$HOME`
 - `docs/setup.md` - setup guide for both platforms
