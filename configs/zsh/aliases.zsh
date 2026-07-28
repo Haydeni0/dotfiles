@@ -53,6 +53,9 @@ alias gst='git status'
 alias gss='git status --short'
 alias gsb='git status --short --branch'
 
+# git: lazygit (TUI) - installed via mise
+alias lg='lazygit'
+
 # git: add
 alias ga='git add'
 alias gaa='git add --all'
