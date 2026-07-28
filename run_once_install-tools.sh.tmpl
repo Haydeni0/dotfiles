@@ -18,9 +18,10 @@ mise use -g starship zoxide fzf neovim bat ripgrep fd jq lazygit gh delta yazi g
 # Mac: zsh is pre-installed (system or Homebrew). No extra steps needed.
 
 {{ else -}}
-# Linux: zsh may not be pre-installed (compute nodes don't have it).
-# Install via micromamba (available on HPC nodes) to ~/.local/bin/zsh.
-if ! command -v zsh &>/dev/null; then
+# Linux: always install zsh to ~/.local/bin/zsh via micromamba (available on HPC nodes).
+# Don't gate on 'command -v zsh' - login nodes have /usr/bin/zsh but compute nodes don't.
+# Since home is NFS-shared, installing once makes zsh available on ALL nodes.
+if [[ ! -x ~/.local/bin/zsh ]]; then
     if command -v micromamba &>/dev/null; then
         micromamba create -y -n zsh zsh -c conda-forge >/dev/null 2>&1
         ln -sf ~/.local/share/micromamba/envs/zsh/bin/zsh ~/.local/bin/zsh
@@ -29,7 +30,7 @@ if ! command -v zsh &>/dev/null; then
         ln -sf ~/miniconda3/envs/zsh/bin/zsh ~/.local/bin/zsh 2>/dev/null || \
         ln -sf ~/anaconda3/envs/zsh/bin/zsh ~/.local/bin/zsh 2>/dev/null
     else
-        echo "Warning: zsh not found and no conda/micromamba available. Install zsh via your OS package manager."
+        echo "Warning: no conda/micromamba available. Install zsh via your OS package manager."
     fi
 fi
 

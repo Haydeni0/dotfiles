@@ -4,6 +4,9 @@ case $- in
       *) return;;
 esac
 
+# PATH setup (must be in .bashrc - bash login -> .bashrc runs before zsh .zprofile)
+export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$HOME/.local/share/pi-node/node-v22.23.1-linux-x64/bin:$PATH"
+
 # uv env (defensive - kept alongside other tools)
 . "$HOME/.local/bin/env" 2>/dev/null
 
