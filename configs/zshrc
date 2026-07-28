@@ -89,8 +89,21 @@ fi
 # (e.g. `gssh -p 2222 user@host`), not after - ssh parses positionally.
 # Uses `wezterm cli spawn --new-window` (not `wezterm start`) so the window
 # joins the running instance - cmd+\ (ActivateWindowRelative) can cycle to it.
+# Runs a retry-loop wrapper (not bare ssh) so the pane survives a dropped
+# connection instead of exiting/closing: on any ssh exit (drop or clean
+# logout) it waits 3s and reconnects. Ctrl-C during the sleep is the only
+# way to stop the retries.
 if command -v wezterm >/dev/null 2>&1; then
-    gssh() { wezterm cli spawn --new-window -- ssh -t "$@" }
+    gssh() {
+        wezterm cli spawn --new-window -- sh -c '
+            while true; do
+                ssh -t "$@"
+                status=$?
+                echo "[gssh] disconnected ($status), reconnecting in 3s... (ctrl-c to stop)"
+                sleep 3
+            done
+        ' sh "$@"
+    }
 fi
 
 # Plugins (git-cloned to ~/.local/share/zsh/, source with guards)
