@@ -110,6 +110,9 @@ git config --global user.email "you@example.com"
 #    f. If a tmux server was running before `chezmoi apply` (started with an old
 #       config), reload it so the new keybinds take effect: `tmux source-file
 #       ~/.tmux.conf` (or kill the server and start fresh).
+#    g. AltTab keybinds (hold cmd for switcher, shift+tab for previous window)
+#       are MANUAL - AltTab clobbers its plist on launch, so `defaults write`
+#       can't set them. Open AltTab's prefs and set them once in the GUI.
 
 # 6. Verify (open a new terminal window after re-login)
 echo $SHELL          # /bin/zsh or /opt/homebrew/bin/zsh
