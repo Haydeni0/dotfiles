@@ -35,16 +35,15 @@ mkdir -p ~/.local/share/zsh
 [[ -x ~/.local/bin/fzf ]] || {
     git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
     ~/.fzf/install --all --no-update-rc --xdg
+    ln -sf ~/.fzf/bin/fzf ~/.local/bin/fzf
 }
 
-# neovim (extract appimage - no FUSE needed)
+# neovim (tar.gz - no FUSE needed, no appimage extraction)
 [[ -x ~/.local/bin/nvim ]] || {
-    curl -L -o /tmp/nvim.appimage https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
-    chmod u+x /tmp/nvim.appimage
-    cd /tmp && ./nvim.appimage --appimage-extract >/dev/null 2>&1
-    mv /tmp/squashfs-root ~/.local/share/nvim-appimage
-    ln -sf ~/.local/share/nvim-appimage/AppRun ~/.local/bin/nvim
-    rm -f /tmp/nvim.appimage
+    curl -sSL https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz \
+        | tar xz -C /tmp
+    mv /tmp/nvim-linux-x86_64/bin/nvim ~/.local/bin/
+    rm -rf /tmp/nvim-linux-x86_64
 }
 
 # bat
