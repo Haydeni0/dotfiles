@@ -120,6 +120,13 @@ if command -v difft >/dev/null 2>&1; then
     alias gdifft='GIT_EXTERNAL_DIFF=difft git diff'
 fi
 
+# nvchad: secondary nvim config to try out (cloned to ~/.config/nvchad, see
+# run_once_install-tools.sh.tmpl). NVIM_APPNAME keeps its data/state/cache
+# separate from the main nvim config too, so it's fully independent.
+if command -v nvim >/dev/null 2>&1; then
+    alias nvchad='NVIM_APPNAME=nvchad nvim'
+fi
+
 # Plugins (git-cloned to ~/.local/share/zsh/, source with guards)
 [[ -r ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
     source ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
