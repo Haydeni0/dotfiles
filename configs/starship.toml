@@ -39,6 +39,7 @@ style = "bold cyan"
 ahead = "⇡${count}"
 behind = "⇣${count}"
 diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+stashed = '\$${count}'
 
 [fill]
 symbol = " "
