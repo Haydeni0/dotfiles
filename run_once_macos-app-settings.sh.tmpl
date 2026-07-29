@@ -43,6 +43,19 @@ defaults write com.ethanbills.DockDoor enableCmdTabEnhancements -bool true
 defaults write com.ethanbills.DockDoor requireShiftTabToGoBack -bool true
 defaults write com.ethanbills.DockDoor switcherTrafficLightButtonsVisibility -string "never"
 defaults write com.ethanbills.DockDoor switcherAppIconSize -int 29
+defaults write com.ethanbills.DockDoor enableDockPreviews -bool false
+defaults write com.ethanbills.DockDoor enableShiftWindowSwitcherPlacement -bool false
+defaults write com.ethanbills.DockDoor instantWindowSwitcher -bool false
+defaults write com.ethanbills.DockDoor reopenSettingsAfterRestart -bool false
+defaults write com.ethanbills.DockDoor showAnimations -bool true
+defaults write com.ethanbills.DockDoor showAppName -bool true
+defaults write com.ethanbills.DockDoor switcherMaxRows -int 8
+defaults write com.ethanbills.DockDoor switcherShowAppHeader -bool true
+defaults write com.ethanbills.DockDoor windowSwitcherPlacementStrategy -string "screenWithMouse"
+defaults write com.ethanbills.DockDoor dockBackgroundStyle -string "liquidGlass"
+defaults write com.ethanbills.DockDoor previewHeight -float 375
+defaults write com.ethanbills.DockDoor previewWidth -float 600
+defaults write com.ethanbills.DockDoor switcherIgnoreScreenLimit -bool false
 echo "  DockDoor: cmd+tab=all-apps, cmd+\`=same-app (activeAppOnly), recentlyUsed order"
 
 # --- ScrollReverser (fix scroll direction/acceleration for mice) ---
