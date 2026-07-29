@@ -22,3 +22,6 @@ backups/
 
 # SDD workspace (scratch - subagent-driven-development artifacts)
 .superpowers/
+
+.DS_Store
+
