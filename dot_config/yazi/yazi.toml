@@ -1,0 +1,13 @@
+# yazi.toml
+[mgr]
+show_hidden = true
+linemode = "all"
+
+# xdg-open unavailable on headless linux; route open to $EDITOR.
+# macos/windows defaults preserved (zero-drift).
+[opener]
+open = [
+  { run = "${EDITOR:-nvim} %s", desc = "$EDITOR", for = "linux", block = true },
+  { run = "open %s",            desc = "Open",    for = "macos" },
+  { run = 'start "" %s1',       desc = "Open",    for = "windows", orphan = true },
+]

@@ -72,6 +72,22 @@ FUSE is often unavailable (`/dev/fuse` missing). Fix: extract the appimage with
 `--appimage-extract` and symlink to `AppRun`. No FUSE needed, slightly slower
 startup but works everywhere.
 
+### 2026-07-30 - yazi needs `file` cmd + opener override on headless linux
+yazi file-open failed on headless CoreWeave box. Two causes:
+1. `file` cmd missing → yazi can't detect MIME (uses `file -bL --mime-type` via
+   yazi-plugin mime.lua) → everything tagged `null/file1-not-found` → hits
+   fallback `open` rule.
+2. Default `open` opener on linux = `xdg-open %s1`, but `xdg-open` not installed
+   (no DE, no GUI apps, no `mimeapps.list`).
+Fix: (a) install `file` via micromamba (`run_once_install-tools.sh.tmpl`, conda-forge
+`file` pkg, symlink to `~/.local/bin/file` - binary finds libmagic via realpath so
+symlink works). (b) override yazi `[opener].open` linux entry → `${EDITOR:-nvim} %s`
+in `dot_config/yazi/yazi.toml`. yazi merges `[opener]` as HashMap<String, Vec> -
+user config replaces only named opener (`open`); `edit`/`play`/`reveal` stay at
+defaults. Text/code/json still route to `edit` (nvim); images/unknown now route
+to `open` (nvim). Config now chezmoi-managed (was hand-created, untracked).
+Note: do NOT install xdg-open - useless on headless box, nothing to launch.
+
 ### 2026-07-28 - zoxide completion: use db entries not local subdirs
 zoxide's default `z <tab>` shows local subdirectories (`_cd -/`), NOT the frecency
 database. The custom `_zoxide_complete` function queries `zoxide query -l` instead,
