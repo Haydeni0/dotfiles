@@ -20,15 +20,20 @@ symlink to the source dir for easy access (created during setup).
 
 ## How to make changes
 
-1. **Edit the source file in `configs/`** (NOT the deployed file in `$HOME`).
-   The source dir is `~/.local/share/chezmoi` (= `chezmoi source-path`).
+1. **Edit the source file in the repo** (NOT the deployed file in `$HOME`).
+   Source lives in `configs/` (templated includes), `dot_config/<tool>/` (plain
+   files deployed directly), or `dot_*.tmpl` (entry points). The source dir is
+   `~/.local/share/chezmoi` (= `chezmoi source-path`).
 2. **Check for drift**: `chezmoi diff` - shows any local edits to deployed files that
    would be lost. Always run this before applying.
 3. **Apply**: `chezmoi apply`
 4. **Test in a new shell** - start a new zsh/tmux pane to pick up changes.
 5. **Commit + push** - the repo is the source of truth.
 
-Never edit deployed files directly - edit `configs/` and `chezmoi apply`.
+Never edit deployed files directly - edit the source in this repo, then
+`chezmoi apply`. When adding a NEW config, write the source file in the repo
+(e.g. `dot_config/<tool>/...`) first, then apply - never write the deployed
+file first and backfill.
 
 ## Repo structure
 
@@ -55,6 +60,9 @@ Never edit deployed files directly - edit `configs/` and `chezmoi apply`.
 - **Install scripts use file existence checks** (`[[ -x ~/.local/bin/tool ]]`),
   not `command -v` (PATH may not include `~/.local/bin` when chezmoi runs scripts).
 - **mise activate** in `.zshrc` and `.bashrc` puts mise-managed tools on PATH.
+- **chezmoi's own config is managed here too.** `~/.config/chezmoi/` is not
+  exempt or "meta" - its source lives at `dot_config/chezmoi/`. Edit there,
+  never the deployed copy.
 
 ## Detecting drift
 
@@ -64,6 +72,10 @@ next `chezmoi apply`** and are not in the repo.
 
 - **Check for drift**: `chezmoi diff` shows differences between deployed files and source.
   Run this before `chezmoi apply` to catch accidental direct edits.
+- **Find unmanaged files**: `chezmoi unmanaged` lists `$HOME` files NOT tracked in
+  the repo. Use it to discover configs that have drifted out of management (e.g.
+  a tool wrote to `~/.config/` and were never added as source). Bring such files
+  into the repo as source, don't edit the deployed copy.
 - **Edit source, not deployed files**: `chezmoi edit ~/.zshrc` opens the source file
   (`configs/zshrc`) in `$EDITOR`. This is the correct way to make changes.
 - **If a tool installer modifies a deployed file** (e.g. fzf tries to append to `.zshrc`):
