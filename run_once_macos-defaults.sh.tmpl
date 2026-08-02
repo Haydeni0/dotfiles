@@ -1,7 +1,7 @@
 {{ if eq .chezmoi.os "darwin" -}}
 #!/bin/bash
 # macOS system defaults (run once on first chezmoi apply on Mac).
-# Sets: separate-spaces OFF, fn-keys as F-keys, mission-control ctrl+arrow keybinds disabled.
+# Sets: separate-spaces OFF, fn-keys as F-keys, mission-control ctrl+arrow keybinds disabled, Finder path bar + column view default.
 #
 # Globe<->Control swap is NOT here - it has no stable `defaults write` (lives in a
 # ByHost plist with keyboard-specific keys). Set it manually in System Settings >
@@ -62,8 +62,17 @@ write_hotkey 32 "65535,126,8650752"
 write_hotkey 35 "65535,125,8650752"
 echo "  mission-control ctrl+arrow keybinds disabled (killall SystemUIServer + logout required)"
 
+# --- Finder: path bar ON, column view as default ---
+# Path bar (Opt+Cmd+P) shown at bottom. Column view (Cmd+3) set as default for
+# NEW windows; existing windows keep their current view (Finder per-window state).
+defaults write com.apple.finder ShowPathbar -bool true
+defaults write com.apple.finder FXPreferredViewStyle -string "clmv"
+echo "  Finder: path bar ON, column view default (killall Finder required)"
+
 # Flush SystemUIServer so the symbolichotkeys changes are read on next login.
 killall SystemUIServer 2>/dev/null || true
+# Restart Finder so path bar + column view default take effect immediately.
+killall Finder 2>/dev/null || true
 
 echo ""
 echo "macOS defaults set. LOG OUT and back in for all changes to take effect."
