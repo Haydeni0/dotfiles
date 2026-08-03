@@ -28,6 +28,11 @@ config.keys = {
     { key = 'RightArrow', mods = 'CMD', action = wezterm.action.SendKey { key = 'e', mods = 'CTRL' } },
     -- cmd+backspace: delete to start of line (readline ctrl+u)
     { key = 'Backspace', mods = 'CMD', action = wezterm.action.SendKey { key = 'u', mods = 'CTRL' } },
+    -- # arrives as opt+3 (Karabiner: backslash key -> opt+3 = # on UK layout).
+    -- With Option=Meta (send_composed_key=false, above), wezterm emits ESC+3
+    -- which vim reads as Esc (normal mode) and shells read as cancel. Send the
+    -- literal char so # types normally. Keeps opt+arrow word-move intact.
+    { key = '3', mods = 'ALT', action = wezterm.action.SendKey { key = '#' } },
 }
 
 return config
