@@ -26,6 +26,10 @@ bindkey -e
 bindkey '^H' backward-kill-word
 bindkey $'\e[1;3D' backward-word
 bindkey $'\e[1;3C' forward-word
+# opt+delete -> kill-word (ctrl+f12 via Karabiner -> opt+delete_forward;
+# sequence arrives unbound and prints "3~" without this). Forward kill.
+bindkey $'\e[3;3~' kill-word
+bindkey $'\e\e[3~' kill-word
 
 # Completion
 fpath+=~/.zfunc
