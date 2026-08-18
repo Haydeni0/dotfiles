@@ -88,7 +88,7 @@ See [docs/setup.md](docs/setup.md) for the full guide (includes macOS system.def
 - `~/.ssh/` - keys, config, authorized_keys (secrets)
 - `~/.config/rclone/rclone.conf` - cloud credentials (secrets)
 - `~/.local/bin/local-claude`, `local-opencode` - CoreWeave proxies
-- uv-managed tools (task, nvitop, hf, evo, graphify) - installed via `uv tool install`
+- uv-managed tools (nvitop, hf, evo, graphify) - installed via `uv tool install`
 - Git identity (user.name, user.email) - different per user
 
 ## Updating
