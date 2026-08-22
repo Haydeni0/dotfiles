@@ -141,3 +141,16 @@ fi
 # Syntax highlighting MUST be last
 [[ -r ~/.local/share/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] && \
     source ~/.local/share/zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# Auto-start herdr (primary multiplexer). tmux is backup (prefix ctrl-b).
+# Set SKIP_HERDR=1 to drop to a plain shell. Set USE_TMUX=1 to start tmux instead.
+# Guarded against nesting inside herdr/tmux panes, IDE terminals, and non-interactive shells.
+if [[ -o interactive ]] && [ -z "$TMUX" ] && [ -z "$HERDR" ] && [ -z "$HERDR_ENV" ] && [ -z "$SKIP_HERDR" ] && \
+   [ "$TERM_PROGRAM" != "vscode" ] && [ -z "${REMOTE_CONTAINERS_SOCKETS}" ] && \
+   [ -z "${CURSOR_AGENT}" ]; then
+    if [ -n "$USE_TMUX" ] && command -v tmux >/dev/null 2>&1; then
+        exec tmux new-session -A -s main
+    elif command -v herdr >/dev/null 2>&1; then
+        exec herdr --session main
+    fi
+fi

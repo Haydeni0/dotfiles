@@ -21,7 +21,7 @@ export AWS_PROFILE=coreweave
 
 # Start herdr (primary multiplexer). tmux is backup (prefix ctrl-b).
 # Set SKIP_HERDR=1 to drop to a plain shell. Set USE_TMUX=1 to start tmux instead.
-if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -z "$HERDR" ] && [ -z "$SKIP_HERDR" ] && \
+if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -z "$HERDR" ] && [ -z "$HERDR_ENV" ] && [ -z "$SKIP_HERDR" ] && \
    [ "$TERM_PROGRAM" != "vscode" ] && [ -z "${REMOTE_CONTAINERS_SOCKETS}" ] && \
    [ -z "${CURSOR_AGENT}" ]; then
     if [ -n "$USE_TMUX" ] && command -v /usr/bin/tmux &>/dev/null; then
