@@ -8,19 +8,8 @@ mkdir -p ~/.local/share/zsh
 [[ -x ~/.local/bin/mise ]] || curl -fsSL https://mise.run | sh
 export PATH="$HOME/.local/bin:$PATH"
 
-# --- install all CLI tools via mise (aqua backend handles archives automatically) ---
-# btop excluded here - mise's aqua backend doesn't support darwin/arm64 for btop.
-# On Mac, btop is installed via Homebrew (Brewfile). On Linux, mise handles it.
-mise use -g starship zoxide fzf neovim bat ripgrep fd jq lazygit gh delta difftastic yazi gdu rclone uv
-
-{{ if eq .chezmoi.os "darwin" -}}
-# Mac: btop via Homebrew (Brewfile), not mise (aqua has no darwin build).
-# Brewfile also installs mise + zsh; `brew bundle` runs separately by the user.
-
-{{ else -}}
-# Linux: btop via mise (aqua has linux builds).
-mise use -g btop
-{{ end -}}
+# --- install all CLI tools via mise ---
+mise install
 
 # --- herdr (not in aqua registry, has its own installer) ---
 [[ -x ~/.local/bin/herdr ]] || curl -fsSL https://herdr.dev/install.sh | sh

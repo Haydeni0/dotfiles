@@ -36,6 +36,13 @@ Environment specifics an agent needs to know. Add as discovered.
 
 ## Learnings
 
+### 2026-08-22 - yazi on Linux requires musl release (gnu build requires glibc 2.39)
+Upstream yazi builds `yazi-x86_64-unknown-linux-gnu` on Ubuntu 24.04 requiring GLIBC_2.39,
+crashing on Ubuntu 22.04, Debian 12, and HPC nodes (glibc 2.35). Mise's aqua backend
+defaults to selecting the gnu release on glibc hosts. Configure yazi as an http backend
+installing the musl release (`yazi-...-unknown-linux-musl.zip`) in
+`dot_config/mise/config.toml.tmpl` for Linux, while keeping `yazi = "latest"` on macOS.
+
 ### 2026-08-22 - .gitattributes prevents CRLF corruption on Windows/WSL
 Cloning on Windows or WSL with default `core.autocrlf = true` converts repo files to
 CRLF. This breaks script execution (e.g. `run_once_install-tools.sh.tmpl` shebang fails

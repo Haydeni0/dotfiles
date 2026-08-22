@@ -10,9 +10,13 @@ jq = "latest"
 lazygit = "latest"
 gh = "latest"
 delta = "latest"
+{{ if eq .chezmoi.os "darwin" -}}
 yazi = "latest"
-gdu = "latest"
+{{ else -}}
+"http:yazi" = { version = "26.8.15", url = "https://github.com/sxyazi/yazi/releases/download/v26.8.15/yazi-{{ if eq .chezmoi.arch "amd64" }}x86_64{{ else }}aarch64{{ end }}-unknown-linux-musl.zip" }
 btop = "latest"
+{{ end -}}
+gdu = "latest"
 rclone = "latest"
 uv = "latest"
 difftastic = "latest"
