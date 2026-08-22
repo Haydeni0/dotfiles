@@ -36,6 +36,23 @@ Environment specifics an agent needs to know. Add as discovered.
 
 ## Learnings
 
+### 2026-08-22 - .gitattributes prevents CRLF corruption on Windows/WSL
+Cloning on Windows or WSL with default `core.autocrlf = true` converts repo files to
+CRLF. This breaks script execution (e.g. `run_once_install-tools.sh.tmpl` shebang fails
+with `/bin/bash\r: no such file or directory`). Enforce `* text=auto eol=lf` in
+`.gitattributes`.
+
+### 2026-08-22 - chezmoi.yaml diff tool needs lookPath guard on bootstrap
+Setting `diff: command: delta` in plain `chezmoi.yaml` causes `chezmoi apply -v` to
+crash on initial bootstrap before `mise` has installed `delta`. Use
+`dot_config/chezmoi/chezmoi.yaml.tmpl` with `{{ if lookPath "delta" }}` so chezmoi uses
+the default diff until delta is on PATH.
+
+### 2026-08-22 - git user identity isolated via ~/.gitconfig.local
+Putting `[user]` name/email directly in shared `configs/gitconfig` clobbers local
+identities across machines (e.g. personal vs work machines). Include
+`~/.gitconfig.local` instead and configure identity per-machine.
+
 ### 2026-07-28 - chezmoi lookPath runs at apply time, not shell startup
 `{{ if lookPath "starship" }}` in chezmoi templates evaluates when `chezmoi apply`
 runs, NOT when the shell starts. If you apply on a machine where a tool is on PATH,
