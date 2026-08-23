@@ -24,11 +24,17 @@ fi
 # Keybindings (emacs mode)
 bindkey -e
 bindkey '^H' backward-kill-word
+# Word navigation: opt+left/right (macOS) and ctrl+left/right (WSL/Linux/xterm)
 bindkey $'\e[1;3D' backward-word
 bindkey $'\e[1;3C' forward-word
-# opt+delete -> kill-word (ctrl+f12 via Karabiner -> opt+delete_forward;
+bindkey $'\e[1;5D' backward-word
+bindkey $'\e[1;5C' forward-word
+bindkey $'\e[5D' backward-word
+bindkey $'\e[5C' forward-word
+# opt+delete / ctrl+delete -> kill-word (ctrl+f12 via Karabiner -> opt+delete_forward;
 # sequence arrives unbound and prints "3~" without this). Forward kill.
 bindkey $'\e[3;3~' kill-word
+bindkey $'\e[3;5~' kill-word
 bindkey $'\e\e[3~' kill-word
 
 # Completion
