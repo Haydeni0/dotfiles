@@ -48,6 +48,12 @@ git config --global user.email "you@example.com"
 
 See [docs/setup.md](docs/setup.md) for the full guide (includes macOS system.defaults, GUI app settings, company-PC safety notes).
 
+## Supported platforms
+
+- **macOS** (Work Mac): Homebrew packages, WezTerm, Karabiner-Elements, zsh default shell, Opt+Arrow navigation (`\e[1;3`).
+- **Linux HPC (no sudo)**: Login & compute nodes with glibc ≥ 2.35, bash login default (`exec zsh`), tools via mise + micromamba, Ctrl+Arrow navigation (`\e[1;5`).
+- **WSL (Windows Subsystem for Linux)**: Ubuntu/Debian on Windows, Windows Terminal/WezTerm, LF line endings enforced, Ctrl+Arrow navigation (`\e[1;5`).
+
 ## What's included
 
 - **zsh**: history, completion, ~100 aliases, starship prompt, zoxide (frecency cd), fzf
@@ -90,6 +96,21 @@ See [docs/setup.md](docs/setup.md) for the full guide (includes macOS system.def
 - `~/.local/bin/local-claude`, `local-opencode` - CoreWeave proxies
 - uv-managed tools (nvitop, hf, evo, graphify) - installed via `uv tool install`
 - Git identity (user.name, user.email) - different per user
+
+## Testing
+
+Run automated checks locally before committing:
+
+```sh
+mise run test    # or ./scripts/test
+```
+
+Validates:
+- Syntax for all zsh and bash files (`zsh -n`, `bash -n`)
+- Multi-platform template compilation (`darwin/arm64`, `darwin/amd64`, `linux/amd64`, `linux/arm64`)
+- Cross-platform keybinding parity in `configs/zshrc` (Mac `\e[1;3` Opt and Linux/WSL `\e[1;5` Ctrl)
+- CRLF line ending prevention
+- Config format validation (JSON, TOML)
 
 ## Updating
 

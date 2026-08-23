@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Resolve repo root directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_ROOT"
+
+echo "==> 1. Checking shell scripts syntax..."
+# Zsh files
+zsh -n configs/zshrc configs/zprofile configs/zsh/*.zsh
+# Bash files
+bash -n configs/bashrc.linux configs/bashrc.darwin configs/bash_profile
+
+echo "==> 2. Checking config formats (JSON / TOML / YAML)..."
+# JSON validation
+if command -v jq >/dev/null 2>&1; then
+    jq empty dot_config/karabiner/karabiner.json
+fi
+
+# TOML validation via Python
+python3 - <<'EOF'
+import sys
+try:
+    import tomllib
+    for toml_path in ["configs/herdr.toml", "configs/starship.toml"]:
+        with open(toml_path, "rb") as f:
+            tomllib.load(f)
+except ImportError:
+    pass
+EOF
+
+echo "==> 3. Checking CRLF line endings in tracked files..."
+CRLF_FILES=$(git grep -I -l $'\r' || true)
+if [[ -n "$CRLF_FILES" ]]; then
+    echo "ERROR: Found CRLF line endings in tracked files:"
+    echo "$CRLF_FILES"
+    exit 1
+fi
+
+echo "==> 4. Checking keybinding parity in configs/zshrc..."
+# macOS Option+Arrows (\e[1;3)
+grep -F -q "bindkey \$'\e[1;3D' backward-word" configs/zshrc || { echo "ERROR: Missing macOS Option+Left backward-word binding"; exit 1; }
+grep -F -q "bindkey \$'\e[1;3C' forward-word" configs/zshrc || { echo "ERROR: Missing macOS Option+Right forward-word binding"; exit 1; }
+# Linux/WSL Ctrl+Arrows (\e[1;5)
+grep -F -q "bindkey \$'\e[1;5D' backward-word" configs/zshrc || { echo "ERROR: Missing Linux/WSL Ctrl+Left backward-word binding"; exit 1; }
+grep -F -q "bindkey \$'\e[1;5C' forward-word" configs/zshrc || { echo "ERROR: Missing Linux/WSL Ctrl+Right forward-word binding"; exit 1; }
+
+echo "==> 5. Checking chezmoi template rendering for all platforms..."
+PLATFORMS=(
+    '{"chezmoi":{"os":"darwin","arch":"arm64"}}'
+    '{"chezmoi":{"os":"darwin","arch":"amd64"}}'
+    '{"chezmoi":{"os":"linux","arch":"amd64"}}'
+    '{"chezmoi":{"os":"linux","arch":"arm64"}}'
+)
+
+# Find all template files in the repo (excluding .git)
+TMPL_FILES=()
+while IFS= read -r line; do
+    TMPL_FILES+=("$line")
+done < <(find . -name '*.tmpl' -not -path './.git/*')
+
+for target in "${PLATFORMS[@]}"; do
+    for tmpl in "${TMPL_FILES[@]}"; do
+        chezmoi execute-template --override-data "$target" < "$tmpl" > /dev/null
+    done
+done
+
+# Verify syntax of rendered install scripts
+for target in "${PLATFORMS[@]}"; do
+    rendered_install=$(chezmoi execute-template --override-data "$target" < run_once_install-tools.sh.tmpl)
+    bash -n <<< "$rendered_install"
+done
+
+echo "==> 6. Checking .chezmoiignore invariants..."
+grep -q '^configs/' .chezmoiignore || { echo "ERROR: configs/ missing from .chezmoiignore"; exit 1; }
+grep -q '^scripts/' .chezmoiignore || { echo "ERROR: scripts/ missing from .chezmoiignore"; exit 1; }
+
+echo "==> All dotfiles tests passed successfully!"

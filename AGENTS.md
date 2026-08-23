@@ -26,9 +26,12 @@ symlink to the source dir for easy access (created during setup).
    `~/.local/share/chezmoi` (= `chezmoi source-path`).
 2. **Check for drift**: `chezmoi diff` - shows any local edits to deployed files that
    would be lost. Always run this before applying.
-3. **Apply**: `chezmoi apply`
-4. **Test in a new shell** - start a new zsh/tmux pane to pick up changes.
-5. **Commit + push** - the repo is the source of truth.
+3. **Run tests**: `mise run test` (or `./scripts/test`) - validates shell syntax (`zsh -n`,
+   `bash -n`), JSON/TOML validity, CRLF prevention, keybinding parity, and template
+   rendering for all supported platforms.
+4. **Apply**: `chezmoi apply`
+5. **Test in a new shell** - start a new zsh/tmux pane to pick up changes.
+6. **Commit + push** - the repo is the source of truth.
 
 Never edit deployed files directly - edit the source in this repo, then
 `chezmoi apply`. When adding a NEW config, write the source file in the repo
@@ -102,6 +105,16 @@ next `chezmoi apply`** and are not in the repo.
 
 ## Testing changes
 
+### Automated checks
+Run `mise run test` (or `./scripts/test`). Validates:
+- Syntax of all zsh and bash files (`zsh -n`, `bash -n`)
+- Formats of JSON and TOML config files
+- No CRLF line endings in tracked files
+- Keybinding parity in `configs/zshrc` (Mac `\e[1;3` Opt and Linux/WSL `\e[1;5` Ctrl)
+- Multi-platform template compilation (`darwin/arm64`, `darwin/amd64`, `linux/amd64`, `linux/arm64`)
+- `.chezmoiignore` invariants
+
+### Manual checks in a new shell
 After `chezmoi apply`, in a new shell:
 - `z <tab>` - zoxide completion (frecency db entries, not local subdirs)
 - `which starship` - resolves via mise to `~/.local/share/mise/installs/starship/latest/`

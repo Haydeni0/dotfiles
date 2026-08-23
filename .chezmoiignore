@@ -1,6 +1,8 @@
 # Non-deploy files (source-of-truth data, not deployed to $HOME)
 configs/
 configs/**
+scripts/
+scripts/**
 docs/
 docs/**
 AGENTS.md

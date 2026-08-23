@@ -21,3 +21,7 @@ rclone = "latest"
 uv = "latest"
 difftastic = "latest"
 node = "lts"
+
+[tasks.test]
+description = "Run dotfiles sanity, syntax, and multi-platform template tests"
+run = "bash ${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi/scripts/test"
