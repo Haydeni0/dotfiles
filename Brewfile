@@ -37,7 +37,7 @@ cask "whatsapp"
 
 # --- Keyboard ---
 # Karabiner-Elements: keyboard remapping (ISO UK layout). Config deployed to
-# ~/.config/karabiner/ via chezmoi (dot_config/karabiner/); reload kicks via
+# ~/.config/karabiner/ via chezmoi (dot_config/private_karabiner/); reload kicks via
 # run_onchange_reload-karabiner.sh.tmpl.
 # Installed via cask (not the nix-darwin service - this is chezmoi, no nix-darwin).
 cask "karabiner-elements"

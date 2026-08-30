@@ -1,5 +1,5 @@
 {{- if eq .chezmoi.os "darwin" -}}
-{{- $k1 := include "dot_config/karabiner/karabiner.json" -}}
+{{- $k1 := include "dot_config/private_karabiner/karabiner.json" -}}
 {{- $hash := sha256sum (print $k1) -}}
 #!/bin/sh
 # Reload Karabiner-Elements after chezmoi deploys a config change.

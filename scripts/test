@@ -15,7 +15,7 @@ bash -n configs/bashrc.linux configs/bashrc.darwin configs/bash_profile
 echo "==> 2. Checking config formats (JSON / TOML / YAML)..."
 # JSON validation
 if command -v jq >/dev/null 2>&1; then
-    jq empty dot_config/karabiner/karabiner.json
+    jq empty dot_config/private_karabiner/karabiner.json
 fi
 
 # TOML validation via Python
