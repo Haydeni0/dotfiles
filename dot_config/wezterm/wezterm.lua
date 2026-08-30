@@ -10,6 +10,13 @@ config.macos_window_background_blur = 20
 config.send_composed_key_when_left_alt_is_pressed = false
 config.send_composed_key_when_right_alt_is_pressed = false
 config.window_decorations = 'RESIZE'
+-- Never prompt on close. Panes are herdr's, not WezTerm's, so there is nothing
+-- WezTerm can warn about that is worth a dialog.
+config.window_close_confirmation = 'NeverPrompt'
+-- The tab bar's x button ignores key assignments and checks this list instead.
+config.skip_close_confirmation_for_processes_named = {
+    'bash', 'sh', 'zsh', 'fish', 'tmux', 'nu', 'herdr',
+}
 -- Auto-boot herdr. Absolute path: GUI-launched wezterm doesn't source zprofile,
 -- so ~/.local/bin isn't on PATH (same constraint as ghostty).
 config.default_prog = { os.getenv('HOME') .. '/.local/bin/herdr' }
@@ -22,6 +29,8 @@ config.keys = {
     { key = '\\', mods = 'CMD|SHIFT', action = wezterm.action.ActivateWindowRelative(-1) },
     { key = '`', mods = 'CMD', action = wezterm.action.ActivateWindowRelative(1) },
     { key = '`', mods = 'CMD|SHIFT', action = wezterm.action.ActivateWindowRelative(-1) },
+    -- cmd+w closes the tab outright; the default binding sets confirm = true.
+    { key = 'w', mods = 'CMD', action = wezterm.action.CloseCurrentTab { confirm = false } },
     -- cmd+arrows: jump to line start/end (readline ctrl+a/ctrl+e). WezTerm
     -- doesn't bind cmd+arrows by default so zsh never sees a line-jump action.
     { key = 'LeftArrow', mods = 'CMD', action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' } },
