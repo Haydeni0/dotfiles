@@ -14,8 +14,10 @@ config.window_decorations = 'RESIZE'
 -- WezTerm can warn about that is worth a dialog.
 config.window_close_confirmation = 'NeverPrompt'
 -- The tab bar's x button ignores key assignments and checks this list instead.
+-- WezTerm reports the pane's foreground process, so a gssh window reads as
+-- 'ssh' (its sh retry wrapper is only in front between reconnects).
 config.skip_close_confirmation_for_processes_named = {
-    'bash', 'sh', 'zsh', 'fish', 'tmux', 'nu', 'herdr',
+    'bash', 'sh', 'zsh', 'fish', 'tmux', 'nu', 'herdr', 'ssh',
 }
 -- Auto-boot herdr. Absolute path: GUI-launched wezterm doesn't source zprofile,
 -- so ~/.local/bin isn't on PATH (same constraint as ghostty).
