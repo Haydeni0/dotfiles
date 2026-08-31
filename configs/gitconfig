@@ -21,3 +21,11 @@
     conflictstyle = diff3
 [diff]
     colorMoved = default
+# gh-resolved HTTPS auth for private repos. gh auth setup-git writes a
+# version-pinned absolute path into ~/.gitconfig on every `gh auth login`
+# (drift chezmoi apply strips) - this bare PATH-resolved form is the
+# repo-managed equivalent; re-login rewrites it back and needs re-stripping.
+[credential "https://github.com"]
+    helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+    helper = !gh auth git-credential

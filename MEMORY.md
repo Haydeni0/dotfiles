@@ -43,6 +43,20 @@ defaults to selecting the gnu release on glibc hosts. Configure yazi as an http 
 installing the musl release (`yazi-...-unknown-linux-musl.zip`) in
 `dot_config/mise/config.toml.tmpl` for Linux, while keeping `yazi = "latest"` on macOS.
 
+### 2026-08-31 - gh credential helper in ~/.gitconfig drifts on gh auth login
+`gh auth login` / `gh auth setup-git` writes a version-pinned absolute-path
+credential helper (`!.../mise/installs/gh/<ver>/.../bin/gh auth git-credential`)
+into `~/.gitconfig`. chezmoi-managed `~/.gitconfig` + repo source
+`configs/gitconfig` carry the bare PATH-resolved form
+(`helper = !gh auth git-credential`) instead. gh does NOT recognize the bare
+form as already-configured, so re-login re-introduces the pinned block ->
+`chezmoi diff` shows drift; fix = strip pinned blocks from deployed file,
+re-apply. Verified live: bare form resolves via mise shims (interactive) and
+~/.local/bin/gh (login shells, unmanaged artifact on this machine only -
+fresh machines need mise activate on PATH). Identity note: [user] lives in
+~/.config/git/config (XDG), NOT ~/.gitconfig.local - earlier entry below
+stale on that point.
+
 ### 2026-08-22 - .gitattributes prevents CRLF corruption on Windows/WSL
 Cloning on Windows or WSL with default `core.autocrlf = true` converts repo files to
 CRLF. This breaks script execution (e.g. `run_once_install-tools.sh.tmpl` shebang fails
