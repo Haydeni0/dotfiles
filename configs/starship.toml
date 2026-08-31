@@ -1,4 +1,8 @@
 add_newline = false
+# Default 30ms. Home and /mnt/data are NFS; scan latency on a loaded machine
+# intermittently exceeds it, producing "Scanning current directory timed out".
+scan_timeout = 200
+command_timeout = 500
 format = "${custom.dir}$git_branch$git_status$cmd_duration$fill$username$hostname$line_break$character"
 
 [character]
