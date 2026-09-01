@@ -1,7 +1,7 @@
 # yazi.toml
 [mgr]
 show_hidden = true
-linemode = "all"
+linemode = "none"
 
 # xdg-open unavailable on headless linux; route open to $EDITOR.
 # macos/windows defaults preserved (zero-drift).
