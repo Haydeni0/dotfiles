@@ -36,6 +36,17 @@ Environment specifics an agent needs to know. Add as discovered.
 
 ## Learnings
 
+### 2026-09-04 - completion matcher-list `{a-zA-Z}={a-zA-Z}` is an identity no-op
+`zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={a-zA-Z}'` looks like
+case-insensitive completion but maps each char to itself (m:src=dst is
+positional) - zero case folding, `readm`-TAB fails against README.md. Correct
+form (what oh-my-zsh ships): `m:{a-zA-Z}={A-Za-z}` (dst swapped: a->A, A->a).
+Fixed in `configs/zshrc` line 45. Verified via expect pty repro driving real
+interactive zsh: `wc readm`-TAB went from "no such file" to completing
+README.md. Repro technique: zpty drain blocks forever without `-t`; use
+`expect` (macOS ships it) - spawn `env SKIP_HERDR=1 zsh -i`, sleep 4 for
+startup, send prefix + \t, check oracle strings in buffer.
+
 ### 2026-08-22 - yazi on Linux requires musl release (gnu build requires glibc 2.39)
 Upstream yazi builds `yazi-x86_64-unknown-linux-gnu` on Ubuntu 24.04 requiring GLIBC_2.39,
 crashing on Ubuntu 22.04, Debian 12, and HPC nodes (glibc 2.35). Mise's aqua backend
