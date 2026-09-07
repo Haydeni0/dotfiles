@@ -116,6 +116,18 @@ if command -v wezterm >/dev/null 2>&1; then
     }
 fi
 
+# sshh: plain ssh in the current terminal, with SKIP_HERDR=1 set on the remote
+# so the remote shell does not auto-boot herdr. sshd's AcceptEnv (LANG LC_* only)
+# blocks SendEnv/SetEnv passthrough, so the var is set by the remote command
+# wrapper instead: the remote shell expands $SHELL (local quoting is preserved
+# because ssh passes this as one argv element, not through a second sh -c) and
+# execs the login shell; -t forces a TTY so the interactive shell gets one.
+# Put ssh options before the host (e.g. `sshh -p 2222 user@host`), not after -
+# ssh parses positionally.
+sshh() {
+    ssh -t "$@" 'SKIP_HERDR=1 exec $SHELL -l'
+}
+
 # lazygit: on macOS it defaults to ~/Library/Application Support/lazygit/
 # instead of ~/.config/lazygit/ (its own docs suggest this override). Force
 # XDG_CONFIG_HOME so the deployed dot_config/lazygit/config.yml.tmpl is the
