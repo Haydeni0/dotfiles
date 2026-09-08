@@ -46,11 +46,11 @@ git config --global user.email "you@example.com"
 #    - Reload tmux config if a server was running pre-apply: tmux source-file ~/.tmux.conf
 ```
 
-See [docs/setup.md](docs/setup.md) for the full guide (includes macOS system.defaults, GUI app settings, company-PC safety notes).
+See [docs/setup.md](docs/setup.md) for the full guide (includes macOS system.defaults, GUI app settings, managed-PC safety notes).
 
 ## Supported platforms
 
-- **macOS** (Work Mac): Homebrew packages, WezTerm, Karabiner-Elements, zsh default shell, Opt+Arrow navigation (`\e[1;3`).
+- **macOS** (Mac): Homebrew packages, WezTerm, Karabiner-Elements, zsh default shell, Opt+Arrow navigation (`\e[1;3`).
 - **Linux HPC (no sudo)**: Login & compute nodes with glibc ≥ 2.35, bash login default (`exec zsh`), tools via mise + micromamba, Ctrl+Arrow navigation (`\e[1;5`).
 - **WSL (Windows Subsystem for Linux)**: Ubuntu/Debian on Windows, Windows Terminal/WezTerm, LF line endings enforced, Ctrl+Arrow navigation (`\e[1;5`).
 

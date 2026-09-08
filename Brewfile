@@ -20,9 +20,9 @@ brew "node"
 # if you prefer Homebrew for specific tools.
 
 # --- GUI apps (casks) ---
-# No `cask_args` or `cleanup` directive: on a company Mac, brew must NOT
-# uninstall casks that aren't listed here (Office, 1Password, Falcon, etc.
-# are company-managed). `brew bundle` installs/updates listed casks only.
+# No `cleanup` directive: `brew bundle` must never uninstall casks that
+# aren't listed here (e.g. pre-existing/managed installs). It
+# installs/updates listed casks only.
 cask "wezterm"
 cask "rectangle"
 cask "dockdoor"
@@ -44,10 +44,3 @@ cask "karabiner-elements"
 
 # --- Fonts ---
 cask "font-hack-nerd-font"
-
-# --- Company-managed apps NOT declared here (left manual) ---
-# Microsoft Office, 1Password, Intune Company Portal, Falcon (CrowdStrike),
-# FortiClient, Microsoft Defender, Chrome, Notion, Slack, Zoom, OneDrive,
-# Windows App. These are deployed by employer MDM - declaring them here risks
-# conflicts and `brew bundle` won't manage them anyway. Reinstall via IT/MDM
-# on a fresh Mac.

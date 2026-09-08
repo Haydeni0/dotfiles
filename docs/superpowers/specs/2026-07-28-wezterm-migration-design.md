@@ -92,8 +92,8 @@ Ghostty is being removed entirely. Its config goes with it.
 
 Swap `cask "ghostty"` -> `cask "wezterm"` (line 25).
 
-Note: Brewfile has no `cleanup` directive (intentional - company Mac must not
-uninstall MDM-managed casks). `brew bundle` will install wezterm but will NOT
+Note: Brewfile has no `cleanup` directive (intentional - brew must not
+uninstall casks it doesn't manage). `brew bundle` will install wezterm but will NOT
 uninstall ghostty. User runs `brew uninstall --cask ghostty` manually once.
 
 ### MODIFY: `configs/zshrc`

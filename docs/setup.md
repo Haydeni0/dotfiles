@@ -58,7 +58,7 @@ zoxide query --list  # should show db entries
 ## macOS
 
 Full reproduction: shell + dev tools + GUI apps + macOS prefs + keyboard config.
-A fresh work Mac following this section gets the complete setup.
+A fresh Mac following this section gets the complete setup.
 
 ### Prerequisites
 - Homebrew installed (https://brew.sh)
@@ -84,8 +84,8 @@ chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 #    This installs: wezterm, rectangle, dockdoor, scroll-reverser, betterdisplay,
 #    obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp,
 #    karabiner-elements, font-hack-nerd-font, mise, zsh, btop, opencode.
-#    Company-managed apps (Office, 1Password, Falcon, etc.) are NOT touched
-#    (Brewfile has no `cleanup` directive).
+#    Pre-existing/managed apps are NOT touched (Brewfile has no `cleanup`
+#    directive).
 brew bundle --file=~/Brewfile
 
 # 4. Set git identity (not managed by chezmoi - different per user)
@@ -131,8 +131,8 @@ zoxide query --list  # shows db entries
 
 ### Migrating from Ghostty (manual cleanup)
 WezTerm replaced Ghostty as the terminal emulator. The Brewfile has no `cleanup`
-directive (company Mac must not uninstall MDM-managed casks), so `brew bundle`
-installs WezTerm but does NOT remove Ghostty. After confirming WezTerm works,
+directive, so `brew bundle` installs WezTerm but does NOT remove Ghostty. After
+confirming WezTerm works,
 remove Ghostty manually:
 ```sh
 brew uninstall --cask ghostty
@@ -152,9 +152,9 @@ removed - chezmoi only manages files it knows about, not abandoned deployed dirs
 - **macOS defaults** (via run_once script): separate-spaces OFF, fn-keys as F-keys, mission-control ctrl+arrow keybinds disabled
 - **GUI app settings** (via run_once script): Rectangle keybinds, DockDoor config, ScrollReverser mouse-only reverse
 
-### Company-PC notes
-- The Brewfile has NO `cleanup` directive, so `brew bundle` only installs/updates the listed casks. Company-managed apps (Microsoft Office, 1Password, Intune Company Portal, Falcon/CrowdStrike, FortiClient, Microsoft Defender, Chrome, Notion, Slack, Zoom) are NOT removed.
-- The macOS defaults script warns if a setting is MDM-managed (it'll be reverted on sync). Check `profiles show` first; if a pref is enforced by your employer's MDM, remove it from `run_once_macos-defaults.sh.tmpl`.
-- Karabiner-Elements installs a driver extension - may trigger an EDR (Falcon) alert. If blocked, keep Karabiner manual (config JSON still deploys via chezmoi; just install the app outside the Brewfile).
+### Managed-PC notes
+- The Brewfile has NO `cleanup` directive, so `brew bundle` only installs/updates the listed casks. Apps not declared here are NOT removed.
+- The macOS defaults script warns if a setting is MDM-managed (it'll be reverted on sync). Check `profiles show` first; if a pref is enforced by an MDM profile, remove it from `run_once_macos-defaults.sh.tmpl`.
+- Karabiner-Elements installs a driver extension - may trigger an endpoint-security alert. If blocked, keep Karabiner manual (config JSON still deploys via chezmoi; just install the app outside the Brewfile).
 
 > Ongoing operations (updating, adding tools, what stays manual) live in [README.md](../README.md).
