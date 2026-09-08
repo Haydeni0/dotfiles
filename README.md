@@ -1,6 +1,6 @@
 # dotfiles
 
-Cross-platform dotfiles managed by chezmoi, with mise for tool installation. No Nix, no bwrap, no root. Same config files on Mac and Linux.
+Cross-platform dotfiles managed by chezmoi, with mise for tool installation. Same config files on Mac and Linux.
 
 ## Quick start
 
