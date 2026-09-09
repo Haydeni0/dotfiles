@@ -103,9 +103,13 @@ fi
 # connection instead of exiting/closing: on any ssh exit (drop or clean
 # logout) it waits 3s and reconnects. Ctrl-C during the sleep is the only
 # way to stop the retries.
+# WEZTERM_UNIX_SOCKET is unset: panes inherit it from the GUI that spawned
+# them, but that GUI may have been quit since - the var then points at a
+# dead socket and `wezterm cli` fails (tries to spawn a rival mux server,
+# which loses the pid-file lock). Without it, cli finds the live instance.
 if command -v wezterm >/dev/null 2>&1; then
     gssh() {
-        wezterm cli spawn --new-window -- sh -c '
+        env -u WEZTERM_UNIX_SOCKET wezterm cli spawn --new-window -- sh -c '
             while true; do
                 ssh -t "$@"
                 status=$?
