@@ -23,6 +23,28 @@ config.skip_close_confirmation_for_processes_named = {
 -- so ~/.local/bin isn't on PATH (same constraint as ghostty).
 config.default_prog = { os.getenv('HOME') .. '/.local/bin/herdr' }
 
+-- cmd+click opens hyperlink (Terminal.app habit), even when the program has
+-- grabbed the mouse (claude code TUI, herdr, vim) - that grab is exactly why a
+-- plain mouse_reporting=false binding never fires inside them. mouse_reporting
+-- = true makes this binding claim the event instead; the docs' warning (pane
+-- program misses the event) is the point here - claude code should not see a
+-- cmd+click as a scroll/click. Nop on Down swallows the press for the same
+-- reason. Drag+SUPER (window move) unaffected: Drag is a separate binding key.
+config.mouse_bindings = {
+    {
+        event = { Up = { streak = 1, button = 'Left' } },
+        mods = 'SUPER',
+        action = wezterm.action.OpenLinkAtMouseCursor,
+        mouse_reporting = true,
+    },
+    {
+        event = { Down = { streak = 1, button = 'Left' } },
+        mods = 'SUPER',
+        action = wezterm.action.Nop,
+        mouse_reporting = true,
+    },
+}
+
 -- Cycle WezTerm windows with cmd+\ and cmd+` (ISO UK + Karabiner reshuffling
 -- move these keys around). WezTerm swallows unhandled cmd combos so macOS's
 -- native cycle-windows never fires; bind both to WezTerm's own action.
