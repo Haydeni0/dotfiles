@@ -86,16 +86,22 @@ See [docs/setup.md](docs/setup.md) for the full guide (includes macOS system.def
 - **Git identity**: `git config --global user.name` and `user.email` (not in the repo - different per user)
 - **AWS_PROFILE**: edit `configs/bashrc.linux`
 - **pi-node PATH**: edit `configs/zprofile`
-- **local-claude/local-opencode aliases**: edit `configs/zsh/aliases.zsh`
 - **SSH keys**: stays manual in `~/.ssh/` (never in repo)
+
+## Aliases: tracked vs machine-local
+
+- **Tracked** (synced across machines): edit `configs/zsh/aliases.zsh`, then `chezmoi apply`
+- **Machine-local** (single machine, not in repo): edit `~/.zsh/aliases.local.zsh` - sourced by `~/.zshrc`
+  if present, never touched by chezmoi
 
 ## What stays manual (not managed by chezmoi)
 
 - `~/.ssh/` - keys, config, authorized_keys (secrets)
 - `~/.config/rclone/rclone.conf` - cloud credentials (secrets)
-- `~/.local/bin/local-claude`, `local-opencode` - CoreWeave proxies
+- `~/.local/bin/` - CoreWeave proxies and other machine-specific binaries
 - uv-managed tools (nvitop, hf, evo, graphify) - installed via `uv tool install`
 - Git identity (user.name, user.email) - different per user
+- `~/.zsh/aliases.local.zsh` - machine-local aliases and functions
 
 ## Testing
 

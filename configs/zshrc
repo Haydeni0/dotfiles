@@ -49,6 +49,9 @@ zstyle ':completion:*:descriptions' format '%F{purple}%d%f'
 # Aliases (shared)
 [[ -r ~/.zsh/aliases.zsh ]] && source ~/.zsh/aliases.zsh
 
+# Aliases (machine-local, not in dotfiles repo)
+[[ -r ~/.zsh/aliases.local.zsh ]] && source ~/.zsh/aliases.local.zsh
+
 # Prompt - starship if available, simple fallback
 if command -v starship >/dev/null 2>&1; then
     eval "$(starship init zsh)"

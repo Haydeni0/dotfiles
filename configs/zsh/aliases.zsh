@@ -157,8 +157,6 @@ alias gignored='git ls-files -v | grep "^[[:lower:]]"'
 alias gfg='git ls-files | grep'
 
 # personal aliases
-alias cc='~/.local/bin/local-claude'
-alias oc='~/.local/bin/local-opencode'
 alias add='git add .'
 alias push='git push'
 alias pull='git pull'
