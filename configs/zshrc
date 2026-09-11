@@ -23,6 +23,10 @@ fi
 
 # Keybindings (emacs mode)
 bindkey -e
+# Word = alphanumerics only, so backward-kill-word (ctrl+backspace) stops at
+# / . - _ etc instead of eating whole paths/filenames. Default WORDCHARS treats
+# those as word chars, killing "asdasd/asdasd" in one press.
+WORDCHARS=''
 bindkey '^H' backward-kill-word
 # Word navigation: opt+left/right (macOS) and ctrl+left/right (WSL/Linux/xterm)
 bindkey $'\e[1;3D' backward-word
