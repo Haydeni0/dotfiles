@@ -63,6 +63,8 @@ See [docs/setup.md](docs/setup.md) for the full guide (includes macOS system.def
 - **herdr**: agent multiplexer with tmux-compatible keybindings (Ctrl-B prefix)
 - **git**: autoSetupRemote, rerere, ~60 git aliases
 
+Keybinds and daily-use features: see the [cheatsheet](docs/cheatsheet.md).
+
 ## Architecture
 
 - `configs/` - source of truth (plain files, NOT deployed to `$HOME`)
@@ -131,3 +133,25 @@ chezmoi update    # pull + apply
   `chezmoi apply` because the content hash changes). To force a re-run of unchanged
   content: `chezmoi state delete-bucket --bucket=scriptState && chezmoi apply`
 - Both: commit + push
+
+## Adopting a tool's existing config into the repo
+
+When a tool has already written config to `$HOME` (e.g. `~/.config/<tool>/`) and you
+want it tracked:
+
+```sh
+chezmoi add ~/.config/<tool>       # copies current state into the source dir
+chezmoi diff                       # should be empty (source == deployed)
+git add dot_config/<tool> && git commit
+```
+
+Nuances:
+
+- Files with secrets never get added (`chezmoi add` them into `dot_config/` only after
+  scrubbing, or add to `.chezmoiignore`). `chezmoi unmanaged` lists candidates you
+  haven't adopted yet.
+- A config needing platform differences becomes a template: `chezmoi add --template`
+  then edit with `{{ if eq .chezmoi.os "darwin" }}` blocks (see
+  `dot_config/herdr/config.toml.tmpl` for the pattern).
+- After adopting, edits go to the source file (repo), never the deployed copy -
+  `chezmoi edit ~/.config/<tool>/...` opens the source in `$EDITOR`.

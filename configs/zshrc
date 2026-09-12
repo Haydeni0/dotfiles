@@ -97,6 +97,12 @@ if command -v zoxide >/dev/null 2>&1; then
 fi
 
 # fzf (requires fzf 0.48+ for --zsh flag)
+# Preview opts: ctrl-t peeks at file content (dirs fall back to ls),
+# alt-c peeks at the dir listing. ctrl-d toggles preview inside fzf.
+# Must be set before `fzf --zsh` runs - the keybinds capture them at source.
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --color=border:#bd93f9'
+export FZF_CTRL_T_OPTS="--preview 'bat -p --color=always {} 2>/dev/null || ls -la {}' --bind ctrl-d:toggle-preview"
+export FZF_ALT_C_OPTS="--preview 'ls -la {}' --bind ctrl-d:toggle-preview"
 if command -v fzf >/dev/null 2>&1; then
     source <(fzf --zsh)
 fi
@@ -162,9 +168,11 @@ fi
 
 # Plugins (git-cloned to ~/.local/share/zsh/, source with guards)
 [[ -r ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
-    source ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+    source ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh && \
+    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#5c6370'
 [[ -r ~/.local/share/zsh/zsh-history-substring-search/zsh-history-substring-search.zsh ]] && \
     source ~/.local/share/zsh/zsh-history-substring-search/zsh-history-substring-search.zsh && \
+    HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1 && \
     bindkey '^[[A' history-substring-search-up && \
     bindkey '^[[B' history-substring-search-down
 # Syntax highlighting MUST be last

@@ -25,3 +25,20 @@ node = "lts"
 [tasks.test]
 description = "Run dotfiles sanity, syntax, and multi-platform template tests"
 run = "bash ${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi/scripts/test"
+
+[tasks.sync]
+description = "Pull latest dotfiles, apply, and test (the post-pull dance as one command)"
+run = [
+    "git -C ${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi pull --ff-only",
+    "chezmoi apply",
+    "mise run test",
+]
+
+[tasks.doctor]
+description = "Show chezmoi health and drift summary (files needing apply)"
+run = [
+    "chezmoi doctor",
+    "echo '--- drift ---'",
+    "chezmoi diff --exclude files",
+    "echo '(empty above = clean)'",
+]

@@ -31,7 +31,9 @@ symlink to the source dir for easy access (created during setup).
    rendering for all supported platforms.
 4. **Apply**: `chezmoi apply`
 5. **Test in a new shell** - start a new zsh/tmux pane to pick up changes.
-6. **Commit + push** - the repo is the source of truth.
+6. **Update the cheatsheet** if the change is user-facing (a new keybind,
+   command, or default) - `docs/cheatsheet.md`, rules at its top.
+7. **Commit + push** - the repo is the source of truth.
 
 Never edit deployed files directly - edit the source in this repo, then
 `chezmoi apply`. When adding a NEW config, write the source file in the repo

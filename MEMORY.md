@@ -36,6 +36,18 @@ Environment specifics an agent needs to know. Add as discovered.
 
 ## Learnings
 
+### 2026-09-11 - WORDCHARS controls zsh word-delete granularity; terminal apps have own logic
+zsh default `WORDCHARS` (`*?_-.[]~=/&;!#$%^(){}<>`) counts `/ . - _` as word
+chars, so ctrl+backspace (`backward-kill-word`) ate whole paths like
+`asdasd/asdasd` in one press. Fixed with `WORDCHARS=''` in `configs/zshrc`
+(commit db2ab37) - word = alphanumerics only, one press on `asdasd/asdasd`
+leaves `asdasd/`. "Weird inconsistency" across apps is expected: zle uses
+WORDCHARS, but terminal apps (Claude Code, nvim) parse keys themselves - their
+behavior is not fixable from dotfiles. Also learned: pty repro must run AFTER
+`chezmoi apply` - spawned zsh reads deployed `~/.zshrc`, not the source dir.
+Oracle tip: killed text assertions on trailing-space lines fail - terminal
+never renders the trailing space; assert on the executed output instead.
+
 ### 2026-09-04 - completion matcher-list `{a-zA-Z}={a-zA-Z}` is an identity no-op
 `zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={a-zA-Z}'` looks like
 case-insensitive completion but maps each char to itself (m:src=dst is
