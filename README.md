@@ -105,26 +105,22 @@ Keybinds and daily-use features: see the [cheatsheet](docs/cheatsheet.md).
 - Git identity (user.name, user.email) - different per user
 - `~/.zsh/aliases.local.zsh` - machine-local aliases and functions
 
-## Testing
-
-Run automated checks locally before committing:
+## Testing and upkeep tasks
 
 ```sh
-mise run test    # or ./scripts/test
+mise run test    # or ./scripts/test - automated checks, run before committing
+mise run sync    # pull --ff-only + chezmoi apply + test - the post-pull dance in one command
+mise run doctor  # chezmoi doctor + drift summary
 ```
 
-Validates:
+`test` validates:
 - Syntax for all zsh and bash files (`zsh -n`, `bash -n`)
 - Multi-platform template compilation (`darwin/arm64`, `darwin/amd64`, `linux/amd64`, `linux/arm64`)
 - Cross-platform keybinding parity in `configs/zshrc` (Mac `\e[1;3` Opt and Linux/WSL `\e[1;5` Ctrl)
 - CRLF line ending prevention
 - Config format validation (JSON, TOML)
 
-## Updating
-
-```sh
-chezmoi update    # pull + apply
-```
+`sync` replaces the manual `chezmoi update` (pull + apply) by also running tests.
 
 ## Adding new tools
 

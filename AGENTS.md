@@ -28,7 +28,9 @@ symlink to the source dir for easy access (created during setup).
    would be lost. Always run this before applying.
 3. **Run tests**: `mise run test` (or `./scripts/test`) - validates shell syntax (`zsh -n`,
    `bash -n`), JSON/TOML validity, CRLF prevention, keybinding parity, and template
-   rendering for all supported platforms.
+   rendering for all supported platforms. Other tasks: `mise run sync` (pull +
+   apply + test, the post-pull dance) and `mise run doctor` (chezmoi health +
+   drift summary).
 4. **Apply**: `chezmoi apply`
 5. **Test in a new shell** - start a new zsh/tmux pane to pick up changes.
 6. **Update the cheatsheet** if the change is user-facing (a new keybind,
