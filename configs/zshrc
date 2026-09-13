@@ -120,11 +120,24 @@ fi
 # them, but that GUI may have been quit since - the var then points at a
 # dead socket and `wezterm cli` fails (tries to spawn a rival mux server,
 # which loses the pid-file lock). Without it, cli finds the live instance.
+# LC_HERDR_ALLOW_SPAWN=1 is sent on the FIRST connection only: it lets the
+# remote zshrc spawn a herdr server if none is live (see the attach-only
+# boot block at the bottom of this file). Reconnects never send it - a
+# dropped connection must re-ATTACH, never silently spawn a fresh server
+# (that is the "session reset" failure mode on NFS-shared-home clusters).
+# LC_ prefix because sshd only AcceptEnv's LANG LC_* (same trick as SKIP_HERDR
+# in sshh, which goes the other way).
 if command -v wezterm >/dev/null 2>&1; then
     gssh() {
         env -u WEZTERM_UNIX_SOCKET wezterm cli spawn --new-window -- sh -c '
+            first=1
             while true; do
-                ssh -t "$@"
+                if [ "$first" = 1 ]; then
+                    LC_HERDR_ALLOW_SPAWN=1 ssh -t "$@"
+                else
+                    ssh -t "$@"
+                fi
+                first=0
                 status=$?
                 echo "[gssh] disconnected ($status), reconnecting in 3s... (ctrl-c to stop)"
                 sleep 3
@@ -182,12 +195,38 @@ fi
 # Auto-start herdr (primary multiplexer). tmux is backup (prefix ctrl-b).
 # Set SKIP_HERDR=1 to drop to a plain shell. Set USE_TMUX=1 to start tmux instead.
 # Guarded against nesting inside herdr/tmux panes, IDE terminals, and non-interactive shells.
+#
+# Two guards against the NFS-shared-home socket race (confirmed on the slurm
+# cluster: seven servers ended up bound to the same socket path; a new ssh
+# silently attached to an empty restored server and the session looked "reset"):
+#
+# 1. Per-host session name over ssh: "main-<hostname>" instead of "main".
+#    Machines sharing an NFS home resolve different sockets + session.json
+#    under sessions/<name>/, so they stop colliding.
+# 2. Attach-only: before booting herdr, probe the session's server with
+#    `herdr --session <name> status` (internally request-timeout-bounded in
+#    herdr, so no external `timeout` needed - macOS has none). No live
+#    server -> plain shell + a message, NEVER a silent spawn of a fresh
+#    server. A spawn is only allowed when LC_HERDR_ALLOW_SPAWN=1 (set by
+#    gssh's first connection - the LC_ prefix is what sshd AcceptEnv permits);
+#    everything else - including gssh reconnects and plain `ssh host` - can
+#    only attach. After a genuine reboot, run `herdr --session <name>` once.
 if [[ -o interactive ]] && [ -z "$TMUX" ] && [ -z "$HERDR" ] && [ -z "$HERDR_ENV" ] && [ -z "$SKIP_HERDR" ] && \
    [ "$TERM_PROGRAM" != "vscode" ] && [ -z "${REMOTE_CONTAINERS_SOCKETS}" ] && \
    [ -z "${CURSOR_AGENT}" ]; then
     if [ -n "$USE_TMUX" ] && command -v tmux >/dev/null 2>&1; then
         exec tmux new-session -A -s main
     elif command -v herdr >/dev/null 2>&1; then
-        exec herdr --session main
+        _herdr_session=main
+        [[ -n "$SSH_TTY" || -n "$SSH_CONNECTION" ]] && _herdr_session="main-$(hostname -s)"
+        if herdr --session "$_herdr_session" status 2>/dev/null | grep -q "status: running"; then
+            exec herdr --session "$_herdr_session"
+        elif [ -n "$LC_HERDR_ALLOW_SPAWN" ]; then
+            exec herdr --session "$_herdr_session"
+        else
+            echo "[herdr] no live session '$_herdr_session' on $(hostname -s); plain shell."
+            echo "[herdr] start one with: herdr --session $_herdr_session"
+        fi
+        unset _herdr_session
     fi
 fi
