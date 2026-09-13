@@ -47,21 +47,17 @@ Daily-use keybinds and commands this dotfiles repo sets up.
 |-----|--------|------|
 | `z <dir>` | Frecency-weighted cd | `zi` = interactive picker |
 | `cat` | bat (paged) when stdout is a terminal | Pipes/redirects get real cat |
-| `gssh <host>` | New WezTerm window, ssh with auto-reconnect | Retry loop survives dropped connections; ctrl+c stops retries |
-| `sshh <host>` | Plain ssh in current terminal | Sets SKIP_HERDR on remote - no herdr auto-boot there |
 | `lg` | lazygit | Stacked diff view (delta without side-by-side) |
 | `gdifft` | git diff via difftastic | Syntax-aware, one-off; core pager (delta) untouched |
 | `nvchad` | Secondary nvim config | Fully separate via NVIM_APPNAME |
-| `SKIP_HERDR=1` | Drop to plain shell on startup | |
-| `USE_TMUX=1` | Auto-start tmux instead of herdr | |
 
 ## Multiplexers
 
 | Key | Action | Note |
 |-----|--------|------|
-| ctrl+space | herdr prefix | Primary multiplexer |
-| prefix+d | herdr detach | |
-| ctrl+b | tmux prefix | tmux is backup multiplexer |
+| ctrl+space | herdr prefix | Local + remote machines in one TUI |
+| prefix+d | herdr detach | Agents keep running after detach |
+| ctrl+b | tmux prefix | Never auto-started |
 | ctrl+shift+arrows | tmux: switch pane | No prefix needed |
 | shift+left/right | tmux: prev/next window | No prefix needed |
 | F11 | tmux: toggle all bindings off | For nested/remote tmux |

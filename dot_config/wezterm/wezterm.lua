@@ -21,14 +21,14 @@ config.window_decorations = 'RESIZE'
 -- WezTerm can warn about that is worth a dialog.
 config.window_close_confirmation = 'NeverPrompt'
 -- The tab bar's x button ignores key assignments and checks this list instead.
--- WezTerm reports the pane's foreground process, so a gssh window reads as
--- 'ssh' (its sh retry wrapper is only in front between reconnects).
+-- WezTerm reports the pane's foreground process; herdr's ssh machine
+-- connections read as 'ssh'.
 config.skip_close_confirmation_for_processes_named = {
     'bash', 'sh', 'zsh', 'fish', 'tmux', 'nu', 'herdr', 'ssh',
 }
--- Auto-boot herdr. Absolute path: GUI-launched wezterm doesn't source zprofile,
--- so ~/.local/bin isn't on PATH (same constraint as ghostty).
-config.default_prog = { os.getenv('HOME') .. '/.local/bin/herdr' }
+-- Plain zsh on launch. herdr runs on demand from inside the shell; its
+-- multi-machine client manages remote servers over ssh.
+config.default_prog = { '/bin/zsh' }
 
 -- cmd+click opens hyperlink (Terminal.app habit), even when the program has
 -- grabbed the mouse (claude code TUI, herdr, vim) - that grab is exactly why a
