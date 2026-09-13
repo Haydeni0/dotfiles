@@ -21,13 +21,33 @@ export AWS_PROFILE=coreweave
 
 # Start herdr (primary multiplexer). tmux is backup (prefix ctrl-b).
 # Set SKIP_HERDR=1 to drop to a plain shell. Set USE_TMUX=1 to start tmux instead.
+# Mirrors the guards in configs/zshrc (read there for the full rationale):
+# 1. Per-host session name over ssh - machines sharing an NFS home must not
+#    resolve the same session socket path.
+# 2. Attach-only boot - probe the session's server with `herdr status`
+#    (request-timeout-bounded inside herdr). No live server -> plain shell +
+#    a message, never a silent spawn of a fresh restored server. A spawn is
+#    only allowed with LC_HERDR_ALLOW_SPAWN=1 (gssh's first connection;
+#    the LC_ prefix is what sshd AcceptEnv permits).
+# This is the REMOTE entry point: login shell here is bash, so herdr boots
+# from this file, not zshrc.
 if [ -n "$PS1" ] && [ -z "$TMUX" ] && [ -z "$HERDR" ] && [ -z "$HERDR_ENV" ] && [ -z "$SKIP_HERDR" ] && \
    [ "$TERM_PROGRAM" != "vscode" ] && [ -z "${REMOTE_CONTAINERS_SOCKETS}" ] && \
    [ -z "${CURSOR_AGENT}" ]; then
     if [ -n "$USE_TMUX" ] && command -v /usr/bin/tmux &>/dev/null; then
         exec /usr/bin/tmux new-session -A -s main
     elif command -v herdr &>/dev/null; then
-        exec herdr --session main
+        _herdr_session=main
+        [ -n "$SSH_TTY" ] || [ -n "$SSH_CONNECTION" ] && _herdr_session="main-$(hostname -s)"
+        if herdr --session "$_herdr_session" status 2>/dev/null | grep -q "status: running"; then
+            exec herdr --session "$_herdr_session"
+        elif [ -n "$LC_HERDR_ALLOW_SPAWN" ]; then
+            exec herdr --session "$_herdr_session"
+        else
+            echo "[herdr] no live session '$_herdr_session' on $(hostname -s); plain shell."
+            echo "[herdr] start one with: herdr --session $_herdr_session"
+        fi
+        unset _herdr_session
     fi
 fi
 
