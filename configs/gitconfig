@@ -17,6 +17,11 @@
     features = side-by-side
 [delta "side-by-side"]
     side-by-side = true
+# lazygit-only look: the line-numbers column already carries position
+# info, so hunk headers are noise there. Activated from lazygit.yml's
+# renderer command; normal `git diff` is unaffected.
+[delta "lazygit"]
+    hunk-header-style = omit
 [merge]
     conflictstyle = diff3
 [diff]

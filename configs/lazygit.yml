@@ -1,6 +1,9 @@
 git:
   diffRenderers:
-    # --features "" opts out of the side-by-side feature (see gitconfig) so
-    # lazygit gets a stacked diff - its panels are narrower than a full
-    # terminal, and side-by-side has known width-rendering bugs in lazygit.
-    - command: delta --dark --paging=never --line-numbers --features ""
+    # --features lazygit activates the [delta "lazygit"] block (hunk
+    # headers omitted - the line-numbers column already carries position
+    # info) and, because a command-line --features replaces delta.features
+    # entirely, also opts out of the side-by-side feature: lazygit's
+    # panels are narrower than a full terminal and side-by-side has known
+    # width-rendering bugs there.
+    - command: delta --dark --paging=never --line-numbers --features lazygit
