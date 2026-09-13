@@ -3,6 +3,17 @@
 show_hidden = true
 linemode = "none"
 
+# git.yazi fetchers: git status per file/dir (signs via init.lua require("git"):setup)
+[[plugin.prepend_fetchers]]
+url   = "*"
+run   = "git"
+group = "git"
+
+[[plugin.prepend_fetchers]]
+url   = "*/"
+run   = "git"
+group = "git"
+
 # xdg-open unavailable on headless linux; route open to $EDITOR.
 # macos/windows defaults preserved (zero-drift).
 [opener]

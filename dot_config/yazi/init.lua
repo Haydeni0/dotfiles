@@ -10,3 +10,8 @@ function Linemode:all()
 	local mtime = t == 0 and "" or (os.date("%Y", t) == os.date("%Y") and os.date("%m/%d %H:%M", t) or os.date("%m/%d  %Y", t))
 	return string.format("%s %s %s %s", perm, owner, size, mtime)
 end
+
+-- git status signs in the default linemode (git.yazi plugin)
+require("git"):setup {
+	order = 1500,
+}

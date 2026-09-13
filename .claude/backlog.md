@@ -6,6 +6,8 @@ Deferred items for this project. Surfaced when starting work here; picked up on 
 
 - #4 [2026-09-13] herdr 0.9.0 bug: workspace picker (prefix+w) ignores up/down - navigate_workspace_up/down binds have no effect there (explicit config binds tested too), while navigate_pane_* (h/j/k/l, arrows) work in the same picker. UI hint promises arrow navigation. Repro'd in Terminal.app too - not terminal/Karabiner. Workaround: goto mode (prefix+g) navigates workspaces fine. Config binds added in configs/herdr.toml [keys] can stay or be reverted when upstream fixes.
 
+- #5 [2026-09-13] herdr plugins: review after experimenting. User evaluating `herdr-sidebar` vs `herdr-file-viewer` vs plain yazi+lazygit. Chose yazi + git.yazi (pinned, done 2026-09-13) for file browsing/git-status needs. herdr-file-viewer still candidate for agent-review workflow (diff-while-browsing, agent-jump-to-file:line) if that pain point emerges; `herdr plugin install smarzban/herdr-file-viewer` is the try command. If kept, pin to installer script with idempotence check per repo convention.
+
 ## Done
 
 - #1 [2026-09-12] WezTerm ctrl+shift+f scrollback search is buggy - CLOSED 2026-09-13: works after herdr 0.9.0 update. Bug was observed with the 0.7.5 client (WezTerm itself unchanged since before the report; no config fix needed). Root cause not established - vanished on herdr upgrade, never reproduced under 0.9.0. If it recurs, reopen and define the exact failure mode (no matches vs garbage matches vs input glitches) before investigating.

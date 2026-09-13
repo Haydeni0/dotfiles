@@ -1,0 +1,18 @@
+{{- $pkg := include "dot_config/yazi/package.toml" -}}
+{{- $hash := sha256sum (print $pkg) -}}
+#!/bin/sh
+# Sync yazi plugins from the pins in ~/.config/yazi/package.toml.
+# package.toml is ya's own format - ya rewrites it on install (no comments
+# there); pins (rev + hash) are the source of truth for plugin versions.
+# run_onchange_ re-runs when this script's rendered content changes; the
+# package.toml hash below changes when plugin pins change.
+# Requires `ya` (ships with yazi, mise-managed).
+set -euo pipefail
+
+command -v ya >/dev/null 2>&1 || {
+    echo "ya not found - yazi not installed yet; plugins sync on next apply."
+    exit 0
+}
+
+ya pkg install
+# package.toml hash: {{ $hash }}
