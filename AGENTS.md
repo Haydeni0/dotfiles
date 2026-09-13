@@ -9,7 +9,7 @@ duplicate the README or AGENTS.md).
 
 A cross-platform dotfiles repo managed by chezmoi. Plain config files in
 `configs/` are the source of truth, deployed to `$HOME` via chezmoi templates
-(`dot_*.tmpl` with `{{ include }}`). Tools installed via mise (17 CLI tools),
+(`dot_*.tmpl` with `{{ include }}`). Tools installed via mise (18 CLI tools),
 micromamba (zsh), and curl (herdr). No Nix, no bwrap, no proot, no namespaces.
 
 The chezmoi source dir IS the working repo. `chezmoi init` clones it to
@@ -50,7 +50,7 @@ file first and backfill.
   configs/ pattern because nvim lua doesn't need templating and `lazy-lock.json` is
   auto-managed by lazy.nvim)
 - `Brewfile` - Mac: mise + zsh via Homebrew (deployed to `~/Brewfile`)
-- `run_once_install-tools.sh.tmpl` - tool installer (mise for 16 tools, micromamba for zsh, curl for herdr, git-clone for zsh plugins)
+- `run_once_install-tools.sh.tmpl` - tool installer (mise for 18 tools, micromamba for zsh, curl for herdr, git-clone for zsh plugins)
 - `.chezmoiignore` - files not deployed to `$HOME`
 - `docs/setup.md` - setup guide for both platforms
 

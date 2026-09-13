@@ -4,9 +4,11 @@ Deferred items for this project. Surfaced when starting work here; picked up on 
 
 ## Open
 
-- #1 [2026-09-12] WezTerm ctrl+shift+f scrollback search is buggy - investigate and fix. Careful: fix may require quitting WezTerm (this Claude session runs inside it) - plan around that before touching anything.
+- #4 [2026-09-13] herdr 0.9.0 bug: workspace picker (prefix+w) ignores up/down - navigate_workspace_up/down binds have no effect there (explicit config binds tested too), while navigate_pane_* (h/j/k/l, arrows) work in the same picker. UI hint promises arrow navigation. Repro'd in Terminal.app too - not terminal/Karabiner. Workaround: goto mode (prefix+g) navigates workspaces fine. Config binds added in configs/herdr.toml [keys] can stay or be reverted when upstream fixes.
 
 ## Done
+
+- #1 [2026-09-12] WezTerm ctrl+shift+f scrollback search is buggy - CLOSED 2026-09-13: works after herdr 0.9.0 update. Bug was observed with the 0.7.5 client (WezTerm itself unchanged since before the report; no config fix needed). Root cause not established - vanished on herdr upgrade, never reproduced under 0.9.0. If it recurs, reopen and define the exact failure mode (no matches vs garbage matches vs input glitches) before investigating.
 
 - #2 [2026-09-13] herdr remote session intermittently loses state on ssh in - FIXED and verified.
   - Root cause: NFS-shared home + session identity keyed on `$HOME` with no hostname component. Multiple `herdr server` processes ended up bound to the same socket path (7 at peak on slurm-b200-201-219, from Aug 29 to Sep 13); connects reached an arbitrary one, `prepare_socket_path`'s connect-test-then-remove is not NFS-atomic, `herdr status` misreported "not running" while servers were live. A new ssh could silently attach to an empty/freshly-restored server - the "reset session" experience.

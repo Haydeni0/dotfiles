@@ -14,7 +14,7 @@
 sh -c "$(curl -fsLS https://get.chezmoi.io/lb)" --
 
 # 2. Apply dotfiles (deploys configs + installs all tools)
-#    - mise bootstraps and installs 17 CLI tools
+#    - mise bootstraps and installs 18 CLI tools
 #    - micromamba installs zsh to ~/.local/bin/zsh
 #    - herdr installed via curl
 #    - zsh plugins git-cloned
@@ -70,7 +70,7 @@ A fresh Mac following this section gets the complete setup.
 brew install chezmoi
 
 # 2. Apply dotfiles (deploys configs + Brewfile + runs install scripts)
-#    - mise bootstraps and installs 17 CLI tools (starship, zoxide, fzf, etc.)
+#    - mise bootstraps and installs 18 CLI tools (starship, zoxide, fzf, etc.)
 #    - herdr installed via curl
 #    - zsh plugins git-cloned
 #    - Karabiner config deployed to ~/.config/karabiner/ (ISO UK layout)

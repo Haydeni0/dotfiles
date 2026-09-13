@@ -77,7 +77,7 @@ Keybinds and daily-use features: see the [cheatsheet](docs/cheatsheet.md).
 
 ## Tool installation
 
-- **mise** bootstraps and installs 17 CLI tools (starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, difftastic, yazi, gdu, btop, rclone, uv) - handles archive formats, URLs, version detection, and download verification automatically
+- **mise** bootstraps and installs 18 CLI tools (starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, difftastic, glow, yazi, gdu, btop, rclone, uv) - handles archive formats, URLs, version detection, and download verification automatically
 - **micromamba** installs zsh to `~/.local/bin/zsh` (compute nodes don't have system zsh; login nodes and Mac do)
 - **herdr** via its own curl installer (not in mise registry)
 - **zsh plugins** (autosuggestions, syntax-highlighting, history-substring-search) git-cloned to `~/.local/share/zsh/`
