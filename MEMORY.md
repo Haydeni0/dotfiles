@@ -36,6 +36,22 @@ Environment specifics an agent needs to know. Add as discovered.
 
 ## Learnings
 
+### 2026-09-13 - herdr 0.9 multi-machine replaced the shell-boot herdr workflow
+herdr 0.9 (`machine add`) lets one Mac client manage remote servers over ssh in
+a single TUI; agents persist because the remote `herdr server` owns them, not
+the ssh connection. So all shell-level boot machinery went (commit fcb2e4e):
+WezTerm launches plain zsh, herdr runs on demand, remotes never boot herdr from
+zshrc/bashrc (`machine add` starts their servers). Machine profiles are
+per-machine state (`~/.local/state/herdr/client/endpoints.json`) - deliberately
+NOT in this repo; the repo stays portable to non-work machines. gssh/sshh and
+the NFS-safe boot guards (per-host session names, attach-only, LC_HERDR_ALLOW_SPAWN)
+were deleted with the boot path. Distinct session names remain mandatory on the
+NFS-shared cluster home - now via `--remote-session` in the machine profiles.
+Gotchas: `herdr update` refuses while any herdr process lives (kill stale
+servers first, including ones on remotes); `machine add` needs a TTY (user runs
+it, not the agent); no keybindings exist for machine switching yet (mouse-only,
+no machine actions in the binary's keymap).
+
 ### 2026-09-11 - WORDCHARS controls zsh word-delete granularity; terminal apps have own logic
 zsh default `WORDCHARS` (`*?_-.[]~=/&;!#$%^(){}<>`) counts `/ . - _` as word
 chars, so ctrl+backspace (`backward-kill-word`) ate whole paths like
