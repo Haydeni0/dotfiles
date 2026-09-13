@@ -2,6 +2,13 @@ local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 
 config.color_scheme = 'rose-pine-moon'
+-- rose-pine-moon ships selection_bg == the background color (#232136), so
+-- drag-selections are invisible (they copy fine, you just can't see them).
+-- Override with rose-pine-moon's highlight_low surface so selections show.
+config.colors = {
+    selection_bg = '#44415a',
+    selection_fg = '#e0def4',
+}
 config.font = wezterm.font('Hack Nerd Font')
 config.font_size = 14
 config.window_padding = { left = 8, right = 8, top = 4, bottom = 4 }
