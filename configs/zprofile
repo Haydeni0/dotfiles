@@ -3,6 +3,12 @@
 # Mac: zsh is default shell, .zprofile runs directly.
 export PATH="$HOME/.local/bin:$HOME/.opencode/bin:$PATH"
 
+# mise shims - non-interactive shells (agent harnesses like herdr panes) inherit
+# login-shell PATH but not `mise activate`; the shims dir makes mise-managed
+# tools (wt, etc.) resolve there too. Interactive zsh additionally runs
+# `mise activate zsh` (configs/zshrc), which supersedes the shims.
+export PATH="$HOME/.local/share/mise/shims:$PATH"
+
 # pi-node (user-specific, remove if not needed)
 export PATH="$HOME/.local/share/pi-node/node-v22.23.1-linux-x64/bin:$PATH"
 
