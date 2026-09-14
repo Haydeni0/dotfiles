@@ -22,6 +22,8 @@ uv = "latest"
 difftastic = "latest"
 glow = "latest"
 node = "lts"
+# binary in release archives is `wt`, not `worktrunk` - exe override required
+"github:max-sixty/worktrunk" = { exe = "wt", version = "latest" }
 
 [tasks.test]
 description = "Run dotfiles sanity, syntax, and multi-platform template tests"

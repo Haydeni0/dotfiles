@@ -50,6 +50,7 @@ Daily-use keybinds and commands this dotfiles repo sets up.
 | `lg` | lazygit | Stacked diff view (delta without side-by-side) |
 | `gdifft` | git diff via difftastic | Syntax-aware, one-off; core pager (delta) untouched |
 | `nvchad` | Secondary nvim config | Fully separate via NVIM_APPNAME |
+| `wt` | worktrunk CLI | Parallel git worktrees (`wt switch -c <branch>`), mise-managed |
 
 ## Multiplexers
 
