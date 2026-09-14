@@ -36,6 +36,16 @@ Environment specifics an agent needs to know. Add as discovered.
 
 ## Learnings
 
+### 2026-09-14 - `#!/bin/sh` run_ scripts cannot use `set -o pipefail` on Linux
+dash (= /bin/sh on Debian/Ubuntu/HPC nodes) has no pipefail, so `set -euo pipefail`
+crashed `chezmoi apply` with `set: Illegal option -o pipefail`
+(run_onchange_yazi-plugins.sh, triggered when git.yazi pin change re-ran it).
+Fix: `set -eu` - the script had no pipes anyway. Rule for run_ scripts: want
+pipefail → `#!/bin/bash`; want POSIX `/bin/sh` → `set -eu` only.
+run_onchange_reload-karabiner.sh keeps `#!/bin/sh` + pipefail deliberately:
+macOS-only, where /bin/sh is bash-as-sh and accepts pipefail - user decision
+2026-09-14, not a bug.
+
 ### 2026-09-13 - herdr 0.9 multi-machine replaced the shell-boot herdr workflow
 herdr 0.9 (`machine add`) lets one Mac client manage remote servers over ssh in
 a single TUI; agents persist because the remote `herdr server` owns them, not

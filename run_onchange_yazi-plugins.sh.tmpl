@@ -7,7 +7,7 @@
 # run_onchange_ re-runs when this script's rendered content changes; the
 # package.toml hash below changes when plugin pins change.
 # Requires `ya` (ships with yazi, mise-managed).
-set -euo pipefail
+set -eu
 
 command -v ya >/dev/null 2>&1 || {
     echo "ya not found - yazi not installed yet; plugins sync on next apply."
