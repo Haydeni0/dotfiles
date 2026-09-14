@@ -104,6 +104,7 @@ Keybinds and daily-use features: see the [cheatsheet](docs/cheatsheet.md).
 - uv-managed tools (nvitop, hf, evo, graphify) - installed via `uv tool install`
 - Git identity (user.name, user.email) - different per user
 - `~/.zsh/aliases.local.zsh` - machine-local aliases and functions
+- `~/.zshenv` - intentionally machine-local (different env vars per machine), never adopt into chezmoi
 
 ## Testing and upkeep tasks
 

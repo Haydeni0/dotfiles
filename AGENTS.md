@@ -53,6 +53,9 @@ file first and backfill.
 - `run_once_install-tools.sh.tmpl` - tool installer (mise for 18 tools, micromamba for zsh, curl for herdr, git-clone for zsh plugins)
 - `.chezmoiignore` - files not deployed to `$HOME`
 - `docs/setup.md` - setup guide for both platforms
+- Not in this repo: `~/.zshenv` - intentionally machine-local (different env vars
+  per machine), never adopt it. Env vars that should reach every machine go in
+  `configs/zprofile`.
 
 ## Principles
 
