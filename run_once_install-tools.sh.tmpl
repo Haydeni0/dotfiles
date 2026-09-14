@@ -46,6 +46,16 @@ if [[ ! -x ~/.local/bin/file ]]; then
     ln -sf ~/.local/share/mamba/envs/file/bin/file ~/.local/bin/file
 fi
 
+# Linux: modern git (worktrunk needs >=2.43; HPC nodes ship 2.34).
+# Guard on version, not just existence - keeps newer-distro systems on system git.
+# Mac: Homebrew/git is current, no need.
+if ! git --version >/dev/null 2>&1 || [[ "$(git --version 2>/dev/null | awk '{split($3,a,"."); print (a[1]*1000+a[2] < 2043) ? "old" : "new"}')" == "old" ]]; then
+    if [[ ! -x ~/.local/bin/git ]]; then
+        micromamba create -y -n git git -c conda-forge >/dev/null 2>&1
+        ln -sf ~/.local/share/mamba/envs/git/bin/git ~/.local/bin/git
+    fi
+fi
+
 {{ end -}}
 
 # --- zsh plugins (both platforms, git-cloned) ---

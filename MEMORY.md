@@ -36,6 +36,20 @@ Environment specifics an agent needs to know. Add as discovered.
 
 ## Learnings
 
+### 2026-09-14 - worktrunk (wt) setup: conda git, inline shell init, skill not plugin
+wt (mise, `github:max-sixty/worktrunk`, exe `wt`) needs git >=2.43; HPC system git is
+2.34 and mise has NO git backend (git-scm ships source only - aqua/ubi/github
+backends 404). Fix: conda-forge git env + `~/.local/bin/git` symlink in
+run_once_install-tools.sh.tmpl, guarded on version (awk split-major*1000+minor
+<2043 - string compare breaks on 2.9 vs 2.43). Shell integration goes INLINE in
+configs/zshrc (`eval "$(command wt config shell init zsh)"` behind `command -v wt`)
+- `wt config shell install` appends to deployed ~/.zshrc = chezmoi drift.
+`wt config plugins claude install` is deliberately NOT used: writes machine-local
+~/.claude/plugins/installed_plugins.json, not syncable - the portable path is the
+worktrunk skill in the claude-config repo, which syncs to all harnesses and
+arrives via git pull. Worktrunk user config would live at dot_config/worktrunk/
+but none needed yet - defaults work.
+
 ### 2026-09-14 - `#!/bin/sh` run_ scripts cannot use `set -o pipefail` on Linux
 dash (= /bin/sh on Debian/Ubuntu/HPC nodes) has no pipefail, so `set -euo pipefail`
 crashed `chezmoi apply` with `set: Illegal option -o pipefail`

@@ -130,6 +130,15 @@ if command -v nvim >/dev/null 2>&1; then
     alias nvchad='NVIM_APPNAME=nvchad nvim'
 fi
 
+# worktrunk (wt): git worktree management for parallel agent workflows.
+# Needs >=git 2.43; on HPC nodes the conda git at ~/.local/bin/git provides it
+# (run_once_install-tools.sh.tmpl). Shell function lets `wt switch` cd the
+# parent shell - `wt config shell install` would instead append to this file
+# post-deploy, causing chezmoi drift.
+if command -v wt >/dev/null 2>&1; then
+    eval "$(command wt config shell init zsh)"
+fi
+
 # Plugins (git-cloned to ~/.local/share/zsh/, source with guards)
 [[ -r ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh ]] && \
     source ~/.local/share/zsh/zsh-autosuggestions/zsh-autosuggestions.zsh && \
