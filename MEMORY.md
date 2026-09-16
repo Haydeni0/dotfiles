@@ -36,6 +36,16 @@ Environment specifics an agent needs to know. Add as discovered.
 
 ## Learnings
 
+### 2026-09-16 - zsh `$status` is read-only; inline loops must not assign it
+zsh maps `$status` to `$?` as a special read-only parameter, so `status=$?`
+raises "read-only variable" and kills the function. rssh's reconnect loop
+died silently on first disconnect this way (commit 191c24a renamed it `rc`).
+gssh never hit this because its loop ran under `sh -c` (POSIX sh has no such
+special); moving a shell snippet INTO zsh re-exposes it. Rule: in zsh
+functions, capture exit codes as `rc=$?`, never `status`. Repro/verification
+requires an interactive-ish `zsh -ic` call - `zsh -n` syntax check passes
+fine, the failure is at runtime assignment.
+
 ### 2026-09-14 - worktrunk (wt) setup: conda git, inline shell init, skill not plugin
 wt (mise, `github:max-sixty/worktrunk`, exe `wt`) needs git >=2.43; HPC system git is
 2.34 and mise has NO git backend (git-scm ships source only - aqua/ubi/github
