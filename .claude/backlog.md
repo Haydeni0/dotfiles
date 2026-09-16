@@ -10,6 +10,10 @@ Deferred items for this project. Surfaced when starting work here; picked up on 
 
 ## Done
 
+## Done
+
+- #6 [2026-09-13] worktrunk evaluation - CLOSED 2026-09-14: CLI installed (wt v0.77.0, mise `github:` backend with `exe = "wt"` override - release archive binary is named wt). Agent/plugin integration (Claude Code plugin, skills, hooks) deliberately not installed; revisit if parallel-agent workflow pain emerges.
+
 - #1 [2026-09-12] WezTerm ctrl+shift+f scrollback search is buggy - CLOSED 2026-09-13: works after herdr 0.9.0 update. Bug was observed with the 0.7.5 client (WezTerm itself unchanged since before the report; no config fix needed). Root cause not established - vanished on herdr upgrade, never reproduced under 0.9.0. If it recurs, reopen and define the exact failure mode (no matches vs garbage matches vs input glitches) before investigating.
 
 - #2 [2026-09-13] herdr remote session intermittently loses state on ssh in - FIXED and verified.
