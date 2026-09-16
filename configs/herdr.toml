@@ -17,3 +17,9 @@ enabled = false
 
 [ui]
 show_agent_labels_on_pane_borders = false
+
+# Sidebar workspace rows: prefix each space with its ordinal ($num token,
+# maintained by the linked numbered-workspaces plugin). Declaring rows replaces
+# the default layout, so the built-ins are repeated here.
+[ui.sidebar.spaces]
+rows = [["$num", "state_icon", "workspace"], ["branch", "git_status"]]

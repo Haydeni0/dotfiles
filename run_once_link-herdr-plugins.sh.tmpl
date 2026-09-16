@@ -1,0 +1,16 @@
+{{ if eq .chezmoi.os "linux" "darwin" -}}
+#!/bin/sh
+# Link chezmoi-deployed herdr plugins. Idempotent: herdr plugin link on an
+# already-linked path is a no-op, but check anyway to keep the run_once hash
+# stable and the log quiet.
+set -eu
+
+plugin_dir="$HOME/.local/share/herdr-plugins/numbered-workspaces"
+
+if command -v herdr >/dev/null 2>&1 && [ -f "$plugin_dir/herdr-plugin.toml" ]; then
+    if ! herdr plugin list 2>/dev/null | grep -q numbered-workspaces; then
+        herdr plugin link "$plugin_dir"
+        echo "herdr: linked numbered-workspaces"
+    fi
+fi
+{{ end -}}

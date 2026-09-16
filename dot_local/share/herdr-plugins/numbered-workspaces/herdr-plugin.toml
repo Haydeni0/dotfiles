@@ -1,0 +1,40 @@
+id = "numbered-workspaces"
+name = "Numbered Workspaces"
+version = "0.1.0"
+min_herdr_version = "0.7.4"
+description = "Mirror each space's ordinal into a $num metadata token so the expanded sidebar can show it."
+platforms = ["linux", "macos"]
+
+[[actions]]
+id = "renumber"
+title = "Renumber spaces"
+contexts = ["global"]
+command = ["./renumber.sh"]
+
+# Every event that can change a space's ordinal. Tokens are in-memory only and
+# do not survive a server restart; focus is the first event after reattaching,
+# so it doubles as the recovery hook (renumber.sh diffs, so it's cheap).
+
+[[events]]
+on = "workspace.created"
+command = ["./renumber.sh"]
+
+[[events]]
+on = "workspace.closed"
+command = ["./renumber.sh"]
+
+[[events]]
+on = "workspace.moved"
+command = ["./renumber.sh"]
+
+[[events]]
+on = "workspace.reordered"
+command = ["./renumber.sh"]
+
+[[events]]
+on = "workspace.renamed"
+command = ["./renumber.sh"]
+
+[[events]]
+on = "workspace.focused"
+command = ["./renumber.sh"]
