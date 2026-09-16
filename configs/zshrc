@@ -159,8 +159,8 @@ rssh() {
         else
             ssh -t "$@" "$target"
         fi
-        status=$?
-        echo "[rssh] disconnected ($status), reconnecting in 3s... (ctrl-c to stop)"
+        rc=$?
+        echo "[rssh] disconnected (rc=$rc), reconnecting in 3s... (ctrl-c to stop)"
         sleep 3
     done
 }
