@@ -64,6 +64,12 @@ Daily-use keybinds and commands this dotfiles repo sets up.
 | shift+left/right | tmux: prev/next window | No prefix needed |
 | F11 | tmux: toggle all bindings off | For nested/remote tmux |
 
+## Yazi
+
+| Key | Action | Note |
+|-----|--------|------|
+| T | Show only the file list or restore layout | toggle-pane plugin, chained min-parent + min-preview; `[1,4,4]` <-> `[0,4,0]` |
+
 ## WezTerm (Mac)
 
 | Key | Action | Note |

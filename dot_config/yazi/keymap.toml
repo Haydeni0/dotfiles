@@ -1,0 +1,6 @@
+# keymap.toml - prepends onto yazi defaults; unlisted sections stay default.
+
+[[mgr.prepend_keymap]]
+on   = "T"
+run  = [ "plugin toggle-pane min-parent", "plugin toggle-pane min-preview" ]
+desc = "Show only the current pane or restore"
