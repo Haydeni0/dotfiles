@@ -69,6 +69,7 @@ Daily-use keybinds and commands this dotfiles repo sets up.
 | Key | Action | Note |
 |-----|--------|------|
 | T | Show only the file list or restore layout | toggle-pane plugin, chained min-parent + min-preview; `[1,4,4]` <-> `[0,4,0]` |
+| m s/p/b/m/o/n | Linemode: size / permissions / birth time / mtime / owner / none | Default binds; repo starts yazi at linemode `none` (`yazi.toml`) |
 
 ## WezTerm (Mac)
 
