@@ -1,0 +1,11 @@
+# style name or JSON path (default "auto")
+style: "auto"
+# mouse support (TUI-mode only)
+mouse: false
+# use pager to display markdown
+pager: false
+# word-wrap at width - 0 lets glow track the terminal width (capped at 120
+# by glow itself); explicit -w flag still overrides
+width: 0
+# show all files, including hidden and ignored.
+all: false
