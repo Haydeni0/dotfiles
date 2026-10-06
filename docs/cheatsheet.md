@@ -58,6 +58,7 @@ Daily-use keybinds and commands this dotfiles repo sets up.
 | Key | Action | Note |
 |-----|--------|------|
 | ctrl+space | herdr prefix | Local + remote machines in one TUI |
+| Herdr tab bar | C/P gate status for focused agent | Reads the agent's launch environment; hidden at shell prompts |
 | prefix+d | herdr detach | Agents keep running after detach |
 | ctrl+b | tmux prefix | Never auto-started |
 | ctrl+shift+arrows | tmux: switch pane | No prefix needed |
