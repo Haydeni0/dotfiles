@@ -1,0 +1,3 @@
+# Worktrunk user config - worktrees centralized under ~/worktrees/<repo>/<branch>
+# instead of sibling dirs next to the checkout (wt default: ../<repo>.<branch>).
+worktree-path = "~/worktrees/{{ repo }}/{{ branch | sanitize }}"

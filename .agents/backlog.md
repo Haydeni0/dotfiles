@@ -8,9 +8,9 @@ Deferred items for this project. Surfaced when starting work here; picked up on 
 
 - #5 [2026-09-13] herdr plugins: review after experimenting. User evaluating `herdr-sidebar` vs `herdr-file-viewer` vs plain yazi+lazygit. Chose yazi + git.yazi (pinned, done 2026-09-13) for file browsing/git-status needs. herdr-file-viewer still candidate for agent-review workflow (diff-while-browsing, agent-jump-to-file:line) if that pain point emerges; `herdr plugin install smarzban/herdr-file-viewer` is the try command. If kept, pin to installer script with idempotence check per repo convention.
 
-- #7 [2026-10-06] Manage worktrunk user config via chezmoi (`dot_config/worktrunk/` -> `~/.config/worktrunk/config.toml`) and set `worktree-path = "~/worktrees/{{ repo }}/{{ branch | sanitize }}"` so `wt`-created worktrees (including Claude Code EnterWorktree ones, once agent-config wires the WorktreeCreate hook) land under `~/worktrees/<repo>/<branch>` instead of sibling dirs cluttering `~/gitrepos`. Deferred from the agent-config grill on 2026-10-06; default wt path template is `../<repo>.<branch>`.
-
 ## Done
+
+- #7 [2026-10-06] Manage worktrunk user config via chezmoi - CLOSED 2026-10-06: `dot_config/worktrunk/config.toml` deployed, `worktree-path = "~/worktrees/{{ repo }}/{{ branch | sanitize }}"`. E2E verified three ways: direct `wt switch --create` (slash branch sanitized to dash), headless `local-claude -w` agent session (correct path, no `.claude/worktrees/` fallback), and Agent-tool `isolation: "worktree"` spawn (`~/worktrees/chezmoi/agent-<id>`). One non-reproducible first-run failure: WorktreeCreate hook reported "Branch agent-e2e already exists" though nothing pre-created it - two identical re-runs clean; possible transient hook double-invoke, revisit if seen again (hook wiring lives in agent-config, coupled).
 
 - #6 [2026-09-13] worktrunk evaluation - CLOSED 2026-09-14: CLI installed (wt v0.77.0, mise `github:` backend with `exe = "wt"` override - release archive binary is named wt). Agent/plugin integration (Claude Code plugin, skills, hooks) deliberately not installed; revisit if parallel-agent workflow pain emerges.
 

@@ -50,7 +50,7 @@ Daily-use keybinds and commands this dotfiles repo sets up.
 | `lg` | lazygit | Stacked diff view (delta without side-by-side) |
 | `gdifft` | git diff via difftastic | Syntax-aware, one-off; core pager (delta) untouched |
 | `nvchad` | Secondary nvim config | Fully separate via NVIM_APPNAME |
-| `wt` | worktrunk CLI | Parallel git worktrees (`wt switch -c <branch>`), mise-managed |
+| `wt` | worktrunk CLI | Parallel git worktrees (`wt switch -c <branch>`), mise-managed; worktrees land in `~/worktrees/<repo>/<branch>`, Claude Code agent worktrees included |
 | `rssh <host>` | Reconnecting ssh + herdr attach | Runs in current terminal from a plain (no-herdr) WezTerm tab; auto-reconnects 3s after drop; attaches herdr session from saved machine profile, else `main-<hostname>` |
 
 ## Multiplexers
