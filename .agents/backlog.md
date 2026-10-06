@@ -8,7 +8,7 @@ Deferred items for this project. Surfaced when starting work here; picked up on 
 
 - #5 [2026-09-13] herdr plugins: review after experimenting. User evaluating `herdr-sidebar` vs `herdr-file-viewer` vs plain yazi+lazygit. Chose yazi + git.yazi (pinned, done 2026-09-13) for file browsing/git-status needs. herdr-file-viewer still candidate for agent-review workflow (diff-while-browsing, agent-jump-to-file:line) if that pain point emerges; `herdr plugin install smarzban/herdr-file-viewer` is the try command. If kept, pin to installer script with idempotence check per repo convention.
 
-## Done
+- #7 [2026-10-06] Manage worktrunk user config via chezmoi (`dot_config/worktrunk/` -> `~/.config/worktrunk/config.toml`) and set `worktree-path = "~/worktrees/{{ repo }}/{{ branch | sanitize }}"` so `wt`-created worktrees (including Claude Code EnterWorktree ones, once agent-config wires the WorktreeCreate hook) land under `~/worktrees/<repo>/<branch>` instead of sibling dirs cluttering `~/gitrepos`. Deferred from the agent-config grill on 2026-10-06; default wt path template is `../<repo>.<branch>`.
 
 ## Done
 
