@@ -27,7 +27,7 @@ Daily-use keybinds and commands this dotfiles repo sets up.
 |-----|--------|------|
 | ctrl+t | Insert file path at prompt | Preview shows file via bat, dirs via `ls`; ctrl+d toggles preview |
 | alt+c | cd into directory | Preview shows `ls -la` of highlighted dir; ctrl+d toggles preview |
-| ctrl+r | History search | Same popup chrome: 40% height, reverse layout, purple border |
+| ctrl+r | History search | Same popup chrome: 40% height, reverse layout, purple border; no preview panel (history lines aren't paths) |
 
 ### Word and line editing
 
