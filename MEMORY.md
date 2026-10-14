@@ -59,10 +59,9 @@ seed long cmd, type prefix, send 3x ctrl-W in ONE write - ssh keystroke coalesci
 `_zsh_autosuggest_modify`'s queued-input anti-flicker path restores the old
 `POSTDISPLAY` even when the widget just changed the buffer; with the buffer emptied
 the fallthrough never refetches, so the suggestion for the pre-burst buffer renders
-indefinitely. The deployed plugin at `~/.local/share/zsh/zsh-autosuggestions`
-carries a local fix (only restore when `BUFFER` is unchanged) pending an upstream
-PR to zsh-users/zsh-autosuggestions; upstream master == the clone, no existing
-issue for it. Not locale-dependent (reproduced with an ASCII prompt).
+indefinitely. Not locale-dependent (reproduced with an ASCII prompt). User judged
+it minor (self-heals on next keypress) - the deployed plugin stays at pristine
+upstream master; root cause, one-line fix, and repro live in backlog #9.
 
 ### 2026-09-14 - worktrunk (wt) setup: conda git, inline shell init, skill not plugin
 wt (mise, `github:max-sixty/worktrunk`, exe `wt`) needs git >=2.43; HPC system git is
