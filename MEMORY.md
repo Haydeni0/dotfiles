@@ -36,6 +36,34 @@ Environment specifics an agent needs to know. Add as discovered.
 
 ## Learnings
 
+### 2026-10-14 - "ghost text" after deleting = unsupported locale on cluster nodes, not zsh or plugins
+The long-standing ghost (`❯ he` residue after backspacing with an autosuggestion on
+screen, only on slurm-login-0, never on the Mac): the Mac sends `LANG=en_GB.UTF-8`
+over ssh, cluster nodes ship only `C/C.utf8/en_US.utf8`, so setlocale silently fails
+and zsh falls back to byte-at-a-time width counting - the starship `❯` (3 UTF-8
+bytes) is modeled as 3 columns while the terminal renders 1. Every zle cursor
+calculation lands 2 columns right of the real buffer, so mid-line repaints never
+erase the chars under the true buffer position. Proven by capturing the pane with
+`script` and replaying the byte stream through pyte at the true geometry (155x67):
+zsh's emitted `ESC[45D` targets its skewed model, both WezTerm and pyte agree the
+residue forms. Repro was width/geometry/content sensitive - live pty probes at
+120 cols with seeded single-line history were clean; the matrix over LANG
+(unset/C/en_GB/ja_JP ghost vs C.UTF-8/en_US clean) plus `locale -a` cracked it.
+Fix: UTF-8 locale fallback at the top of `configs/zshrc` (pane shells skip
+zprofile; `locale charmap` check, prefer C.utf8). Verify changes like this with
+`/tmp/zshrepro/probe_locale.py` style pty+pyte tests, not by eye.
+
+### 2026-10-14 - zsh-autosuggestions restores a stale suggestion for a changed buffer when keystrokes coalesce
+Separate, real bug found while chasing the ghost (repro `/tmp/zshrepro/auto_repro.py`:
+seed long cmd, type prefix, send 3x ctrl-W in ONE write - ssh keystroke coalescing).
+`_zsh_autosuggest_modify`'s queued-input anti-flicker path restores the old
+`POSTDISPLAY` even when the widget just changed the buffer; with the buffer emptied
+the fallthrough never refetches, so the suggestion for the pre-burst buffer renders
+indefinitely. The deployed plugin at `~/.local/share/zsh/zsh-autosuggestions`
+carries a local fix (only restore when `BUFFER` is unchanged) pending an upstream
+PR to zsh-users/zsh-autosuggestions; upstream master == the clone, no existing
+issue for it. Not locale-dependent (reproduced with an ASCII prompt).
+
 ### 2026-09-14 - worktrunk (wt) setup: conda git, inline shell init, skill not plugin
 wt (mise, `github:max-sixty/worktrunk`, exe `wt`) needs git >=2.43; HPC system git is
 2.34 and mise has NO git backend (git-scm ships source only - aqua/ubi/github

@@ -1,3 +1,17 @@
+# Locale fallback - the Mac sends LANG=en_GB.UTF-8 over ssh, but cluster nodes
+# ship few locales (often just C/C.utf8/en_US.utf8), so the requested locale
+# silently fails and zsh falls back to byte-at-a-time width counting: the
+# starship `❯` (3 UTF-8 bytes) is modeled as 3 columns while the terminal
+# renders 1, every cursor calculation lands 2 columns right of the real
+# buffer, and deleting with a suggestion on screen leaves ghost characters.
+# Must run before the prompt and any zle redraw.
+if [[ "${$(locale charmap 2>/dev/null):-ascii}:l" != "utf-8" ]]; then
+    fb_locale=$(locale -a 2>/dev/null | grep -m1 -ixE 'C\.utf8|C\.UTF-8')
+    [[ -z $fb_locale ]] && fb_locale=$(locale -a 2>/dev/null | grep -m1 -ixE '\.utf-?8$')
+    [[ -n $fb_locale ]] && export LANG=$fb_locale
+    unset fb_locale
+fi
+
 # History
 HISTFILE=~/.zsh_history
 HISTSIZE=50000
