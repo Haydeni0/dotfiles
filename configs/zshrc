@@ -21,6 +21,10 @@ setopt HIST_IGNORE_ALL_DUPS HIST_FIND_NO_DUPS EXTENDED_HISTORY HIST_REDUCE_BLANK
 # Editor
 export EDITOR=nvim
 
+# Cross-tool telemetry opt-out standard (honored by codegraph and others):
+# no usage stats, and codegraph skips its once-daily GitHub update check too.
+export DO_NOT_TRACK=1
+
 # mise - puts mise-managed tools on PATH (starship, zoxide, fzf, bat, etc.)
 # Must run before any command -v checks below, since mise provides the tools.
 if command -v mise >/dev/null 2>&1; then
