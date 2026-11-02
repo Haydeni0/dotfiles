@@ -1,7 +1,7 @@
 onboarding = false
 
 [terminal]
-default_shell = "ZSH_PATH_PLACEHOLDER"
+default_shell = "{{ .zshPath }}"
 shell_mode = "non_login"
 
 [keys]
@@ -9,7 +9,7 @@ prefix = "ctrl+space"
 detach = "prefix+d"
 
 [theme]
-name = "THEME_PLACEHOLDER"
+name = "{{ .theme }}"
 auto_switch = false
 
 [ui.sound]
