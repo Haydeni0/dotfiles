@@ -1,9 +1,6 @@
 # Package manager (installs all CLI tools via mise activate)
 brew "mise"
 
-# Shell (system zsh on Mac, but brew provides current version)
-brew "zsh"
-
 # btop - mise's aqua backend has no darwin build, so Mac gets btop via brew.
 # (Linux gets btop via mise in run_once_install-tools.sh.tmpl.)
 brew "btop"
@@ -12,12 +9,12 @@ brew "btop"
 # way behind (0.0.48). Uses ripgrep via PATH (mise provides rg). Kept as brew
 # for the current version. Brings node + npm as brew deps.
 brew "opencode"
-brew "node"
 
-# Note: most CLI tools (starship, zoxide, fzf, bat, ripgrep, fd, etc.)
-# are installed via mise (run_once_install-tools.sh.tmpl) on both platforms.
-# Homebrew is used for mise + zsh only on Mac. Add more brew entries here
-# if you prefer Homebrew for specific tools.
+# Note: CLI tools (starship, zoxide, fzf, bat, ripgrep, fd, etc.) live in
+# the mise config (dot_config/mise/config.toml.tmpl), installed by
+# run_once_install-tools.sh.tmpl on both platforms. Homebrew carries mise,
+# btop (no darwin build in mise's aqua backend), opencode (brew is current),
+# and the GUI casks below.
 
 # --- GUI apps (casks) ---
 # No `cleanup` directive: `brew bundle` must never uninstall casks that

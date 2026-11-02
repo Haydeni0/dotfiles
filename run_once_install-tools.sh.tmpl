@@ -4,9 +4,22 @@ set -euo pipefail
 mkdir -p ~/.local/bin
 mkdir -p ~/.local/share/zsh
 
-# --- bootstrap mise (rootless, single binary, handles all tool archives/URLs/versions) ---
+{{ if eq .chezmoi.os "darwin" -}}
+# Mac: mise comes from Homebrew (Brewfile). Resolve by explicit brew prefix -
+# chezmoi runs scripts with a PATH that may not include it.
+mise_bin=""
+for m in /opt/homebrew/bin/mise /usr/local/bin/mise; do
+    [[ -x "$m" ]] && mise_bin="$m" && break
+done
+[[ -n "$mise_bin" ]] || { echo "install: mise not found (run brew bundle first) - exiting 1 so chezmoi retries" >&2; exit 1; }
+export PATH="$(dirname "$mise_bin"):$PATH"
+
+{{ else -}}
+# Linux: bootstrap mise (rootless, single binary, handles all tool archives/URLs/versions)
 [[ -x ~/.local/bin/mise ]] || curl -fsSL https://mise.run | sh
 export PATH="$HOME/.local/bin:$PATH"
+
+{{ end -}}
 
 # --- install all CLI tools via mise ---
 mise install
