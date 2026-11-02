@@ -24,7 +24,7 @@ config.window_close_confirmation = 'NeverPrompt'
 -- WezTerm reports the pane's foreground process; herdr's ssh machine
 -- connections read as 'ssh'.
 config.skip_close_confirmation_for_processes_named = {
-    'bash', 'sh', 'zsh', 'fish', 'tmux', 'nu', 'herdr', 'ssh',
+    'bash', 'sh', 'zsh', 'fish', 'nu', 'herdr', 'ssh',
 }
 -- Plain zsh on launch. herdr runs on demand from inside the shell; its
 -- multi-machine client manages remote servers over ssh.
