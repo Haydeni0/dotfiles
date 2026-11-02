@@ -17,9 +17,9 @@ alias ldot='ls -ld .*'
 
 # directory navigation
 alias ..='cd ..'
-alias ...='../..'
-alias ....='../../..'
-alias .....='../../../..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
 alias md='mkdir -p'
 alias rd=rmdir
 

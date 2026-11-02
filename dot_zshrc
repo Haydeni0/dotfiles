@@ -70,6 +70,7 @@ compinit -C
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
 zstyle ':completion:*' cache-path "$HOME/.cache/zsh"
+zstyle ':completion:*' use-cache true
 zstyle ':completion:*:descriptions' format '%F{purple}%d%f'
 
 # Aliases (shared)

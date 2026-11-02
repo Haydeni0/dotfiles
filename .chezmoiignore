@@ -3,6 +3,7 @@ configs/
 configs/**
 scripts/
 scripts/**
+mise.toml
 docs/
 docs/**
 AGENTS.md
