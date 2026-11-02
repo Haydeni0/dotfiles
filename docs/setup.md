@@ -3,7 +3,6 @@
 ## Linux (HPC, no sudo)
 
 ### Prerequisites
-- tmux installed (`which tmux`)
 - git installed (`which git`)
 - micromamba OR conda installed (for zsh - available on CoreWeave HPC nodes)
 - No zsh required (installed automatically via micromamba if not system-provided)
@@ -14,10 +13,11 @@
 sh -c "$(curl -fsLS https://get.chezmoi.io/lb)" --
 
 # 2. Apply dotfiles (deploys configs + installs all tools)
-#    - mise bootstraps and installs 18 CLI tools
+#    - mise bootstraps and installs the tools defined in the mise config
+#      (dot_config/mise/config.toml.tmpl)
 #    - micromamba installs zsh to ~/.local/bin/zsh
 #    - herdr installed via curl
-#    - zsh plugins git-cloned
+#    - zsh plugins vendored by chezmoi to ~/.local/share/zsh/
 chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 
 # 3. Symlink ~/.dotfiles -> source dir for easy access
@@ -26,11 +26,11 @@ chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 ln -sfn ~/.local/share/chezmoi ~/.dotfiles
 
 # 4. Set git identity (not managed by chezmoi)
-git config --global user.name "Your Name"
-git config --global user.email "you@example.com"
+git config --file ~/.gitconfig.local user.name "Your Name"
+git config --file ~/.gitconfig.local user.email "you@example.com"
 
-# 5. Verify (open a new tmux pane so the new .bashrc runs)
-#    Shell chain: bash login -> .bash_profile -> .bashrc (PATH, mise, tmux) -> exec zsh -> .zshrc (mise, starship, zoxide, plugins)
+# 5. Verify (open a new shell/pane so the new .bashrc runs)
+#    Shell chain: bash login -> .bash_profile -> .bashrc (env fragment, mise) -> exec zsh -> .zshenv -> .zshrc (mise, starship, zoxide, plugins)
 echo $SHELL          # should be zsh
 which starship       # should resolve via mise
 which zoxide         # should resolve via mise
@@ -53,7 +53,7 @@ zoxide query --list  # should show db entries
 - Works on login nodes AND compute nodes (same NFS home)
 - mise handles tool archives/URLs/versions automatically (no brittle per-tool install scripts)
 - zsh installed via micromamba to the shared NFS home (one install, available on all nodes)
-- New tmux panes: bash sources `.bashrc` → sets PATH → starts tmux → exec zsh → sources `.zshrc` (mise activate, starship, zoxide, plugins)
+- New panes: bash sources `.bashrc` (env fragment, mise) → exec zsh → `.zshenv` → `.zshrc` (mise activate, starship, zoxide, plugins)
 
 ## macOS
 
@@ -70,9 +70,10 @@ A fresh Mac following this section gets the complete setup.
 brew install chezmoi
 
 # 2. Apply dotfiles (deploys configs + Brewfile + runs install scripts)
-#    - mise bootstraps and installs 18 CLI tools (starship, zoxide, fzf, etc.)
+#    - mise (from Homebrew) installs the tools defined in the mise config
+#      (dot_config/mise/config.toml.tmpl)
 #    - herdr installed via curl
-#    - zsh plugins git-cloned
+#    - zsh plugins vendored by chezmoi to ~/.local/share/zsh/
 #    - Karabiner config deployed to ~/.config/karabiner/ (ISO UK layout)
 #    - WezTerm config deployed to ~/.config/wezterm/
 #    - macOS system.defaults script runs (separate-spaces, fn-keys, mission-control keybinds)
@@ -80,27 +81,25 @@ brew install chezmoi
 #    - Brewfile deployed to ~/Brewfile (for step 3)
 chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 
-# 3. Install GUI apps + fonts + mise + zsh + btop + opencode via Homebrew (Brewfile from step 2)
+# 3. Install GUI apps + fonts + mise + btop + opencode via Homebrew (Brewfile from step 2)
 #    This installs: wezterm, rectangle, dockdoor, scroll-reverser, betterdisplay,
 #    obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp,
-#    karabiner-elements, font-hack-nerd-font, mise, zsh, btop, opencode.
+#    karabiner-elements, font-hack-nerd-font, mise, btop, opencode.
 #    Pre-existing/managed apps are NOT touched (Brewfile has no `cleanup`
 #    directive).
 brew bundle --file=~/Brewfile
 
 # 4. Set git identity (not managed by chezmoi - different per user)
-git config --global user.name "Your Name"
-git config --global user.email "you@example.com"
+git config --file ~/.gitconfig.local user.name "Your Name"
+git config --file ~/.gitconfig.local user.email "you@example.com"
 
 # 5. Manual one-time steps (cannot be automated):
 #    a. Karabiner-Elements: launch the app once (installs its driver, prompts for
 #       Accessibility + Input Monitoring permissions in System Settings > Privacy).
 #       Approve both. The config (ISO UK layout) is already in place from step 3.
-#       You can also use Karabiner for the Globe<->Control key swap (below).
-#    b. Globe<->Control key swap: no stable `defaults write` exists (lives in a
-#       keyboard-specific ByHost plist). Either:
-#         - System Settings > Keyboard > Modifier Keys > swap Globe and Control, OR
-#         - Add it as a Karabiner-Elements complex modification (config in this repo).
+#    b. fn/Control key swap: handled by the deployed Karabiner config
+#       (fn -> left_control complex modification). No manual step - do NOT also
+#       swap keys in System Settings, the two swaps would cancel out.
 #    c. System Settings > Mouse > turn OFF "natural scrolling" (so ScrollReverser
 #       can fix mouse scroll direction without conflict).
 #    d. LOG OUT and back in - macOS system.defaults (separate-spaces, fn-keys,
@@ -109,17 +108,14 @@ git config --global user.email "you@example.com"
 #       WindowServer crash-at-login bug (Apple radar 153570422). If you hit login
 #       crashes after step d, re-enable separate spaces in System Settings and
 #       remove the spans-displays line from run_once_macos-defaults.sh.tmpl.
-#    f. If a tmux server was running before `chezmoi apply` (started with an old
-#       config), reload it so the new keybinds take effect: `tmux source-file
-#       ~/.tmux.conf` (or kill the server and start fresh).
-#    g. DockDoor: launch the app once (it requests Accessibility access in
+#    f. DockDoor: launch the app once (it requests Accessibility access in
 #       System Settings > Privacy & Security - approve it, required for window
 #       switching). Keybinds are automated via run_once_macos-app-settings.sh.tmpl
 #       (cmd+tab = all-apps switcher, cmd+` = same-app switcher, recentlyUsed
 #       order). No GUI config needed on a fresh Mac - just grant Accessibility.
 
 # 6. Verify (open a new terminal window after re-login)
-echo $SHELL          # /bin/zsh or /opt/homebrew/bin/zsh
+echo $SHELL          # /bin/zsh
 which starship       # via mise
 which zoxide         # via mise
 alias g              # shows git
@@ -142,13 +138,13 @@ rm -rf ~/.config/ghostty
 removed - chezmoi only manages files it knows about, not abandoned deployed dirs.
 
 ### What gets installed
-- **CLI tools** (via mise): starship, zoxide, fzf, nvim, bat, ripgrep, fd, jq, lazygit, gh, delta, difftastic, yazi, gdu, btop, rclone, uv - in `~/.local/share/mise/installs/`
+- **CLI tools** (via mise): the tools defined in the mise config (`dot_config/mise/config.toml.tmpl`) - in `~/.local/share/mise/installs/`
 - **herdr** (via curl) - `~/.local/bin/herdr`
-- **zsh plugins** (git-cloned) - `~/.local/share/zsh/`
+- **zsh plugins** (vendored by chezmoi) - `~/.local/share/zsh/`
 - **GUI apps** (via Homebrew casks): wezterm, rectangle, dockdoor, scroll-reverser, betterdisplay, obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp, karabiner-elements
 - **Fonts** (via Homebrew cask): Hack Nerd Font
-- **mise + zsh + btop + opencode** (via Homebrew): tool management, current zsh, resource monitor, AI coding agent (opencode brings node + npm as brew deps)
-- **Configs** (via chezmoi): zsh, tmux, starship, herdr, git, nvim, wezterm, karabiner - real files in `~`
+- **mise + btop + opencode** (via Homebrew): tool management, resource monitor, AI coding agent (opencode brings node + npm as brew deps)
+- **Configs** (via chezmoi): zsh (zshenv, zshrc, aliases), starship, herdr, git, nvim, wezterm, karabiner - real files in `~`
 - **macOS defaults** (via run_once script): separate-spaces OFF, fn-keys as F-keys, mission-control ctrl+arrow keybinds disabled
 - **GUI app settings** (via run_once script): Rectangle keybinds, DockDoor config, ScrollReverser mouse-only reverse
 

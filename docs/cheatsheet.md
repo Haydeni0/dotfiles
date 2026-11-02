@@ -11,7 +11,7 @@ Daily-use keybinds and commands this dotfiles repo sets up.
   Add it in the same change - a cheatsheet entry lagging the config is a lie.
 - **Don't add**: install steps (docs/setup.md), architecture/philosophy
   (README.md), machine-local stuff (not in this repo), the full alias list
-  (self-evident from `configs/zsh/aliases.zsh`), or anything a user can't
+  (self-evident from `dot_zsh/aliases.zsh`), or anything a user can't
   invoke.
 - **Format**: `key | action | note` tables. One line per entry. No history,
   no rationale - that lives in the config file's comments or the commit.
@@ -53,17 +53,13 @@ Daily-use keybinds and commands this dotfiles repo sets up.
 | `wt` | worktrunk CLI | Parallel git worktrees (`wt switch -c <branch>`), mise-managed; worktrees land in `~/worktrees/<repo>/<branch>`, Claude Code agent worktrees included |
 | `rssh <host>` | Reconnecting ssh + herdr attach | Runs in current terminal from a plain (no-herdr) WezTerm tab; auto-reconnects 3s after drop; attaches herdr session from saved machine profile, else `main-<hostname>` |
 
-## Multiplexers
+## Multiplexer (herdr)
 
 | Key | Action | Note |
 |-----|--------|------|
 | ctrl+space | herdr prefix | Local + remote machines in one TUI |
 | Herdr tab bar | C/P gate status for focused agent | Reads the agent's launch environment; hidden at shell prompts |
 | prefix+d | herdr detach | Agents keep running after detach |
-| ctrl+b | tmux prefix | Never auto-started |
-| ctrl+shift+arrows | tmux: switch pane | No prefix needed |
-| shift+left/right | tmux: prev/next window | No prefix needed |
-| F11 | tmux: toggle all bindings off | For nested/remote tmux |
 
 ## Yazi
 
@@ -94,7 +90,6 @@ Leader is space; which-key popup lists leader binds after a pause.
 | `<space>s` | Grep text |
 | `<space>b` | Buffers |
 | `<space>g` | Neogit |
-| `gd` | LSP definition |
 | ctrl+a | Select all |
 
 Current-line git blame is on by default (gitsigns).
@@ -104,7 +99,7 @@ Current-line git blame is on by default (gitsigns).
 | Key/Command | Action | Note |
 |-----|--------|------|
 | h / n | Jump between diff hunks | In delta pager (any git diff) |
-| `~60 aliases` | `g` = git, `gst`, `gcm`, `gsw`, ... | Full list: `configs/zsh/aliases.zsh` |
+| `~60 aliases` | `g` = git, `gst`, `gcm`, `gsw`, ... | Full list: `dot_zsh/aliases.zsh` |
 
 ## Karabiner (Mac)
 

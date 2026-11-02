@@ -22,19 +22,18 @@ Rules:
 
 ## Tool Setup
 
-Environment specifics an agent needs to know. Add as discovered.
-
-### Linux cluster (no root)
-- Tools installed to `~/.local/bin` (curl/git-clone, no sudo)
-- zsh plugins git-cloned to `~/.local/share/zsh/`
-- Configs deployed by chezmoi as real files (not store symlinks)
-- Login nodes block mount namespaces (but no longer relevant - no bwrap/proot)
-
-### macOS
-- Tools installed via Homebrew (Brewfile)
-- zsh plugins also git-cloned to `~/.local/share/zsh/` (same as Linux)
+Tools are mise-managed per `dot_config/mise/config.toml.tmpl` (Homebrew on Mac
+carries mise, btop, opencode, and the GUI casks; herdr via its own curl
+installer; zsh via micromamba on Linux; zsh plugins vendored via
+`.chezmoiexternal.toml`).
 
 ## Learnings
+
+### 2026-11-02 - ~/.zshenv is repo-managed; machine-local vars go in ~/.zshenv.local
+`~/.zshenv` is deployed from `dot_zshenv.tmpl` (env/PATH via `configs/env.sh.tmpl`)
+and sources unmanaged `~/.zshenv.local` when present. AGENTS.md's old "never adopt
+.zshenv" rule is amended: the file IS managed, only `~/.zshenv.local` stays
+machine-local. Every shell entry point (login, non-login, herdr panes) reads it.
 
 ### 2026-10-14 - "ghost text" after deleting = unsupported locale on cluster nodes, not zsh or plugins
 The long-standing ghost (`❯ he` residue after backspacing with an autosuggestion on
@@ -49,8 +48,8 @@ zsh's emitted `ESC[45D` targets its skewed model, both WezTerm and pyte agree th
 residue forms. Repro was width/geometry/content sensitive - live pty probes at
 120 cols with seeded single-line history were clean; the matrix over LANG
 (unset/C/en_GB/ja_JP ghost vs C.UTF-8/en_US clean) plus `locale -a` cracked it.
-Fix: UTF-8 locale fallback at the top of `configs/zshrc` (pane shells skip
-zprofile; `locale charmap` check, prefer C.utf8). Verify changes like this with
+Fix: UTF-8 locale fallback at the top of `dot_zshrc` (pane shells get their env from
+zshenv now; `locale charmap` check, prefer C.utf8). Verify changes like this with
 `/tmp/zshrepro/probe_locale.py` style pty+pyte tests, not by eye.
 
 ### 2026-10-14 - zsh-autosuggestions restores a stale suggestion for a changed buffer when keystrokes coalesce
@@ -69,7 +68,7 @@ wt (mise, `github:max-sixty/worktrunk`, exe `wt`) needs git >=2.43; HPC system g
 backends 404). Fix: conda-forge git env + `~/.local/bin/git` symlink in
 run_once_install-tools.sh.tmpl, guarded on version (awk split-major*1000+minor
 <2043 - string compare breaks on 2.9 vs 2.43). Shell integration goes INLINE in
-configs/zshrc (`eval "$(command wt config shell init zsh)"` behind `command -v wt`)
+dot_zshrc (`eval "$(command wt config shell init zsh)"` behind `command -v wt`)
 - `wt config shell install` appends to deployed ~/.zshrc = chezmoi drift.
 `wt config plugins claude install` is deliberately NOT used: writes machine-local
 ~/.claude/plugins/installed_plugins.json, not syncable - the portable path is the
@@ -106,7 +105,7 @@ no machine actions in the binary's keymap).
 ### 2026-09-11 - WORDCHARS controls zsh word-delete granularity; terminal apps have own logic
 zsh default `WORDCHARS` (`*?_-.[]~=/&;!#$%^(){}<>`) counts `/ . - _` as word
 chars, so ctrl+backspace (`backward-kill-word`) ate whole paths like
-`asdasd/asdasd` in one press. Fixed with `WORDCHARS=''` in `configs/zshrc`
+`asdasd/asdasd` in one press. Fixed with `WORDCHARS=''` in `dot_zshrc`
 (commit db2ab37) - word = alphanumerics only, one press on `asdasd/asdasd`
 leaves `asdasd/`. "Weird inconsistency" across apps is expected: zle uses
 WORDCHARS, but terminal apps (Claude Code, nvim) parse keys themselves - their
@@ -120,10 +119,10 @@ never renders the trailing space; assert on the executed output instead.
 case-insensitive completion but maps each char to itself (m:src=dst is
 positional) - zero case folding, `readm`-TAB fails against README.md. Correct
 form (what oh-my-zsh ships): `m:{a-zA-Z}={A-Za-z}` (dst swapped: a->A, A->a).
-Fixed in `configs/zshrc` line 45. Verified via expect pty repro driving real
+Fixed in `dot_zshrc`. Verified via expect pty repro driving real
 interactive zsh: `wc readm`-TAB went from "no such file" to completing
 README.md. Repro technique: zpty drain blocks forever without `-t`; use
-`expect` (macOS ships it) - spawn `env SKIP_HERDR=1 zsh -i`, sleep 4 for
+`expect` (macOS ships it) - spawn `zsh -i`, sleep 4 for
 startup, send prefix + \t, check oracle strings in buffer.
 
 ### 2026-08-22 - yazi on Linux requires musl release (gnu build requires glibc 2.39)
@@ -137,7 +136,7 @@ installing the musl release (`yazi-...-unknown-linux-musl.zip`) in
 `gh auth login` / `gh auth setup-git` writes a version-pinned absolute-path
 credential helper (`!.../mise/installs/gh/<ver>/.../bin/gh auth git-credential`)
 into `~/.gitconfig`. chezmoi-managed `~/.gitconfig` + repo source
-`configs/gitconfig` carry the bare PATH-resolved form
+`dot_gitconfig` carry the bare PATH-resolved form
 (`helper = !gh auth git-credential`) instead. gh does NOT recognize the bare
 form as already-configured, so re-login re-introduces the pinned block ->
 `chezmoi diff` shows drift; fix = strip pinned blocks from deployed file,
@@ -161,7 +160,7 @@ is absent and `chezmoi diff` display degrades - non-fatal, re-run after
 install; apply is unaffected.
 
 ### 2026-08-22 - git user identity isolated via ~/.gitconfig.local
-Putting `[user]` name/email directly in shared `configs/gitconfig` clobbers local
+Putting `[user]` name/email directly in shared `dot_gitconfig` clobbers local
 identities across machines (e.g. personal vs work machines). Include
 `~/.gitconfig.local` instead and configure identity per-machine.
 
@@ -180,8 +179,9 @@ reads from source state, ignore only prevents deployment to the target.
 
 ### 2026-07-28 - dot_*.tmpl wrapper files MUST have .tmpl suffix
 Without `.tmpl`, chezmoi treats files as plain files (no template processing).
-`{{ include "configs/..." }}` silently fails - the file deploys empty. All
-wrapper files must be `dot_zshrc.tmpl`, `dot_tmux.conf.tmpl`, etc.
+`{{ includeTemplate "configs/..." }}` silently fails - the file deploys empty. Any
+file with template syntax must carry the suffix, e.g. `dot_zshenv.tmpl` (a real
+live example); plain sources deploy as `dot_*` with no template at all.
 
 ### 2026-07-28 - install scripts should use [[ -x ]] not command -v
 `command -v starship` checks PATH, but `~/.local/bin` may not be on PATH when
@@ -191,15 +191,10 @@ file existence checks instead.
 
 ### 2026-07-28 - herdr.toml needs absolute zsh path (template-resolved)
 herdr's `default_shell` may require an absolute path, not a bare command name.
-The config uses a `ZSH_PATH_PLACEHOLDER` replaced by the chezmoi template with
-the platform-correct path via `lookPath "zsh"` (at apply time, which is correct
-here since the path doesn't change between apply and runtime).
-
-### 2026-07-28 - nvim appimage extracted (no FUSE)
-AppImages require FUSE to mount the squashfs filesystem. On no-root HPC clusters,
-FUSE is often unavailable (`/dev/fuse` missing). Fix: extract the appimage with
-`--appimage-extract` and symlink to `AppRun`. No FUSE needed, slightly slower
-startup but works everywhere.
+`dot_config/herdr/config.toml.tmpl` computes the per-OS path and passes it via
+`includeTemplate "configs/herdr.toml" (dict "zshPath" ... "theme" ...)` - no
+`lookPath`, no string placeholders (a typo in a placeholder swap fails silently;
+the includeTemplate data arg is required).
 
 ### 2026-07-30 - yazi needs `file` cmd + opener override on headless linux
 yazi file-open failed on headless CoreWeave box. Two causes:

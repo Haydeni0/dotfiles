@@ -3,9 +3,10 @@
 # macOS system defaults (run once on first chezmoi apply on Mac).
 # Sets: separate-spaces OFF, fn-keys as F-keys, mission-control ctrl+arrow keybinds disabled, Finder path bar + column view default.
 #
-# Globe<->Control swap is NOT here - it has no stable `defaults write` (lives in a
-# ByHost plist with keyboard-specific keys). Set it manually in System Settings >
-# Keyboard > Modifier Keys, or via Karabiner-Elements (config in this repo).
+# The fn<->left_control swap is NOT here - it has no stable `defaults write` (lives
+# in a ByHost plist with keyboard-specific keys). The deployed Karabiner config
+# already performs the swap; no manual step (and do not also swap in System
+# Settings - the two swaps would cancel out).
 #
 # Some changes need logout or `killall` to take effect - noted inline.
 # On a managed Mac: if MDM enforces any of these, the `defaults write` will be
@@ -77,8 +78,6 @@ killall Finder 2>/dev/null || true
 echo ""
 echo "macOS defaults set. LOG OUT and back in for all changes to take effect."
 echo ""
-echo "Manual steps (no stable defaults-write key exists):"
-echo "  - System Settings > Keyboard > Modifier Keys > swap Globe and Control"
-echo "    (or use Karabiner-Elements - config deployed by this repo)"
+echo "The fn/left-control swap is handled by the deployed Karabiner config - no manual step."
 echo "If any setting didn't apply (MDM-managed), set it manually in System Settings."
 {{ end -}}

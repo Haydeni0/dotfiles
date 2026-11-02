@@ -7,10 +7,11 @@ duplicate the README or AGENTS.md).
 
 ## What this repo is
 
-A cross-platform dotfiles repo managed by chezmoi. Plain config files in
-`configs/` are the source of truth, deployed to `$HOME` via chezmoi templates
-(`dot_*.tmpl` with `{{ include }}`). Tools installed via mise (18 CLI tools),
-micromamba (zsh), and curl (herdr). No Nix, no bwrap, no proot, no namespaces.
+A cross-platform dotfiles repo managed by chezmoi. Config sources are plain
+`dot_*` files (no template needed) or `configs/` fragments where a template
+does real work, deployed to `$HOME` by chezmoi. Tools installed via mise
+(defined in `dot_config/mise/config.toml.tmpl`), micromamba (zsh), and curl
+(herdr). No Nix, no bwrap, no proot, no namespaces.
 
 The chezmoi source dir IS the working repo. `chezmoi init` clones it to
 `~/.local/share/chezmoi`; edit, commit, and `chezmoi apply` from there. Do not
@@ -21,18 +22,20 @@ symlink to the source dir for easy access (created during setup).
 ## How to make changes
 
 1. **Edit the source file in the repo** (NOT the deployed file in `$HOME`).
-   Source lives in `configs/` (templated includes), `dot_config/<tool>/` (plain
-   files deployed directly), or `dot_*.tmpl` (entry points). The source dir is
+   Source lives in `dot_*` files (plain, deployed directly), `configs/`
+   (templated fragments a template does real work on), or `dot_*.tmpl`
+   (template entry points). The source dir is
    `~/.local/share/chezmoi` (= `chezmoi source-path`).
 2. **Check for drift**: `chezmoi diff` - shows any local edits to deployed files that
    would be lost. Always run this before applying.
-3. **Run tests**: `mise run test` (or `./scripts/test`) - validates shell syntax (`zsh -n`,
-   `bash -n`), JSON/TOML validity, CRLF prevention, keybinding parity, and template
-   rendering for all supported platforms. Other tasks: `mise run sync` (pull +
-   apply + test, the post-pull dance) and `mise run doctor` (chezmoi health +
+3. **Run tests**: `mise run test` from the chezmoi source dir (tasks live in the
+   repo-level `mise.toml`; or `./scripts/test` directly) - validates shell syntax
+   (`zsh -n`, `bash -n`), JSON/TOML validity, CRLF prevention, keybinding parity,
+   and template rendering for all supported platforms. Other tasks: `mise run sync`
+   (pull + apply + test, the post-pull dance) and `mise run doctor` (chezmoi health +
    drift summary).
 4. **Apply**: `chezmoi apply`
-5. **Test in a new shell** - start a new zsh/tmux pane to pick up changes.
+5. **Test in a new shell** - start a new zsh pane to pick up changes.
 6. **Update the cheatsheet** if the change is user-facing (a new keybind,
    command, or default) - `docs/cheatsheet.md`, rules at its top.
 7. **Commit + push** - the repo is the source of truth.
@@ -44,29 +47,38 @@ file first and backfill.
 
 ## Repo structure
 
-- `configs/` - source of truth (plain files, NOT deployed to `$HOME`)
-- `dot_*.tmpl` - chezmoi entry points (include from `configs/`)
-- `dot_config/nvim/` - nvim config (plain files, deployed directly - exception to the
-  configs/ pattern because nvim lua doesn't need templating and `lazy-lock.json` is
-  auto-managed by lazy.nvim)
-- `Brewfile` - Mac: mise + zsh via Homebrew (deployed to `~/Brewfile`)
-- `run_once_install-tools.sh.tmpl` - tool installer (mise for 18 tools, micromamba for zsh, curl for herdr, git-clone for zsh plugins)
+- `configs/` - templated fragments a template does real work on (bashrc OS
+  variants, herdr.toml, env.sh.tmpl) - NOT deployed to `$HOME`
+- `dot_*` / `dot_config/` - plain config sources deployed directly
+- `dot_*.tmpl` - template entry points needing per-platform rendering
+- `dot_config/nvim/` - nvim config (plain files, deployed directly; `lazy-lock.json`
+  is tracked in the repo - runtime updates by lazy.nvim show as drift to fold back in)
+- `.chezmoiexternal.toml` - pinned zsh plugin archives vendored to `~/.local/share/zsh/`
+- `Brewfile` - Mac: mise via Homebrew (plus btop, opencode, GUI casks; deployed to `~/Brewfile`)
+- `run_once_install-tools.sh.tmpl` - tool installer (mise for tools, micromamba for zsh, curl for herdr, git-clone for the NvChad starter)
 - `.chezmoiignore` - files not deployed to `$HOME`
+- `mise.toml` - repo-level mise tasks (test/sync/doctor), ignored from deployment
 - `docs/setup.md` - setup guide for both platforms
-- Not in this repo: `~/.zshenv` - intentionally machine-local (different env vars
-  per machine), never adopt it. Env vars that should reach every machine go in
-  `configs/zprofile`.
+- `~/.zshenv` is managed by the repo (`dot_zshenv.tmpl`: env/PATH via
+  `configs/env.sh.tmpl`) and sources unmanaged `~/.zshenv.local` for machine-local
+  vars. Env vars that should reach every machine go in `configs/env.sh.tmpl`
+  (read by every shell via `~/.zshenv` and login bash).
 
 ## Principles
 
-- **configs/ is the single source of truth.** Never edit deployed files directly.
+- **`configs/` holds only files a template does real work on.** Everything else is a
+  plain `dot_*` source deployed directly. Never edit deployed files directly.
 - **Runtime guards, not template-time.** Use `command -v` checks in `.zshrc`,
   not `lookPath` in chezmoi templates (lookPath runs at apply time, not shell startup).
 - **Zero drift.** Same config files on Mac and Linux. Platform differences handled
-  via chezmoi templates (`dot_bashrc.tmpl`, herdr `config.toml.tmpl`).
+  via chezmoi templates (`dot_bashrc.tmpl`, herdr `config.toml.tmpl`). Two documented
+  platform-fact exceptions: WezTerm hardcodes `/bin/zsh` on the Mac (system zsh there),
+  and `configs/bashrc.linux` PATH-resolves zsh at runtime for `exec zsh -l` (install
+  location varies by machine).
 - **No Nix.** No `/nix/store`, no bwrap, no proot, no namespaces. Tools via mise
   (managed in `~/.local/share/mise/installs/`), zsh via micromamba (`~/.local/bin/zsh`).
-- **zsh plugins git-cloned** to `~/.local/share/zsh/`, sourced with `[[ -r ]]` guards.
+- **zsh plugins vendored** via `.chezmoiexternal.toml` archive externals
+  to `~/.local/share/zsh/`, sourced with `[[ -r ]]` guards.
 - **Install scripts use file existence checks** (`[[ -x ~/.local/bin/tool ]]`),
   not `command -v` (PATH may not include `~/.local/bin` when chezmoi runs scripts).
 - **mise activate** in `.zshrc` and `.bashrc` puts mise-managed tools on PATH.
@@ -81,18 +93,22 @@ deployed files can be edited directly, but those edits will be **overwritten on 
 next `chezmoi apply`** and are not in the repo.
 
 - **Check for drift**: `chezmoi diff` shows differences between deployed files and source.
-  Run this before `chezmoi apply` to catch accidental direct edits.
+  Run this before `chezmoi apply` to catch accidental direct edits. Bootstrap caveat:
+  before the first `mise install`, the diff pager (hardcoded
+  `~/.local/share/mise/shims/delta`) is absent and diff display degrades - non-fatal,
+  re-run after install; apply is unaffected.
 - **Find unmanaged files**: `chezmoi unmanaged` lists `$HOME` files NOT tracked in
   the repo. Use it to discover configs that have drifted out of management (e.g.
   a tool wrote to `~/.config/` and were never added as source). Bring such files
   into the repo as source, don't edit the deployed copy.
 - **Edit source, not deployed files**: `chezmoi edit ~/.zshrc` opens the source file
-  (`configs/zshrc`) in `$EDITOR`. This is the correct way to make changes.
+  (`dot_zshrc` - a plain source, the entry point itself) in `$EDITOR`. This is the
+  correct way to make changes.
 - **If a tool installer modifies a deployed file** (e.g. fzf tries to append to `.zshrc`):
-  the change is local only. Handle it in `configs/` or `run_once_install-tools.sh.tmpl`
-  instead. The install script already uses `--no-update-rc` flags where possible.
+  the change is local only. Handle it in the repo source or `run_once_install-tools.sh.tmpl`
+  instead.
 - **Revert accidental edits**: `chezmoi apply` overwrites deployed files with source.
-  Anything not in `configs/` is lost.
+  Anything not in the repo source is lost.
 - **Never blindly `chezmoi apply` when `chezmoi diff` shows changes.** When a
   diff appears, **surface it to the user and work through it together** - do not
   resolve it unilaterally. Present the diff, state the likely cause, and let the
@@ -113,12 +129,19 @@ next `chezmoi apply`** and are not in the repo.
 ## Testing changes
 
 ### Automated checks
-Run `mise run test` (or `./scripts/test`). Validates:
-- Syntax of all zsh and bash files (`zsh -n`, `bash -n`)
-- Formats of JSON and TOML config files
+Run `mise run test` (or `./scripts/test`) from the chezmoi source dir. Validates:
+- Syntax of all zsh and bash files, plain and rendered per platform (`zsh -n`, `bash -n`)
+- Formats of all tracked and rendered JSON, TOML, and YAML config files
+- No leftover placeholders in rendered templates
 - No CRLF line endings in tracked files
-- Keybinding parity in `configs/zshrc` (Mac `\e[1;3` Opt and Linux/WSL `\e[1;5` Ctrl)
+- Keybinding parity in `dot_zshrc` (Mac `\e[1;3` Opt and Linux/WSL `\e[1;5` Ctrl)
 - Multi-platform template compilation (`darwin/arm64`, `darwin/amd64`, `linux/amd64`, `linux/arm64`)
+- Invariants: no template-time `lookPath`, no bare `command -v` in run_ scripts
+  (repo-installed tools resolve by absolute path), `.tmpl` suffix on template
+  entry points, externals keys paired with zshrc source guards, AGENTS.md and
+  CLAUDE.md stay identical twins, `.chezmoiignore` keeps its non-deploy sections
+- Validator presence (bash, zsh, git, rg, jq, uv, chezmoi) - a missing validator
+  is a loud failure, never a silent skip
 - `.chezmoiignore` invariants
 
 ### Manual checks in a new shell
