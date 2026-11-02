@@ -1,0 +1,27 @@
+# External content vendored by chezmoi. Updating a plugin = change the rev in
+# its URL + its checksum, then `chezmoi apply`. Paths MUST match the source
+# guards in the zshrc. (Archive externals, not git-repos: chezmoi has no rev
+# pinning for git-repos - only clone/pull. Checksums pin the exact content.)
+# The NvChad starter is NOT here: it is a user-mutable base the install
+# script clones once (externals would overwrite local edits on every apply).
+
+[".local/share/zsh/zsh-autosuggestions"]
+    type = "archive"
+    url = "https://github.com/zsh-users/zsh-autosuggestions/archive/85919cd1ffa7d2d5412f6d3fe437ebdbeeec4fc5.tar.gz"
+    exact = true
+    stripComponents = 1
+    checksum.sha256 = "20665e469e720e674964a66854d5534b9af78cdfd438512746ecd1ade8e819ce"
+
+[".local/share/zsh/zsh-syntax-highlighting"]
+    type = "archive"
+    url = "https://github.com/zsh-users/zsh-syntax-highlighting/archive/1d85c692615a25fe2293bdd44b34c217d5d2bf04.tar.gz"
+    exact = true
+    stripComponents = 1
+    checksum.sha256 = "e4a95feb737d78efa4052e23c4880e6936a3133ea58f390458fc80ea4033483e"
+
+[".local/share/zsh/zsh-history-substring-search"]
+    type = "archive"
+    url = "https://github.com/zsh-users/zsh-history-substring-search/archive/14c8d2e0ffaee98f2df9850b19944f32546fdea5.tar.gz"
+    exact = true
+    stripComponents = 1
+    checksum.sha256 = "823ea186446669fb024b839b117122d03ee0b3b20e199c95e09e85695bd30b0f"

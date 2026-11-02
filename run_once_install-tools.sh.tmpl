@@ -33,7 +33,7 @@ mise install
 {{ else -}}
 # Linux: bootstrap micromamba if not present (rootless, single binary)
 if ! command -v micromamba &>/dev/null && [[ ! -x ~/.local/bin/micromamba ]]; then
-    curl -fsSL https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj -C ~/.local/bin/ --strip-components=1 bin/micromamba
+    curl -fsSL https://micro.mamba.pm/api/micromamba/linux-{{ if eq .chezmoi.arch "amd64" }}64{{ else }}aarch64{{ end }}/latest | tar -xj -C ~/.local/bin/ --strip-components=1 bin/micromamba
 fi
 
 # Linux: always install zsh to ~/.local/bin/zsh via micromamba (available on HPC nodes).
@@ -70,14 +70,6 @@ if ! git --version >/dev/null 2>&1 || [[ "$(git --version 2>/dev/null | awk '{sp
 fi
 
 {{ end -}}
-
-# --- zsh plugins (both platforms, git-cloned) ---
-[[ -d ~/.local/share/zsh/zsh-autosuggestions ]] || \
-    git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions ~/.local/share/zsh/zsh-autosuggestions
-[[ -d ~/.local/share/zsh/zsh-syntax-highlighting ]] || \
-    git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting ~/.local/share/zsh/zsh-syntax-highlighting
-[[ -d ~/.local/share/zsh/zsh-history-substring-search ]] || \
-    git clone --depth 1 https://github.com/zsh-users/zsh-history-substring-search ~/.local/share/zsh/zsh-history-substring-search
 
 # --- NvChad (secondary nvim config, tried via NVIM_APPNAME=nvchad, not vendored here) ---
 [[ -d ~/.config/nvchad ]] || \
