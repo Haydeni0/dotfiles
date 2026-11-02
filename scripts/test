@@ -1,52 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Resolve repo root directory
+# Repo test suite. Fails loudly when a validator is missing - no silent skips.
+# File discovery is dynamic (git ls-files) so it survives file moves.
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
-echo "==> 1. Checking shell scripts syntax..."
-# Zsh files
-zsh -n configs/zshrc configs/zsh/*.zsh
-# Bash files
-bash -n configs/bashrc.linux configs/bashrc.darwin configs/bash_profile
+fail() { echo "ERROR: $*" >&2; exit 1; }
 
-echo "==> 2. Checking config formats (JSON / TOML / YAML)..."
-# JSON validation
-if command -v jq >/dev/null 2>&1; then
-    jq empty dot_config/private_karabiner/karabiner.json
-fi
+echo "==> 0. Validator presence"
+for tool in bash zsh git rg jq uv chezmoi; do
+    command -v "$tool" >/dev/null 2>&1 || fail "validator missing: $tool (mise/micromamba/system managed; install it)"
+done
 
-# TOML validation via Python
-python3 - <<'EOF'
-import sys
-try:
-    import tomllib
-    for toml_path in ["configs/herdr.toml", "configs/starship.toml"]:
-        with open(toml_path, "rb") as f:
-            tomllib.load(f)
-except ImportError:
-    pass
-EOF
-
-echo "==> 3. Checking CRLF line endings in tracked files..."
-CRLF_FILES=$(git grep -I -l $'\r' || true)
-if [[ -n "$CRLF_FILES" ]]; then
-    echo "ERROR: Found CRLF line endings in tracked files:"
-    echo "$CRLF_FILES"
-    exit 1
-fi
-
-echo "==> 4. Checking keybinding parity in configs/zshrc..."
-# macOS Option+Arrows (\e[1;3)
-grep -F -q "bindkey \$'\e[1;3D' backward-word" configs/zshrc || { echo "ERROR: Missing macOS Option+Left backward-word binding"; exit 1; }
-grep -F -q "bindkey \$'\e[1;3C' forward-word" configs/zshrc || { echo "ERROR: Missing macOS Option+Right forward-word binding"; exit 1; }
-# Linux/WSL Ctrl+Arrows (\e[1;5)
-grep -F -q "bindkey \$'\e[1;5D' backward-word" configs/zshrc || { echo "ERROR: Missing Linux/WSL Ctrl+Left backward-word binding"; exit 1; }
-grep -F -q "bindkey \$'\e[1;5C' forward-word" configs/zshrc || { echo "ERROR: Missing Linux/WSL Ctrl+Right forward-word binding"; exit 1; }
-
-echo "==> 5. Checking chezmoi template rendering for all platforms..."
 PLATFORMS=(
     '{"chezmoi":{"os":"darwin","arch":"arm64"}}'
     '{"chezmoi":{"os":"darwin","arch":"amd64"}}'
@@ -54,26 +22,130 @@ PLATFORMS=(
     '{"chezmoi":{"os":"linux","arch":"arm64"}}'
 )
 
-# Find all template files in the repo (excluding .git)
-TMPL_FILES=()
-while IFS= read -r line; do
-    TMPL_FILES+=("$line")
-done < <(find . -name '*.tmpl' -not -path './.git/*')
-
-for target in "${PLATFORMS[@]}"; do
-    for tmpl in "${TMPL_FILES[@]}"; do
-        chezmoi execute-template --override-data "$target" < "$tmpl" > /dev/null
+echo "==> 1. Shell syntax: plain shell sources + all rendered templates"
+RENDERED="$(mktemp)"
+trap 'rm -f "$RENDERED"' EXIT
+shell_check() { # $1 = kind (zsh|bash|sh), $2 = content file
+    case "$1" in
+        zsh) zsh -n "$2" ;;
+        bash) bash -n "$2" ;;
+        sh)   sh -n "$2" ;;
+    esac
+}
+kind_for() { # $1 = file basename
+    case "$1" in
+        *bashrc*|*bash_profile*) echo bash ;;
+        # run_ scripts get bash -n even when #!/bin/sh: bash accepts POSIX sh
+        # syntax (a superset), and the macos-defaults script is #!/bin/bash
+        # with bash-only syntax that sh -n (dash) rejects
+        *.sh*|run_once_*|run_onchange_*) echo bash ;;
+        *) echo zsh ;;
+    esac
+}
+is_shell_target() { # $1 = file path
+    case "$(basename "$1")" in
+        *zshrc*|*zshenv*|*zprofile*|*bashrc*|*bash_profile*|*aliases.zsh*|run_once_*|run_onchange_*|*.sh*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+# plain (non-template) shell sources, wherever they live; skip template
+# fragments (e.g. configs/bashrc.linux - syntax-checked rendered instead)
+while IFS= read -r f; do
+    is_shell_target "$f" || continue
+    grep -q '{{' "$f" && continue
+    shell_check "$(kind_for "$(basename "$f")")" "$f"
+done < <(git ls-files | grep -vE '\.tmpl$')
+# every template whose target is a shell file, rendered per platform
+for tmpl in $(git ls-files '*.tmpl'); do
+    is_shell_target "${tmpl%.tmpl}" || continue
+    kind="$(kind_for "$(basename "${tmpl%.tmpl}")")"
+    for p in "${PLATFORMS[@]}"; do
+        chezmoi execute-template --override-data "$p" < "$tmpl" > $RENDERED
+        shell_check "$kind" $RENDERED
     done
 done
 
-# Verify syntax of rendered install scripts
-for target in "${PLATFORMS[@]}"; do
-    rendered_install=$(chezmoi execute-template --override-data "$target" < run_once_install-tools.sh.tmpl)
-    bash -n <<< "$rendered_install"
+echo "==> 2. Config formats: all tracked + all rendered TOML/YAML/JSON"
+while IFS= read -r f; do jq empty "$f"; done < <(git ls-files '*.json')
+while IFS= read -r f; do uv run --script scripts/validate_config.py toml "$f"; done < <(git ls-files '*.toml')
+while IFS= read -r f; do uv run --script scripts/validate_config.py yaml "$f"; done < <(git ls-files | grep -E '\.ya?ml$' | grep -v Brewfile)
+for tmpl in $(git ls-files '*.tmpl'); do
+    base="${tmpl%.tmpl}"
+    fmt=""
+    case "$base" in
+        *.toml) fmt=toml ;;
+        *.yml|*.yaml) fmt=yaml ;;
+        *.json) fmt=json ;;
+    esac
+    [ -z "$fmt" ] && continue
+    for p in "${PLATFORMS[@]}"; do
+        chezmoi execute-template --override-data "$p" < "$tmpl" > $RENDERED
+        if [ "$fmt" = json ]; then jq empty $RENDERED
+        else uv run --script scripts/validate_config.py "$fmt" $RENDERED; fi
+    done
 done
 
-echo "==> 6. Checking .chezmoiignore invariants..."
-grep -q '^configs/' .chezmoiignore || { echo "ERROR: configs/ missing from .chezmoiignore"; exit 1; }
-grep -q '^scripts/' .chezmoiignore || { echo "ERROR: scripts/ missing from .chezmoiignore"; exit 1; }
+echo "==> 3. Rendered output: no leftover placeholders"
+for tmpl in $(git ls-files '*.tmpl'); do
+    for p in "${PLATFORMS[@]}"; do
+        chezmoi execute-template --override-data "$p" < "$tmpl" > $RENDERED
+        grep -nE 'PLACEHOLDER' $RENDERED && fail "leftover placeholder in rendered $tmpl ($p)"
+    done
+done
+
+echo "==> 4. CRLF check"
+CRLF_FILES=$(git grep -I -l $'\r' -- . || true)
+[ -n "$CRLF_FILES" ] && fail "CRLF line endings in: $CRLF_FILES"
+
+echo "==> 5. Keybinding parity (zshrc discovered dynamically)"
+ZSHRC=$(git ls-files | grep -E '(^dot_zshrc$|^configs/zshrc$)' | head -1)
+[ -n "$ZSHRC" ] || fail "zshrc source not found"
+for binding in "bindkey \$'\\e[1;3D' backward-word" "bindkey \$'\\e[1;3C' forward-word" \
+                "bindkey \$'\\e[1;5D' backward-word" "bindkey \$'\\e[1;5C' forward-word"; do
+    grep -F -q "$binding" "$ZSHRC" || fail "missing keybinding: $binding"
+done
+
+echo "==> 6. Invariants"
+# no template-time lookPath
+rg -n 'lookPath' --glob '*.tmpl' && fail "lookPath in a template (use runtime guards)" || true
+# template syntax requires .tmpl suffix on deployed dot_* entry points.
+# Exempt: configs/ fragments (included templates, not deployed),
+# .chezmoiignore (inherently a template), dot_config/worktrunk/* (worktrunk's
+# own {{ }} templating, deployed verbatim by design).
+while IFS= read -r f; do
+    case "$f" in
+        dot_config/worktrunk/*|*.tmpl) ;;
+        *) fail "template syntax in deployed file $f without .tmpl suffix" ;;
+    esac
+done < <(git grep -l '{{' -- 'dot_*' || true)
+# run_ scripts: a repo-installed tool resolves by absolute path/-x, never command -v alone
+# (comment lines are prose about the rule, not code - skipped)
+for s in $(git ls-files 'run_*.tmpl'); do
+    for p in "${PLATFORMS[@]}"; do
+        chezmoi execute-template --override-data "$p" < "$s" > $RENDERED
+        while IFS= read -r line; do
+            case "$line" in
+                '#'*) ;;
+                *"command -v git"*|*"command -v micromamba"*|*'-x '*) ;;
+                *'command -v '*) fail "run_ script $s uses bare command -v: $line" ;;
+            esac
+        done < <(grep 'command -v' $RENDERED || true)
+    done
+done
+# externals keys and zshrc source paths must pair (R11)
+if [ -f .chezmoiexternal.toml ]; then
+    ZSHRC_SRC=$(git ls-files | grep -E '(^dot_zshrc$|^configs/zshrc$)' | head -1)
+    while IFS= read -r key; do
+        grep -q "$key" "$ZSHRC_SRC" || fail "externals key $key has no matching source guard in $ZSHRC_SRC"
+    done < <(grep -oE '^\["[^"]+"\]' .chezmoiexternal.toml | tr -d '[""]')
+    for plugin in zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search; do
+        grep -q "\.local/share/zsh/$plugin" .chezmoiexternal.toml || fail "plugin $plugin missing from .chezmoiexternal.toml"
+    done
+fi
+# AGENTS.md and CLAUDE.md stay identical twins
+cmp -s AGENTS.md CLAUDE.md || fail "AGENTS.md and CLAUDE.md differ - edit them in lockstep"
+# .chezmoiignore keeps its non-deploy sections
+grep -q '^configs/' .chezmoiignore || fail "configs/ missing from .chezmoiignore"
+grep -q '^scripts/' .chezmoiignore || fail "scripts/ missing from .chezmoiignore"
 
 echo "==> All dotfiles tests passed successfully!"
