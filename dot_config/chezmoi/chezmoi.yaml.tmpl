@@ -1,4 +1,6 @@
-{{ if lookPath "delta" -}}
+# Hardcoded mise shim - deterministic on every machine (a template-time
+# PATH lookup would depend on the applying machine's PATH). Bootstrap
+# caveat: before the first `mise install`, `chezmoi diff` display falls
+# back / re-run after install; apply is unaffected.
 diff:
-  command: delta
-{{ end -}}
+  command: ~/.local/share/mise/shims/delta

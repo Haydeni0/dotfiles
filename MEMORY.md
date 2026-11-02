@@ -153,11 +153,12 @@ CRLF. This breaks script execution (e.g. `run_once_install-tools.sh.tmpl` sheban
 with `/bin/bash\r: no such file or directory`). Enforce `* text=auto eol=lf` in
 `.gitattributes`.
 
-### 2026-08-22 - chezmoi.yaml diff tool needs lookPath guard on bootstrap
-Setting `diff: command: delta` in plain `chezmoi.yaml` causes `chezmoi apply -v` to
-crash on initial bootstrap before `mise` has installed `delta`. Use
-`dot_config/chezmoi/chezmoi.yaml.tmpl` with `{{ if lookPath "delta" }}` so chezmoi uses
-the default diff until delta is on PATH.
+### 2026-08-22 - chezmoi.yaml diff tool uses a hardcoded mise shim
+The diff pager is hardcoded to `~/.local/share/mise/shims/delta` (mise is the
+single tool manager; template `lookPath` was nondeterministic - it evaluated
+against the applying machine's PATH). Before the first `mise install` the shim
+is absent and `chezmoi diff` display degrades - non-fatal, re-run after
+install; apply is unaffected.
 
 ### 2026-08-22 - git user identity isolated via ~/.gitconfig.local
 Putting `[user]` name/email directly in shared `configs/gitconfig` clobbers local
