@@ -92,6 +92,14 @@ for tmpl in $(git ls-files '*.tmpl'); do
         grep -nE 'PLACEHOLDER' $RENDERED && fail "leftover placeholder in rendered $tmpl ($p)"
     done
 done
+# .chezmoiignore is a live template without the .tmpl suffix - render it too
+# (a template error there breaks every apply/diff/managed on all machines)
+for p in "${PLATFORMS[@]}"; do
+    chezmoi execute-template --override-data "$p" < .chezmoiignore > $RENDERED || fail ".chezmoiignore template error ($p)"
+    grep -nE 'PLACEHOLDER' $RENDERED && fail "leftover placeholder in rendered .chezmoiignore ($p)"
+done
+chezmoi execute-template --override-data '{"chezmoi":{"os":"linux","arch":"amd64"}}' < .chezmoiignore | grep -qx 'Brewfile' || fail "linux .chezmoiignore must ignore Brewfile"
+chezmoi execute-template --override-data '{"chezmoi":{"os":"darwin","arch":"arm64"}}' < .chezmoiignore | grep -qx 'Brewfile' && fail "darwin .chezmoiignore must deploy Brewfile" || true
 
 echo "==> 4. CRLF check"
 CRLF_FILES=$(git grep -I -l $'\r' -- . || true)
@@ -142,8 +150,10 @@ if [ -f .chezmoiexternal.toml ]; then
         grep -q "\.local/share/zsh/$plugin" .chezmoiexternal.toml || fail "plugin $plugin missing from .chezmoiexternal.toml"
     done
 fi
-# AGENTS.md and CLAUDE.md stay identical twins
-cmp -s AGENTS.md CLAUDE.md || fail "AGENTS.md and CLAUDE.md differ - edit them in lockstep"
+# CLAUDE.md is a tracked symlink to AGENTS.md (one source, two names) - both
+# the link and the identity must hold
+[ "$(git ls-files -s CLAUDE.md | awk '{print $1}')" = "120000" ] || fail "CLAUDE.md must be a symlink to AGENTS.md (mode 120000), not a real copy"
+cmp -s AGENTS.md CLAUDE.md || fail "AGENTS.md and CLAUDE.md differ"
 # .chezmoiignore keeps its non-deploy sections
 grep -q '^configs/' .chezmoiignore || fail "configs/ missing from .chezmoiignore"
 grep -q '^scripts/' .chezmoiignore || fail "scripts/ missing from .chezmoiignore"

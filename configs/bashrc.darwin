@@ -1,4 +1,7 @@
-# Mac .bashrc - minimal (zsh is default shell on macOS, .bashrc rarely runs)
+# Mac .bashrc - minimal (zsh is default shell on macOS, .bashrc rarely runs),
+# but a login bash still gets the managed env/PATH like every other entry point.
+{{ includeTemplate "configs/env.sh.tmpl" . -}}
+
 case $- in
     *i*) ;;
       *) return;;

@@ -69,15 +69,13 @@ A fresh Mac following this section gets the complete setup.
 # 1. Install chezmoi
 brew install chezmoi
 
-# 2. Apply dotfiles (deploys configs + Brewfile + runs install scripts)
-#    - mise (from Homebrew) installs the tools defined in the mise config
-#      (dot_config/mise/config.toml.tmpl)
-#    - herdr installed via curl
-#    - zsh plugins vendored by chezmoi to ~/.local/share/zsh/
+# 2. Apply dotfiles (deploys configs + Brewfile). On a fresh Mac this first
+#    apply INTENTIONALLY stops at the tool-install script - mise isn't
+#    installed yet, so the script exits 1 ("run brew bundle first") and chezmoi
+#    will not record it as done. Everything alphabetically earlier (all
+#    dotfiles, the Brewfile) is already deployed. Continue to step 3.
 #    - Karabiner config deployed to ~/.config/karabiner/ (ISO UK layout)
 #    - WezTerm config deployed to ~/.config/wezterm/
-#    - macOS system.defaults script runs (separate-spaces, fn-keys, mission-control keybinds)
-#    - GUI app settings script runs (Rectangle/ScrollReverser keybinds)
 #    - Brewfile deployed to ~/Brewfile (for step 3)
 chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 
@@ -89,14 +87,21 @@ chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 #    directive).
 brew bundle --file=~/Brewfile
 
-# 4. Set git identity (not managed by chezmoi - different per user)
+# 4. Re-run the apply - with mise on PATH the tool-install script now
+#    succeeds: mise installs the tools defined in the mise config
+#    (dot_config/mise/config.toml.tmpl), herdr via curl, zsh plugins vendored
+#    to ~/.local/share/zsh/, then the macOS defaults + GUI app settings
+#    scripts run (their casks now exist).
+chezmoi apply
+
+# 5. Set git identity (not managed by chezmoi - different per user)
 git config --file ~/.gitconfig.local user.name "Your Name"
 git config --file ~/.gitconfig.local user.email "you@example.com"
 
-# 5. Manual one-time steps (cannot be automated):
+# 6. Manual one-time steps (cannot be automated):
 #    a. Karabiner-Elements: launch the app once (installs its driver, prompts for
 #       Accessibility + Input Monitoring permissions in System Settings > Privacy).
-#       Approve both. The config (ISO UK layout) is already in place from step 3.
+#       Approve both. The config (ISO UK layout) is already in place from step 2.
 #    b. fn/Control key swap: handled by the deployed Karabiner config
 #       (fn -> left_control complex modification). No manual step - do NOT also
 #       swap keys in System Settings, the two swaps would cancel out.

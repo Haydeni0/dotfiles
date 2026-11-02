@@ -2,9 +2,9 @@
 #!/bin/bash
 # GUI app settings (run once on first chezmoi apply on Mac).
 # Sets keybinds/prefs for Rectangle, DockDoor, ScrollReverser via `defaults write`.
-# Apps must be installed first (Brewfile casks) - run `chezmoi apply` first
-# or `brew bundle` first (both orders work, see docs/setup.md); the casks
-# must exist before this script configures them.
+# Apps must be installed first (Brewfile casks): on a fresh Mac the first
+# apply stops at the tool-install script, `brew bundle` installs the casks,
+# and the SECOND apply runs this script (see docs/setup.md for the sequence).
 # Apps may need a restart (or re-login) to pick up changes.
 
 set -euo pipefail

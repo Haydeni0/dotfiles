@@ -93,10 +93,11 @@ deployed files can be edited directly, but those edits will be **overwritten on 
 next `chezmoi apply`** and are not in the repo.
 
 - **Check for drift**: `chezmoi diff` shows differences between deployed files and source.
-  Run this before `chezmoi apply` to catch accidental direct edits. Bootstrap caveat:
-  before the first `mise install`, the diff pager (hardcoded
-  `~/.local/share/mise/shims/delta`) is absent and diff display degrades - non-fatal,
-  re-run after install; apply is unaffected.
+  Run this before `chezmoi apply` to catch accidental direct edits. Bootstrap caveat
+  (owned here; the pager config comment points back): before the first `mise install`,
+  the diff pager (hardcoded `~/.local/share/mise/shims/delta`) is absent and
+  `chezmoi diff` aborts with a `fork/exec ... no such file or directory` error that
+  never names the pager config. Apply is unaffected. Re-run diff after install.
 - **Find unmanaged files**: `chezmoi unmanaged` lists `$HOME` files NOT tracked in
   the repo. Use it to discover configs that have drifted out of management (e.g.
   a tool wrote to `~/.config/` and were never added as source). Bring such files
@@ -138,8 +139,10 @@ Run `mise run test` (or `./scripts/test`) from the chezmoi source dir. Validates
 - Multi-platform template compilation (`darwin/arm64`, `darwin/amd64`, `linux/amd64`, `linux/arm64`)
 - Invariants: no template-time `lookPath`, no bare `command -v` in run_ scripts
   (repo-installed tools resolve by absolute path), `.tmpl` suffix on template
-  entry points, externals keys paired with zshrc source guards, AGENTS.md and
-  CLAUDE.md stay identical twins, `.chezmoiignore` keeps its non-deploy sections
+  entry points, externals keys paired with zshrc source guards, CLAUDE.md stays
+  a tracked symlink to AGENTS.md (mode 120000 - one source, two names; never
+  replace it with a real copy), `.chezmoiignore` keeps its non-deploy sections
+  and renders per platform
 - Validator presence (bash, zsh, git, rg, jq, uv, chezmoi) - a missing validator
   is a loud failure, never a silent skip
 - `.chezmoiignore` invariants

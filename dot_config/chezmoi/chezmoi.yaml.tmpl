@@ -1,6 +1,7 @@
 # Hardcoded mise shim - deterministic on every machine (a template-time
 # PATH lookup would depend on the applying machine's PATH). Bootstrap
-# caveat: before the first `mise install`, `chezmoi diff` display falls
-# back / re-run after install; apply is unaffected.
+# caveat: before the first `mise install`, `chezmoi diff` aborts with a
+# fork/exec error (apply unaffected) - re-run after install. Full detail
+# lives in AGENTS.md ("Check for drift").
 diff:
   command: ~/.local/share/mise/shims/delta

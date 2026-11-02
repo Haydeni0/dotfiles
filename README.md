@@ -25,16 +25,23 @@ git config --file ~/.gitconfig.local user.email "you@example.com"
 # 1. Install chezmoi
 brew install chezmoi
 
-# 2. Apply dotfiles (deploys configs + Brewfile + mise tools + macOS defaults + GUI app settings)
+# 2. Apply dotfiles (deploys configs + Brewfile). On a fresh Mac this first
+#    apply intentionally stops at the tool-install script - mise isn't
+#    installed yet (it comes from brew bundle in step 4). See docs/setup.md
+#    for the full fresh-Mac sequence.
 chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 
 # 3. Symlink ~/.dotfiles -> source dir for easy access
 ln -sfn ~/.local/share/chezmoi ~/.dotfiles
 
-# 4. Install GUI apps + fonts via Homebrew (Brewfile was deployed by step 2)
+# 4. Install GUI apps + fonts + mise via Homebrew (Brewfile was deployed by step 2)
 brew bundle --file=~/Brewfile
 
-# 5. Set git identity (not managed by chezmoi - different per user)
+# 5. Re-run the apply - the tool-install script now succeeds (mise on PATH)
+#    and installs the mise tools, herdr, and the vendored zsh plugins
+chezmoi apply
+
+# 6. Set git identity (not managed by chezmoi - different per user)
 git config --file ~/.gitconfig.local user.name "Your Name"
 git config --file ~/.gitconfig.local user.email "you@example.com"
 

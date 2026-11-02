@@ -156,8 +156,8 @@ with `/bin/bash\r: no such file or directory`). Enforce `* text=auto eol=lf` in
 The diff pager is hardcoded to `~/.local/share/mise/shims/delta` (mise is the
 single tool manager; template `lookPath` was nondeterministic - it evaluated
 against the applying machine's PATH). Before the first `mise install` the shim
-is absent and `chezmoi diff` display degrades - non-fatal, re-run after
-install; apply is unaffected.
+is absent and `chezmoi diff` aborts with a fork/exec error that never names
+the pager config; apply is unaffected. Re-run diff after install.
 
 ### 2026-08-22 - git user identity isolated via ~/.gitconfig.local
 Putting `[user]` name/email directly in shared `dot_gitconfig` clobbers local
