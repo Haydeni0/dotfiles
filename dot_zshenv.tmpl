@@ -1,0 +1,4 @@
+{{ includeTemplate "configs/env.sh.tmpl" . -}}
+
+# Machine-local env vars, deliberately outside the repo (AGENTS.md).
+[[ -r ~/.zshenv.local ]] && source ~/.zshenv.local

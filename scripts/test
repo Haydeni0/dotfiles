@@ -8,7 +8,7 @@ cd "$REPO_ROOT"
 
 echo "==> 1. Checking shell scripts syntax..."
 # Zsh files
-zsh -n configs/zshrc configs/zprofile configs/zsh/*.zsh
+zsh -n configs/zshrc configs/zsh/*.zsh
 # Bash files
 bash -n configs/bashrc.linux configs/bashrc.darwin configs/bash_profile
 
