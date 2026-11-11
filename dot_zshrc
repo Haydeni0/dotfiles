@@ -26,21 +26,32 @@ fi
 
 # SSH agent - one per host on a fixed socket, reused by every shell/pane.
 # An inherited SSH_AUTH_SOCK (agent forwarding) always wins - never overridden.
+# The socket name carries the short hostname: on the NFS-shared cluster home a
+# Unix socket only reaches the host that bound it, so a shared name would make
+# every other node treat it as stale, delete it, and orphan that node's agent
+# with its keys still loaded.
 # ssh-add -l exit codes: 0 = identities, 1 = agent alive, no identities,
 # 2 = no agent reachable on the socket.
 if [ -z "$SSH_AUTH_SOCK" ]; then
-    [[ -d ~/.ssh ]] || mkdir -p ~/.ssh
-    export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
+    [[ -d ~/.ssh ]] || mkdir -m 700 -p ~/.ssh
+    export SSH_AUTH_SOCK="$HOME/.ssh/agent-${HOST%%.*}.sock"
     ssh-add -l >/dev/null 2>&1
-    if [ $? -ge 2 ]; then
+    agent_state=$?
+    if [ $agent_state -ge 2 ]; then
         # a stale socket from a hard-killed agent would block `ssh-agent -a`
         # forever (NFS home: crashes leave it behind) - remove and respawn
         rm -f "$SSH_AUTH_SOCK"
-        eval "$(ssh-agent -a "$HOME/.ssh/agent.sock" -s)" >/dev/null
+        eval "$(ssh-agent -a "$SSH_AUTH_SOCK" -s)" >/dev/null
+        agent_state=1
+    fi
+    # Keys expire after a working day so a forgotten agent does not hold
+    # decrypted keys indefinitely; the first new shell after expiry reloads them.
+    if [ $agent_state -eq 1 ]; then
         find ~/.ssh -maxdepth 1 -type f -name "*.pub" -exec basename {} .pub \; | while read key; do
-            ssh-add ~/.ssh/"$key" 2>/dev/null
+            ssh-add -t 12h ~/.ssh/"$key" 2>/dev/null
         done
     fi
+    unset agent_state
 fi
 
 # Keybindings (emacs mode)
