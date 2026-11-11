@@ -1,5 +1,14 @@
 [include]
     path = ~/.gitconfig.local
+# Identity comes only from ~/.gitconfig.local. Without this, a machine missing
+# it commits as user@<fqdn>, publishing internal hostnames in commit metadata;
+# with it, git refuses to commit until user.email is set.
+[user]
+    useConfigOnly = true
+# Reject corrupt or malformed objects on fetch/clone/push. A legacy repo with
+# historical fsck warnings can be cloned with `git -c transfer.fsckObjects=false clone ...`.
+[transfer]
+    fsckObjects = true
 [push]
     autoSetupRemote = true
 [rerere]
