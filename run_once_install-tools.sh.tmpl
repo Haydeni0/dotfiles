@@ -69,6 +69,22 @@ if ! git --version >/dev/null 2>&1 || [[ "$(git --version 2>/dev/null | awk '{sp
     fi
 fi
 
+# Linux: `pi` (coding agent) ships in the externally provisioned pi-node dir
+# (~/.local/share/pi-node/<version>/bin), which is not on PATH - only pi is
+# exposed, so pi-node's bundled node does not shadow mise's. The launcher globs
+# the version dir at run time, so a pi-node bump needs no re-apply. A real
+# (non-symlink) pi already in ~/.local/bin is left alone.
+if compgen -G ~/.local/share/pi-node/'*'/bin/pi >/dev/null && { [[ ! -e ~/.local/bin/pi ]] || grep -q 'pi-node launcher' ~/.local/bin/pi; }; then
+    cat > ~/.local/bin/pi <<'LAUNCHER'
+#!/bin/bash
+# pi-node launcher (written by run_once_install-tools.sh)
+pi_bin=$(ls -d "$HOME"/.local/share/pi-node/*/bin/pi 2>/dev/null | sort -V | tail -1)
+[[ -n "$pi_bin" ]] || { echo "pi: no pi under ~/.local/share/pi-node/*/bin" >&2; exit 127; }
+PATH="${pi_bin%/pi}:$PATH" exec "$pi_bin" "$@"
+LAUNCHER
+    chmod +x ~/.local/bin/pi
+fi
+
 {{ end -}}
 
 # --- NvChad (secondary nvim config, tried via NVIM_APPNAME=nvchad, not vendored here) ---

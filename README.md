@@ -92,7 +92,6 @@ Keybinds and daily-use features: see the [cheatsheet](docs/cheatsheet.md).
 
 - **Git identity**: `git config --file ~/.gitconfig.local user.name` and `user.email` (not in the repo - different per user)
 - **AWS_PROFILE**: edit `configs/env.sh.tmpl`
-- **pi-node PATH**: edit `configs/env.sh.tmpl`
 - **SSH keys**: stays manual in `~/.ssh/` (never in repo)
 
 ## Aliases: tracked vs machine-local
