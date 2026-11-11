@@ -49,7 +49,7 @@ export PATH="$(dirname "$mise_bin"):$PATH"
 {{ else -}}
 # Linux: bootstrap mise (rootless, single binary, handles all tool archives/URLs/versions).
 # musl build: statically linked, so it runs on any glibc the HPC nodes ship.
-if [[ ! -x ~/.local/bin/mise ]]; then
+if [[ ! -x ~/.local/bin/mise ]] || [[ "$(~/.local/bin/mise --version 2>/dev/null | awk '{print $1}')" != "{{ $miseVersion }}" ]]; then
     mise_tarball=$(mktemp)
     fetch_verified "https://github.com/jdx/mise/releases/download/v{{ $miseVersion }}/mise-v{{ $miseVersion }}-{{ $miseAsset }}.tar.gz" \
         "{{ $miseSha }}" "$mise_tarball"
@@ -66,7 +66,9 @@ export PATH="$HOME/.local/bin:$PATH"
 mise install --locked
 
 # --- herdr (not in mise's registry; pinned release binary from GitHub) ---
-if [[ ! -x ~/.local/bin/herdr ]]; then
+# Version-checked guard: a pin bump reinstalls the binary (fetch_verified's mv
+# is atomic, so a running herdr keeps its old inode until restart).
+if [[ ! -x ~/.local/bin/herdr ]] || [[ "$(~/.local/bin/herdr --version 2>/dev/null | awk '{print $NF}')" != "{{ $herdrVersion }}" ]]; then
     fetch_verified "https://github.com/herdrdev/herdr/releases/download/v{{ $herdrVersion }}/herdr-{{ $herdrAsset }}" \
         "{{ $herdrSha }}" ~/.local/bin/herdr
     chmod +x ~/.local/bin/herdr
@@ -76,8 +78,8 @@ fi
 # Mac: zsh is pre-installed (system or Homebrew). No extra steps needed.
 
 {{ else -}}
-# Linux: bootstrap micromamba if not present (rootless, single binary)
-if ! command -v micromamba &>/dev/null && [[ ! -x ~/.local/bin/micromamba ]]; then
+# Linux: bootstrap micromamba (rootless, single binary), pinned to an exact version
+if [[ ! -x ~/.local/bin/micromamba ]] || [[ "$(~/.local/bin/micromamba --version 2>/dev/null | awk '{print $1}')" != "{{ $micromambaVersion }}" ]]; then
     fetch_verified "https://github.com/mamba-org/micromamba-releases/releases/download/{{ $micromambaVersion }}/micromamba-{{ $micromambaAsset }}" \
         "{{ $micromambaSha }}" ~/.local/bin/micromamba
     chmod +x ~/.local/bin/micromamba
