@@ -153,7 +153,7 @@ with `/bin/bash\r: no such file or directory`). Enforce `* text=auto eol=lf` in
 `.gitattributes`.
 
 ### 2026-08-22 - chezmoi.yaml diff tool uses a hardcoded mise shim
-The diff pager is hardcoded to `~/.local/share/mise/shims/delta` (mise is the
+The diff pager is hardcoded to the mise delta shim, `{{ .chezmoi.homeDir }}`-expanded at apply time (mise is the
 single tool manager; template `lookPath` was nondeterministic - it evaluated
 against the applying machine's PATH). Before the first `mise install` the shim
 is absent and `chezmoi diff` aborts with a fork/exec error that never names

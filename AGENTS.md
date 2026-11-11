@@ -95,8 +95,9 @@ next `chezmoi apply`** and are not in the repo.
 - **Check for drift**: `chezmoi diff` shows differences between deployed files and source.
   Run this before `chezmoi apply` to catch accidental direct edits. Bootstrap caveat
   (owned here; the pager config comment points back): before the first `mise install`,
-  the diff pager (hardcoded `~/.local/share/mise/shims/delta`) is absent and
-  `chezmoi diff` aborts with a `fork/exec ... no such file or directory` error that
+  the diff pager (the mise delta shim, `{{ .chezmoi.homeDir }}`-expanded at
+  apply time - chezmoi fork/execs the string directly and never expands `~`)
+  is absent and `chezmoi diff` aborts with a `fork/exec ... no such file or directory` error that
   never names the pager config. Apply is unaffected. Re-run diff after install.
 - **Find unmanaged files**: `chezmoi unmanaged` lists `$HOME` files NOT tracked in
   the repo. Use it to discover configs that have drifted out of management (e.g.
