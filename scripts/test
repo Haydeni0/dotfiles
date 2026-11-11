@@ -115,7 +115,7 @@ done
 
 echo "==> 6. Invariants"
 # no template-time lookPath
-rg -n 'lookPath' --glob '*.tmpl' && fail "lookPath in a template (use runtime guards)" || true
+rg -n 'lookPath' --glob '*.tmpl' . && fail "lookPath in a template (use runtime guards)" || true
 # template syntax requires .tmpl suffix on deployed dot_* entry points.
 # Exempt: configs/ fragments (included templates, not deployed),
 # .chezmoiignore (inherently a template), dot_config/worktrunk/* (worktrunk's
