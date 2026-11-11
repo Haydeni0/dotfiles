@@ -22,12 +22,38 @@ Rules:
 
 ## Tool Setup
 
-Tools are mise-managed per `dot_config/mise/config.toml.tmpl` (Homebrew on Mac
-carries mise, btop, opencode, and the GUI casks; herdr via its own curl
-installer; zsh via micromamba on Linux; zsh plugins vendored via
+Tools are mise-managed per `dot_config/mise/config.toml` (Homebrew on Mac
+carries mise, btop, opencode, and the GUI casks; herdr from a pinned,
+sha256-checked release; zsh via micromamba on Linux; zsh plugins vendored via
 `.chezmoiexternal.toml`).
 
 ## Learnings
+
+### 2026-11-11 - mise lock: exact pins, not `latest` + `mise lock tool@ver`
+`mise lock tool@0.19.2` under a `tool = "latest"` request writes an entry with
+`specifiers = ["0.19.2"]`, which does not match the `latest` request: the next
+`mise install` ignores it, installs the newest release, and rewrites the lock.
+Pins therefore live in `dot_config/mise/config.toml` as exact versions, and the
+lockfile adds per-platform URL + sha256. Verified in a sandboxed
+MISE_CONFIG_DIR: exact pin + lock installs the pinned version, leaves the lock
+unchanged, and a zeroed checksum makes the install fail. Also: lockfile format
+v4 needs mise >= 2026.11.1 (2026.10.21 errors "unsupported lockfile version 4;
+this mise supports up to version 3"), and per-OS tools use mise's `os = [...]`
+filter so one config + lock serves Mac and Linux. Branch hayden/security-hardening.
+
+### 2026-11-11 - conda-forge zsh 5.9 aarch64 build reports empty $ZSH_VERSION
+`zsh==5.9` on linux-aarch64 resolves to build `ha2db10e_2`, whose binary prints
+`zsh  (aarch64-conda-linux-gnu)` and has `$ZSH_VERSION` empty - plugin
+`is-at-least` checks break. x86_64 5.9 (`h30626fc_2`) and 5.9.2 on both arches
+are fine (Rocky 9 containers, both arches). The install script pins `zsh==5.9.2`.
+Use `==` in micromamba specs: `zsh=5.9` is a prefix match that also takes 5.9.2.
+
+### 2026-11-11 - macOS `ps -E` hides the environment of Apple platform binaries
+`ps -wwE -p <pid>` appends the environment for ordinary binaries (node, claude)
+but prints only the command line for Apple-signed ones (/usr/bin/perl), so
+agent-gates.sh tests need a non-system process (node) to exercise the Darwin
+path. Separately: Unix socket paths cap at ~104 bytes on macOS - an ssh-agent
+test HOME under the scratchpad path is too long; use `mktemp -d`.
 
 ### 2026-11-02 - ~/.zshenv is repo-managed; machine-local vars go in ~/.zshenv.local
 `~/.zshenv` is deployed from `dot_zshenv.tmpl` (env/PATH via `configs/env.sh.tmpl`)
@@ -130,7 +156,7 @@ Upstream yazi builds `yazi-x86_64-unknown-linux-gnu` on Ubuntu 24.04 requiring G
 crashing on Ubuntu 22.04, Debian 12, and HPC nodes (glibc 2.35). Mise's aqua backend
 defaults to selecting the gnu release on glibc hosts. Configure yazi as an http backend
 installing the musl release (`yazi-...-unknown-linux-musl.zip`) in
-`dot_config/mise/config.toml.tmpl` for Linux, while keeping `yazi = "latest"` on macOS.
+`dot_config/mise/config.toml` for Linux (os-filtered), while macOS keeps the aqua `yazi`.
 
 ### 2026-08-31 - gh credential helper in ~/.gitconfig drifts on gh auth login
 `gh auth login` / `gh auth setup-git` writes a version-pinned absolute-path

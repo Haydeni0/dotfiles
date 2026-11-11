@@ -1,0 +1,44 @@
+# Exact versions, not "latest": a fresh machine installs what was reviewed,
+# never whatever was published that hour. mise.lock (deployed next to this
+# file) records each version's download URL + sha256 per platform, and
+# `mise install` refuses an artifact that does not match. Upgrade flow
+# (mise rewrites both deployed files, so fold them back into the repo):
+#   mise upgrade --bump <tool>
+#   chezmoi re-add ~/.config/mise/config.toml ~/.config/mise/mise.lock
+# Adding a tool: add it here, `chezmoi apply`, then
+#   mise lock --global && chezmoi re-add ~/.config/mise/mise.lock
+# Same file on every platform - per-OS tools use mise's own `os` filter, so
+# one lockfile covers Mac and Linux.
+[tools]
+fzf = "0.74.1"
+starship = "1.26.0"
+zoxide = "0.10.0"
+neovim = "0.12.4"
+bat = "0.26.1"
+ripgrep = "15.2.0"
+fd = "10.4.2"
+jq = "1.8.2"
+lazygit = "0.65.1"
+gh = "2.96.0"
+delta = "0.19.2"
+yazi = { version = "26.9.1", os = ["macos"] }
+# Linux btop via mise; Mac gets it from Homebrew (no darwin build in aqua).
+btop = { version = "1.4.8", os = ["linux"] }
+gdu = "5.36.1"
+rclone = "1.74.4"
+uv = "0.11.32"
+difftastic = "0.69.0"
+glow = "3.0.0"
+# Pinned to 24: node 26.x links libatomic.so.1, absent on some Linux hosts (Rocky 9.7:
+# "error while loading shared libraries: libatomic.so.1"). 24.x has no libatomic dependency.
+node = "24.22.2"
+# binary in release archives is `wt`, not `worktrunk` - the github backend finds it without an override
+"github:max-sixty/worktrunk" = { version = "0.77.0" }
+
+# Linux yazi is the musl release: the gnu build needs glibc 2.39, newer than
+# the HPC nodes ship.
+[tools."http:yazi"]
+version = "26.8.15"
+os = ["linux"]
+platforms.linux-x64.url = "https://github.com/sxyazi/yazi/releases/download/v26.8.15/yazi-x86_64-unknown-linux-musl.zip"
+platforms.linux-arm64.url = "https://github.com/sxyazi/yazi/releases/download/v26.8.15/yazi-aarch64-unknown-linux-musl.zip"

@@ -14,9 +14,9 @@ sh -c "$(curl -fsLS https://get.chezmoi.io/lb)" --
 
 # 2. Apply dotfiles (deploys configs + installs all tools)
 #    - mise bootstraps and installs the tools defined in the mise config
-#      (dot_config/mise/config.toml.tmpl)
+#      (dot_config/mise/config.toml)
 #    - micromamba installs zsh to ~/.local/bin/zsh
-#    - herdr installed via curl
+#    - herdr installed from a pinned, sha256-checked release
 #    - zsh plugins vendored by chezmoi to ~/.local/share/zsh/
 chezmoi init --apply git@github-haydeni0:Haydeni0/dotfiles.git
 
@@ -89,7 +89,7 @@ brew bundle --file=~/Brewfile
 
 # 4. Re-run the apply - with mise on PATH the tool-install script now
 #    succeeds: mise installs the tools defined in the mise config
-#    (dot_config/mise/config.toml.tmpl), herdr via curl, zsh plugins vendored
+#    (dot_config/mise/config.toml), herdr (pinned release), zsh plugins vendored
 #    to ~/.local/share/zsh/, then the macOS defaults + GUI app settings
 #    scripts run (their casks now exist).
 chezmoi apply
@@ -143,8 +143,8 @@ rm -rf ~/.config/ghostty
 removed - chezmoi only manages files it knows about, not abandoned deployed dirs.
 
 ### What gets installed
-- **CLI tools** (via mise): the tools defined in the mise config (`dot_config/mise/config.toml.tmpl`) - in `~/.local/share/mise/installs/`
-- **herdr** (via curl) - `~/.local/bin/herdr`
+- **CLI tools** (via mise): the tools defined in the mise config (`dot_config/mise/config.toml`) - in `~/.local/share/mise/installs/`
+- **herdr** (pinned release, sha256-checked) - `~/.local/bin/herdr`
 - **zsh plugins** (vendored by chezmoi) - `~/.local/share/zsh/`
 - **GUI apps** (via Homebrew casks): wezterm, rectangle, dockdoor, scroll-reverser, betterdisplay, obsidian, cursor, visual-studio-code, docker-desktop, zotero, whatsapp, karabiner-elements
 - **Fonts** (via Homebrew cask): Hack Nerd Font

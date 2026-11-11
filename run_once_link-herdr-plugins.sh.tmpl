@@ -2,7 +2,7 @@
 # Link chezmoi-deployed herdr plugins. Idempotent: herdr plugin link on an
 # already-linked path is a no-op, but check anyway to keep the run_once hash
 # stable and the log quiet.
-# `herdr` installs to ~/.local/bin (its curl installer). Resolve by absolute
+# `herdr` installs to ~/.local/bin (run_once_install-tools). Resolve by absolute
 # path - chezmoi runs scripts with a PATH that may not include it (AGENTS.md).
 # Missing tool = exit 1 so chezmoi retries on the next apply.
 set -eu

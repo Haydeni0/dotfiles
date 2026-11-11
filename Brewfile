@@ -11,7 +11,7 @@ brew "btop"
 brew "opencode"
 
 # Note: CLI tools (starship, zoxide, fzf, bat, ripgrep, fd, etc.) live in
-# the mise config (dot_config/mise/config.toml.tmpl), installed by
+# the mise config (dot_config/mise/config.toml), installed by
 # run_once_install-tools.sh.tmpl on both platforms. Homebrew carries mise,
 # btop (no darwin build in mise's aqua backend), opencode (brew is current),
 # and the GUI casks below.

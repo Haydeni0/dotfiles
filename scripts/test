@@ -138,8 +138,15 @@ for s in $(git ls-files 'run_*.tmpl'); do
                 *'command -v '*) fail "run_ script $s uses bare command -v: $line" ;;
             esac
         done < <(grep 'command -v' $RENDERED || true)
+        # downloads go through fetch_verified (pinned sha256), never straight
+        # into a shell or an extractor
+        grep -nE '(curl|wget)[^|#]*\|[[:space:]]*(ba)?sh\b|(curl|wget)[^|#]*\|[[:space:]]*tar\b' $RENDERED \
+            && fail "run_ script $s pipes a download into a shell/tar ($p) - use fetch_verified"
     done
 done
+# mise tools are exact pins: a floating request would ignore the lockfile entry
+grep -vE '^[[:space:]]*#' dot_config/mise/config.toml | grep -nE '"(latest|lts)"' \
+    && fail "dot_config/mise/config.toml has a floating version - pin it exactly and re-lock"
 # externals keys and zshrc source paths must pair (R11)
 if [ -f .chezmoiexternal.toml ]; then
     ZSHRC_SRC=$(git ls-files | grep -E '(^dot_zshrc$|^configs/zshrc$)' | head -1)

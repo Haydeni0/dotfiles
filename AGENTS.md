@@ -10,8 +10,9 @@ duplicate the README or AGENTS.md).
 A cross-platform dotfiles repo managed by chezmoi. Config sources are plain
 `dot_*` files (no template needed) or `configs/` fragments where a template
 does real work, deployed to `$HOME` by chezmoi. Tools installed via mise
-(defined in `dot_config/mise/config.toml.tmpl`), micromamba (zsh), and curl
-(herdr). No Nix, no bwrap, no proot, no namespaces.
+(defined in `dot_config/mise/config.toml`, exact versions + `mise.lock`),
+micromamba (zsh), and a pinned, sha256-checked release download (herdr). No
+Nix, no bwrap, no proot, no namespaces.
 
 The chezmoi source dir IS the working repo. `chezmoi init` clones it to
 `~/.local/share/chezmoi`; edit, commit, and `chezmoi apply` from there. Do not
@@ -53,9 +54,15 @@ file first and backfill.
 - `dot_*.tmpl` - template entry points needing per-platform rendering
 - `dot_config/nvim/` - nvim config (plain files, deployed directly; `lazy-lock.json`
   is tracked in the repo - runtime updates by lazy.nvim show as drift to fold back in)
+- `dot_config/mise/` - mise config (exact tool versions, same file on every platform) and
+  `private_mise.lock` (per-platform URL + sha256 for each version; `mise install` rejects a
+  mismatch). `mise upgrade --bump` rewrites both deployed files - fold them back with
+  `chezmoi re-add ~/.config/mise/config.toml ~/.config/mise/mise.lock`
 - `.chezmoiexternal.toml` - pinned zsh plugin archives vendored to `~/.local/share/zsh/`
 - `Brewfile` - Mac: mise via Homebrew (plus btop, opencode, GUI casks; deployed to `~/Brewfile`)
-- `run_once_install-tools.sh.tmpl` - tool installer (mise for tools, micromamba for zsh, curl for herdr, git-clone for the NvChad starter)
+- `run_once_install-tools.sh.tmpl` - tool installer (mise for tools, micromamba for zsh,
+  git-clone for the NvChad starter; bootstrap downloads - Linux mise, micromamba, herdr -
+  are pinned versions checked against sha256s recorded in the script)
 - `.chezmoiignore` - files not deployed to `$HOME`
 - `mise.toml` - repo-level mise tasks (test/sync/doctor), ignored from deployment
 - `docs/setup.md` - setup guide for both platforms
@@ -139,7 +146,9 @@ Run `mise run test` (or `./scripts/test`) from the chezmoi source dir. Validates
 - Keybinding parity in `dot_zshrc` (Mac `\e[1;3` Opt and Linux/WSL `\e[1;5` Ctrl)
 - Multi-platform template compilation (`darwin/arm64`, `darwin/amd64`, `linux/amd64`, `linux/arm64`)
 - Invariants: no template-time `lookPath`, no bare `command -v` in run_ scripts
-  (repo-installed tools resolve by absolute path), `.tmpl` suffix on template
+  (repo-installed tools resolve by absolute path), no download piped into a
+  shell or `tar` in run_ scripts (use `fetch_verified`), no floating
+  (`latest`/`lts`) mise versions, `.tmpl` suffix on template
   entry points, externals keys paired with zshrc source guards, CLAUDE.md stays
   a tracked symlink to AGENTS.md (mode 120000 - one source, two names; never
   replace it with a real copy), `.chezmoiignore` keeps its non-deploy sections

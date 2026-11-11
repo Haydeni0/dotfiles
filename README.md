@@ -82,9 +82,9 @@ Keybinds and daily-use features: see the [cheatsheet](docs/cheatsheet.md).
 
 ## Tool installation
 
-- **mise** installs the tools defined in the mise config (`dot_config/mise/config.toml.tmpl`) - handles archive formats, URLs, version detection, and download verification automatically
+- **mise** installs the tools defined in the mise config (`dot_config/mise/config.toml`) at exact versions; `mise.lock` beside it pins each download's sha256 per platform
 - **micromamba** installs zsh to `~/.local/bin/zsh` (compute nodes don't have system zsh; login nodes and Mac do)
-- **herdr** via its own curl installer (not in mise registry)
+- **herdr** pinned GitHub release binary, sha256-checked by the install script (not in mise registry)
 - **zsh plugins** (autosuggestions, syntax-highlighting, history-substring-search) vendored to `~/.local/share/zsh/` via `.chezmoiexternal.toml`
 - **Mac only**: mise, btop, opencode, and GUI apps via Homebrew (Brewfile)
 
@@ -125,7 +125,8 @@ What `test` validates: see the testing section of [AGENTS.md](AGENTS.md) (single
 
 ## Adding new tools
 
-- Both platforms: add the tool to `dot_config/mise/config.toml.tmpl`, then `mise install`
+- Both platforms: add the tool at an exact version to `dot_config/mise/config.toml`, `chezmoi apply`,
+  then `mise lock --global && chezmoi re-add ~/.config/mise/mise.lock` and `mise install`
   (on Mac, resolve mise first: `brew bundle` - see Brewfile)
 - Homebrew only for GUI casks and tools with no darwin build in mise (e.g. btop, opencode)
 - Commit + push

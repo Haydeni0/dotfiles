@@ -1,8 +1,40 @@
+{{- /* Pinned bootstrap downloads: version + sha256 per platform, recorded here
+     so a compromised download host cannot swap a binary. Bump = new version,
+     then sha256 of each asset (cross-check the vendor's published sums). */ -}}
+{{- $herdrVersion := "0.9.5" -}}
+{{- $herdrAsset := "" -}}{{- $herdrSha := "" -}}
+{{- if eq .chezmoi.os "darwin" -}}
+{{-   if eq .chezmoi.arch "arm64" -}}{{- $herdrAsset = "macos-aarch64" -}}{{- $herdrSha = "fb77c2232a05a8035421382c894392f4174e4e38a18e48af3dd0290157c3a7e2" -}}
+{{-   else -}}{{- $herdrAsset = "macos-x86_64" -}}{{- $herdrSha = "5fb0a908ec7f6745e3e245738b06bfad56c46391c391ab3c0955fbead01f1369" -}}{{- end -}}
+{{- else -}}
+{{-   if eq .chezmoi.arch "arm64" -}}{{- $herdrAsset = "linux-aarch64" -}}{{- $herdrSha = "17d7536f2da50859523680ef279dffcac8e4a235f4e46fe8da6c2ec44141897c" -}}
+{{-   else -}}{{- $herdrAsset = "linux-x86_64" -}}{{- $herdrSha = "14d9e8bc8b4a9e0118d77c32266f76d461f09b40342eb23752960bd89f59929d" -}}{{- end -}}
+{{- end -}}
+{{- $miseVersion := "2026.11.6" -}}
+{{- $miseAsset := "linux-x64-musl" -}}{{- $miseSha := "2cc1157b9d75a1c6a63aa7231a047c33b43f273fd2bc545ab51ae9db4f74993a" -}}
+{{- if eq .chezmoi.arch "arm64" -}}{{- $miseAsset = "linux-arm64-musl" -}}{{- $miseSha = "982a195d32427364beb878e1933b76aa5b1d1ccf82c3aca8cfcc2675666546a2" -}}{{- end -}}
+{{- $micromambaVersion := "2.10.0-0" -}}
+{{- $micromambaAsset := "linux-64" -}}{{- $micromambaSha := "701f39c06f8e6a670a0e186c8479b9e5c0502a2f0cda6cef65d83bdd2875e8bd" -}}
+{{- if eq .chezmoi.arch "arm64" -}}{{- $micromambaAsset = "linux-aarch64" -}}{{- $micromambaSha = "3bb56786e21b9b24024f599fe9185b4a59dc3f9f59937a42311ee583adbbb23c" -}}{{- end -}}
 #!/bin/bash
 set -euo pipefail
 
 mkdir -p ~/.local/bin
 mkdir -p ~/.local/share/zsh
+
+# Download $1 to $3, keeping it only if its sha256 equals $2.
+fetch_verified() {
+    local tmp actual
+    tmp=$(mktemp)
+    curl -fsSL --retry 3 "$1" -o "$tmp"
+    actual=$({{ if eq .chezmoi.os "darwin" }}shasum -a 256{{ else }}sha256sum{{ end }} "$tmp" | awk '{print $1}')
+    if [[ "$actual" != "$2" ]]; then
+        rm -f "$tmp"
+        echo "install: sha256 mismatch for $1: expected $2, got $actual - refusing to install" >&2
+        exit 1
+    fi
+    mv "$tmp" "$3"
+}
 
 {{ if eq .chezmoi.os "darwin" -}}
 # Mac: mise comes from Homebrew (Brewfile). Resolve by explicit brew prefix -
@@ -15,17 +47,30 @@ done
 export PATH="$(dirname "$mise_bin"):$PATH"
 
 {{ else -}}
-# Linux: bootstrap mise (rootless, single binary, handles all tool archives/URLs/versions)
-[[ -x ~/.local/bin/mise ]] || curl -fsSL https://mise.run | sh
+# Linux: bootstrap mise (rootless, single binary, handles all tool archives/URLs/versions).
+# musl build: statically linked, so it runs on any glibc the HPC nodes ship.
+if [[ ! -x ~/.local/bin/mise ]]; then
+    mise_tarball=$(mktemp)
+    fetch_verified "https://github.com/jdx/mise/releases/download/v{{ $miseVersion }}/mise-v{{ $miseVersion }}-{{ $miseAsset }}.tar.gz" \
+        "{{ $miseSha }}" "$mise_tarball"
+    tar -xzf "$mise_tarball" -C ~/.local/bin --strip-components=2 mise/bin/mise
+    rm -f "$mise_tarball"
+fi
 export PATH="$HOME/.local/bin:$PATH"
 
 {{ end -}}
 
 # --- install all CLI tools via mise ---
-mise install
+# --locked: every tool must match an entry (version + sha256) in the deployed
+# ~/.config/mise/mise.lock; anything unlocked or mismatched fails the install.
+mise install --locked
 
-# --- herdr (not in aqua registry, has its own installer) ---
-[[ -x ~/.local/bin/herdr ]] || curl -fsSL https://herdr.dev/install.sh | sh
+# --- herdr (not in mise's registry; pinned release binary from GitHub) ---
+if [[ ! -x ~/.local/bin/herdr ]]; then
+    fetch_verified "https://github.com/herdrdev/herdr/releases/download/v{{ $herdrVersion }}/herdr-{{ $herdrAsset }}" \
+        "{{ $herdrSha }}" ~/.local/bin/herdr
+    chmod +x ~/.local/bin/herdr
+fi
 
 {{ if eq .chezmoi.os "darwin" -}}
 # Mac: zsh is pre-installed (system or Homebrew). No extra steps needed.
@@ -33,14 +78,20 @@ mise install
 {{ else -}}
 # Linux: bootstrap micromamba if not present (rootless, single binary)
 if ! command -v micromamba &>/dev/null && [[ ! -x ~/.local/bin/micromamba ]]; then
-    curl -fsSL https://micro.mamba.pm/api/micromamba/linux-{{ if eq .chezmoi.arch "amd64" }}64{{ else }}aarch64{{ end }}/latest | tar -xj -C ~/.local/bin/ --strip-components=1 bin/micromamba
+    fetch_verified "https://github.com/mamba-org/micromamba-releases/releases/download/{{ $micromambaVersion }}/micromamba-{{ $micromambaAsset }}" \
+        "{{ $micromambaSha }}" ~/.local/bin/micromamba
+    chmod +x ~/.local/bin/micromamba
 fi
+
+# conda-forge packages below are pinned with `==` (exact; a single `=` is a
+# prefix match, so file=5.4 would also take 5.47).
 
 # Linux: always install zsh to ~/.local/bin/zsh via micromamba (available on HPC nodes).
 # Don't gate on 'command -v zsh' - login nodes have /usr/bin/zsh but compute nodes don't.
 # Since home is NFS-shared, installing once makes zsh available on ALL nodes.
+# Not 5.9: its conda-forge aarch64 build reports an empty $ZSH_VERSION.
 if [[ ! -x ~/.local/bin/zsh ]]; then
-    micromamba create -y -n zsh zsh -c conda-forge >/dev/null 2>&1
+    micromamba create -y -n zsh 'zsh==5.9.2' -c conda-forge >/dev/null 2>&1
     # micromamba installs to ~/.local/share/mamba/envs/ (not micromamba/)
     ln -sf ~/.local/share/mamba/envs/zsh/bin/zsh ~/.local/bin/zsh
 fi
@@ -54,7 +105,7 @@ fi
 # Linux: `file` cmd for MIME detection (yazi, other tools).
 # Mac has it pre-installed; Linux HPC nodes often don't. micromamba install (rootless).
 if [[ ! -x ~/.local/bin/file ]]; then
-    micromamba create -y -n file file -c conda-forge >/dev/null 2>&1
+    micromamba create -y -n file 'file==5.47' -c conda-forge >/dev/null 2>&1
     # micromamba installs to ~/.local/share/mamba/envs/ (not micromamba/)
     ln -sf ~/.local/share/mamba/envs/file/bin/file ~/.local/bin/file
 fi
@@ -64,7 +115,7 @@ fi
 # Mac: Homebrew/git is current, no need.
 if ! git --version >/dev/null 2>&1 || [[ "$(git --version 2>/dev/null | awk '{split($3,a,"."); print (a[1]*1000+a[2] < 2043) ? "old" : "new"}')" == "old" ]]; then
     if [[ ! -x ~/.local/bin/git ]]; then
-        micromamba create -y -n git git -c conda-forge >/dev/null 2>&1
+        micromamba create -y -n git 'git==2.55.0' -c conda-forge >/dev/null 2>&1
         ln -sf ~/.local/share/mamba/envs/git/bin/git ~/.local/bin/git
     fi
 fi
@@ -88,7 +139,12 @@ fi
 {{ end -}}
 
 # --- NvChad (secondary nvim config, tried via NVIM_APPNAME=nvchad, not vendored here) ---
-[[ -d ~/.config/nvchad ]] || \
-    git clone --depth 1 https://github.com/NvChad/starter ~/.config/nvchad
+# Pinned commit of the starter. The starter's own plugins (NvChad itself,
+# lazy.nvim) still float on their branches - it is an experiment, not daily use.
+nvchad_commit=e3572e1f5e1c297212c3deeb17b7863139ce663e
+if [[ ! -d ~/.config/nvchad ]]; then
+    git clone --quiet https://github.com/NvChad/starter ~/.config/nvchad
+    git -C ~/.config/nvchad reset --quiet --hard "$nvchad_commit"
+fi
 
 echo "Tools installed. Run 'mise activate zsh' in your .zshrc to put mise-managed tools on PATH."
